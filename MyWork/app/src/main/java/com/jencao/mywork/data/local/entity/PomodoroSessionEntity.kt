@@ -10,7 +10,7 @@ import com.jencao.mywork.data.local.BaseEntity
  */
 @Entity(
     tableName = "pomodoro_sessions",
-    indices = [Index("completed_at")]
+    indices = [Index(value = ["completed_at"])]
 )
 data class PomodoroSessionEntity(
     @ColumnInfo(name = "mode") var mode: String = "work",

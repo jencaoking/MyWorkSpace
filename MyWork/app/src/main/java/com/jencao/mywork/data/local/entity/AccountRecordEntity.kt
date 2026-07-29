@@ -10,7 +10,7 @@ import com.jencao.mywork.data.local.BaseEntity
  */
 @Entity(
     tableName = "account_records",
-    indices = [Index("record_date"), Index("type")]
+    indices = [Index(value = ["record_date"]), Index(value = ["type"])]
 )
 data class AccountRecordEntity(
     @ColumnInfo(name = "type") var type: String = "expense",

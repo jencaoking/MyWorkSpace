@@ -16,7 +16,7 @@ import com.jencao.mywork.data.local.BaseEntity
  */
 @Entity(
     tableName = "tasks",
-    indices = [Index("category_id"), Index("status"), Index("due_date")]
+    indices = [Index(value = ["category_id"]), Index(value = ["status"]), Index(value = ["due_date"])]
 )
 data class TaskEntity(
     @ColumnInfo(name = "title") var title: String = "",

@@ -10,7 +10,7 @@ import com.jencao.mywork.data.local.BaseEntity
  */
 @Entity(
     tableName = "notes",
-    indices = [Index("is_pinned"), Index("needs_sync")]
+    indices = [Index(value = ["is_pinned"]), Index(value = ["needs_sync"])]
 )
 data class NoteEntity(
     @ColumnInfo(name = "title") var title: String = "",

@@ -11,7 +11,7 @@ import com.jencao.mywork.data.local.BaseEntity
  */
 @Entity(
     tableName = "task_checkins",
-    indices = [Index("task_id"), Index("checkin_date")]
+    indices = [Index(value = ["task_id"]), Index(value = ["checkin_date"])]
 )
 data class TaskCheckinEntity(
     @ColumnInfo(name = "task_id") var taskId: String = "",

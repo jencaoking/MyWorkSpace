@@ -10,7 +10,7 @@ import com.jencao.mywork.data.local.BaseEntity
  */
 @Entity(
     tableName = "sport_records",
-    indices = [Index("record_date")]
+    indices = [Index(value = ["record_date"])]
 )
 data class SportRecordEntity(
     @ColumnInfo(name = "type") var type: String = "",

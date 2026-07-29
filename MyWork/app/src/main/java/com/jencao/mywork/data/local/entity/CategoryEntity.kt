@@ -10,7 +10,7 @@ import com.jencao.mywork.data.local.BaseEntity
  */
 @Entity(
     tableName = "categories",
-    indices = [Index("sort_order")]
+    indices = [Index(value = ["sort_order"])]
 )
 data class CategoryEntity(
     @ColumnInfo(name = "name") var name: String = "",

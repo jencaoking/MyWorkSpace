@@ -11,7 +11,7 @@ import com.jencao.mywork.data.local.BaseEntity
  */
 @Entity(
     tableName = "english_words",
-    indices = [Index("next_review")]
+    indices = [Index(value = ["next_review"])]
 )
 data class EnglishWordEntity(
     @ColumnInfo(name = "word") var word: String = "",

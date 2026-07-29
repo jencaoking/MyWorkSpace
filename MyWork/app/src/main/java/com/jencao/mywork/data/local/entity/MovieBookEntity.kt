@@ -11,7 +11,7 @@ import com.jencao.mywork.data.local.BaseEntity
  */
 @Entity(
     tableName = "movie_books",
-    indices = [Index("type"), Index("status")]
+    indices = [Index(value = ["type"]), Index(value = ["status"])]
 )
 data class MovieBookEntity(
     @ColumnInfo(name = "type") var type: String = "movie",
