@@ -27,6 +27,7 @@ import com.jencao.mywork.data.util.RepeatRule
 import java.time.LocalDate
 import java.time.YearMonth
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskCalendarScreen(
     nav: NavHostController,

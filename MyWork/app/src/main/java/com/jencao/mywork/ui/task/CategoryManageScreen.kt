@@ -33,6 +33,7 @@ private val PALETTE = listOf(
     "#29B6F6", "#5C6BC0", "#AB47BC", "#EC407A", "#8D6E63"
 )
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CategoryManageScreen(
     nav: NavHostController,

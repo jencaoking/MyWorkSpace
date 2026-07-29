@@ -27,6 +27,7 @@ import com.jencao.mywork.data.util.DateUtils
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskDetailScreen(
     nav: NavHostController,
