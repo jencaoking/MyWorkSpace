@@ -12,6 +12,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -141,11 +144,12 @@ fun PomodoroScreen(
 
         // 控制按钮
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            NeuButton(if (running) "暂停" else "开始") {
-                if (running) vm.pause() else vm.start()
-            }
-            NeuButton("重置") { vm.reset() }
-            NeuButton("跳过") { vm.skip() }
+            NeuButton(
+                text = if (running) "暂停" else "开始",
+                onClick = { if (running) vm.pause() else vm.start() }
+            )
+            NeuButton(text = "重置", onClick = { vm.reset() })
+            NeuButton(text = "跳过", onClick = { vm.skip() })
         }
 
         Text(

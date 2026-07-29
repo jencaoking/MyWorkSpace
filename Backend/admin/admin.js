@@ -1,233 +1,381 @@
-/* 自律工作台 · 后台管理 — 前端逻辑（原生 JS，无构建步骤） */
-(() => {
-  "use strict";
+'use strict';
 
-  const view = document.getElementById("view");
-  const connEl = document.getElementById("conn");
-  const toastEl = document.getElementById("toast");
+/* ---------- 导航定义（概览 + 9 张白名单表） ---------- */
+const NAV = [
+  { key: 'overview',        label: '概览',     ico: '◎' },
+  { key: 'tasks',           label: '任务',     ico: '✓' },
+  { key: 'notes',           label: '笔记',     ico: '✎' },
+  { key: 'sport_records',   label: '运动',     ico: '♥' },
+  { key: 'english_words',   label: '单词',     ico: 'A' },
+  { key: 'movie_books',     label: '影音书籍', ico: '▦' },
+  { key: 'health_records',  label: '健康',     ico: '+' },
+  { key: 'account_records', label: '记账',     ico: '¥' },
+  { key: 'categories',      label: '分类',     ico: '#' },
+  { key: 'user_settings',   label: '设置',     ico: '⚙' },
+];
+const LABEL = Object.fromEntries(NAV.map(n => [n.key, n.label]));
 
-  const TABLE_META = {
-    tasks:          { label: "任务" },
-    notes:          { label: "笔记" },
-    sport_records:  { label: "运动" },
-    english_words:  { label: "英语" },
-    movie_books:    { label: "影音书籍" },
-    health_records: { label: "健康" },
-    account_records:{ label: "记账" },
-    categories:     { label: "分类" },
-    user_settings:  { label: "设置" },
-  };
+/* ---------- 全局状态 ---------- */
+const S = { view: 'overview', table: '', rows: [], columns: [], types: {} };
 
-  let currentTable = null;
-  let currentRows = [];
+/* ---------- DOM 引用 ---------- */
+const $ = id => document.getElementById(id);
+const loginScreen = $('loginScreen'), appEl = $('app'), navEl = $('nav'), contentEl = $('content');
 
-  /* ---------- 工具 ---------- */
-  const api = async (path) => {
-    const res = await fetch(path, { headers: { Accept: "application/json" } });
-    if (!res.ok) throw new Error("HTTP " + res.status);
-    const j = await res.json();
-    if (j.code !== 0) throw new Error(j.message || "接口错误");
-    return j.data;
-  };
+/* ---------- 工具函数 ---------- */
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+}
+function isTs(c) {
+  return ['created_at', 'updated_at', 'completed_at', 'last_modified', 'last_sync_at', 'timestamp', 'synced_at'].includes(c) || c.endsWith('_at');
+}
+function isText(c) {
+  return ['content', 'note', 'notes', 'description', 'remark', 'synopsis', 'meaning', 'detail', 'summary', 'url', 'cover'].includes(c);
+}
+function labelOf(c) {
+  return ({
+    id: 'ID', title: '标题', content: '内容', note: '笔记', notes: '备注', description: '描述',
+    created_at: '创建时间', updated_at: '更新时间', completed_at: '完成时间', last_modified: '最后修改',
+    last_sync_at: '同步时间', timestamp: '时间戳', is_deleted: '已删除', device_id: '设备', priority: '优先级',
+    status: '状态', task_type: '类型', needs_sync: '待同步', category_id: '分类', amount: '金额',
+    record_date: '日期', word: '单词', book_name: '书名', name: '名称', type: '类型', synopsis: '简介',
+  })[c] || c;
+}
+function fmtTs(v) {
+  if (v === null || v === '' || v === undefined) return '—';
+  const n = Number(v);
+  if (isNaN(n) || n <= 0) return esc(String(v));
+  const ms = n > 1e11 ? n : n * 1000;
+  return new Date(ms).toLocaleString('zh-CN', { hour12: false });
+}
 
-  const esc = (s) =>
-    String(s).replace(/[&<>"]/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[m]));
+async function api(path, opts = {}) {
+  const res = await fetch(path, {
+    headers: { 'Content-Type': 'application/json' },
+    ...opts,
+  });
+  let json = {};
+  try { json = await res.json(); } catch (e) { /* ignore */ }
+  if (!res.ok || (json.code !== 0 && json.code !== undefined)) {
+    const err = new Error(json.message || ('请求失败 (' + res.status + ')'));
+    err.status = res.status;
+    throw err;
+  }
+  return json.data !== undefined ? json.data : json;
+}
 
-  const humanize = (c) => c.replace(/_/g, " ").replace(/\b\w/g, (m) => m.toUpperCase());
+let toastTimer = null;
+function toast(msg, isErr = false) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (isErr ? ' err' : '');
+  t.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.hidden = true; }, 2600);
+}
 
-  const isTs = (c) =>
-    /_(at|time)$/.test(c) || ["last_modified", "due_date", "reminder_time", "next_review", "synced_at"].includes(c);
+function openModal(id) { $(id).hidden = false; }
+function closeModal(id) { $(id).hidden = true; }
 
-  const isTextCol = (c) =>
-    ["content", "title", "note", "meaning", "example", "rule", "module_toggles", "summary", "definition", "remark", "repeat_rule"].includes(c);
+/* ---------- 鉴权流程 ---------- */
+function showLogin() { loginScreen.hidden = false; appEl.hidden = true; }
+function enterApp() {
+  loginScreen.hidden = true;
+  appEl.hidden = false;
+  renderSidebar();
+  navigate(S.view || 'overview');
+}
 
-  const fmtTs = (ms) => {
-    const d = new Date(ms);
-    if (isNaN(d)) return String(ms);
-    const p = (n) => String(n).padStart(2, "0");
-    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
-  };
+async function boot() {
+  try {
+    await api('/admin/overview');
+    enterApp();
+  } catch (e) {
+    showLogin();
+    if (e.status && e.status !== 401) toast('无法连接后台服务：' + e.message, true);
+  }
+}
 
-  const badge = (cls, text) => `<span class="badge ${cls}">${esc(text)}</span>`;
-  const taskStatusBadge = (v) => badge(v == 1 ? "green" : v == 2 ? "blue" : "amber", v == 1 ? "已完成" : v == 2 ? "进行中" : "待办");
-  const priorityBadge = (v) => badge(v == 1 ? "rose" : v == 3 ? "gray" : "amber", v == 1 ? "高" : v == 3 ? "低" : "中");
-  const taskTypeBadge = (v) => badge("blue", v == 1 ? "重复" : v == 2 ? "目标" : "普通");
+$('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const pwd = $('loginPwd').value;
+  const btn = $('loginBtn'), err = $('loginErr');
+  btn.disabled = true; err.hidden = true;
+  try {
+    await api('/admin/login', { method: 'POST', body: JSON.stringify({ password: pwd }) });
+    $('loginPwd').value = '';
+    enterApp();
+  } catch (e2) {
+    err.textContent = e2.message;
+    err.hidden = false;
+  } finally { btn.disabled = false; }
+});
 
-  const cellHtml = (table, col, val) => {
-    if (val === null || val === "") return '<span class="badge gray">—</span>';
-    if (col === "is_deleted") return badge(val == 1 ? "rose" : "green", val == 1 ? "已删除" : "正常");
-    if (table === "tasks") {
-      if (col === "status") return taskStatusBadge(val);
-      if (col === "priority") return priorityBadge(val);
-      if (col === "task_type") return taskTypeBadge(val);
-    }
-    if (isTs(col) && /^\d+$/.test(String(val))) return `<span class="mono">${fmtTs(Number(val))}</span>`;
-    let s = typeof val === "object" ? JSON.stringify(val) : String(val);
-    if (s.length > 60) return `<span class="cell-text" title="${esc(s)}">${esc(s.slice(0, 60))}…</span>`;
-    return esc(s);
-  };
+$('logoutBtn').addEventListener('click', async () => {
+  try { await api('/admin/logout', { method: 'POST' }); } catch (e) { /* ignore */ }
+  S.view = 'overview';
+  showLogin();
+});
 
-  const toast = (msg, isErr) => {
-    toastEl.textContent = msg;
-    toastEl.classList.toggle("err", !!isErr);
-    toastEl.hidden = false;
-    requestAnimationFrame(() => toastEl.classList.add("show"));
-    clearTimeout(toast._t);
-    toast._t = setTimeout(() => {
-      toastEl.classList.remove("show");
-      setTimeout(() => (toastEl.hidden = true), 250);
-    }, 2800);
-  };
+/* ---------- 导航与渲染 ---------- */
+function renderSidebar() {
+  navEl.innerHTML = '';
+  NAV.forEach(item => {
+    const b = document.createElement('button');
+    b.className = 'nav-item' + (item.key === S.view ? ' active' : '');
+    b.dataset.key = item.key;
+    b.innerHTML = `<span class="nav-ico">${item.ico}</span><span>${item.label}</span>`;
+    b.onclick = () => { navigate(item.key); appEl.classList.remove('nav-open'); };
+    navEl.appendChild(b);
+  });
+}
 
-  /* ---------- 连接状态 ---------- */
-  const checkConn = async () => {
-    try {
-      const d = await api("/api/health");
-      connEl.className = "conn online";
-      connEl.querySelector(".conn-text").textContent = "已连接 · PHP " + d.php_version;
-    } catch {
-      connEl.className = "conn offline";
-      connEl.querySelector(".conn-text").textContent = "连接失败";
-    }
-  };
+function navigate(key) {
+  S.view = key;
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.key === key));
+  $('viewTitle').textContent = LABEL[key] || '概览';
+  if (key === 'overview') showOverview();
+  else showTable(key);
+}
 
-  /* ---------- 概览 ---------- */
-  const showOverview = async () => {
-    const skeleton = `<div class="view-head"><div><h2>概览</h2><p class="sub">加载中…</p></div></div>
-      <div class="grid cols-auto">${'<div class="card skeleton"><div class="sk-bar"></div></div>'.repeat(6)}</div>`;
-    view.innerHTML = skeleton;
-    try {
-      const d = await api("/admin/overview");
-      renderOverview(d);
-    } catch (e) {
-      toast("加载概览失败：" + e.message, true);
-      view.innerHTML = `<div class="panel"><div class="empty">加载失败</div></div>`;
-    }
-  };
+function setConn(ok, ver) {
+  const dot = $('connStatus');
+  dot.className = 'status-dot ' + (ok ? 'ok' : 'bad');
+  $('connText').textContent = ok ? ('已连接 · PHP ' + ver) : '连接失败';
+}
 
-  const renderOverview = (d) => {
-    const t = d.tables || {};
-    const cards = Object.keys(TABLE_META)
-      .map((k) => {
-        const v = t[k] ?? 0;
-        return `<div class="card stat">
-          <div class="label">${esc(TABLE_META[k].label)}</div>
-          <div class="value">${v}</div>
-          <div class="foot">${esc(TABLE_META[k].label)}记录数</div>
-        </div>`;
-      })
-      .join("");
+async function showOverview() {
+  contentEl.innerHTML = '<div class="empty">加载中…</div>';
+  try {
+    const d = await api('/admin/overview');
+    renderOverview(d);
+    setConn(d.db_connected, d.php_version);
+  } catch (e) {
+    contentEl.innerHTML = `<div class="empty">加载失败：${esc(e.message)}</div>`;
+  }
+}
 
-    const max = Math.max(1, ...Object.keys(TABLE_META).map((k) => t[k] ?? 0));
-    const bars = Object.keys(TABLE_META)
-      .map((k) => {
-        const v = t[k] ?? 0;
-        const pct = Math.max(6, Math.round((v / max) * 100));
-        return `<div class="sysrow">
-          <span class="k">${esc(TABLE_META[k].label)}</span>
-          <span style="display:flex;align-items:center;gap:10px;flex:1;justify-content:flex-end">
-            <span style="height:6px;width:${pct}px;border-radius:6px;background:linear-gradient(90deg,var(--accent),var(--cyan))"></span>
-            <span class="v">${v}</span>
-          </span></div>`;
-      })
-      .join("");
+function renderOverview(d) {
+  const max = Math.max(1, ...Object.values(d.tables));
+  const grid = document.createElement('div');
+  grid.className = 'stat-grid';
+  Object.keys(d.tables).forEach(t => {
+    const val = d.tables[t];
+    const card = document.createElement('div');
+    card.className = 'stat-card glass';
+    card.innerHTML = `<h3>${LABEL[t] || t}</h3><div class="num">${val}</div>` +
+      `<div class="bar"><span style="width:${Math.round(val / max * 100)}%"></span></div>`;
+    grid.appendChild(card);
+  });
+  const sys = document.createElement('div');
+  sys.className = 'sys-row';
+  sys.innerHTML =
+    `<span class="sys-chip">PHP <b>${esc(d.php_version)}</b></span>` +
+    `<span class="sys-chip">数据库 <b>${d.db_connected ? '已连接' : '异常'}</b></span>` +
+    `<span class="sys-chip">设备数 <b>${d.device_count}</b></span>` +
+    `<span class="sys-chip">服务器时间 <b>${fmtTs(d.server_time)}</b></span>`;
+  contentEl.innerHTML = '';
+  contentEl.append(sys, grid);
+}
 
-    view.innerHTML = `
-      <div class="view-head"><div><h2>概览</h2><p class="sub">全局数据与服务状态 · 实时快照</p></div></div>
-      <div class="grid cols-auto">${cards}</div>
-      <div class="grid cols-2" style="margin-top:2px">
-        <div class="card">
-          <div class="stat"><div class="label">系统状态</div></div>
-          <div class="sysrow"><span class="k">数据库</span><span class="v">${d.db_connected ? "已连接" : "异常"}</span></div>
-          <div class="sysrow"><span class="k">PHP 版本</span><span class="v">${esc(d.php_version)}</span></div>
-          <div class="sysrow"><span class="k">接入设备</span><span class="v">${d.device_count}</span></div>
-          <div class="sysrow"><span class="k">服务器时间</span><span class="v">${fmtTs(d.server_time)}</span></div>
-          ${d.db_error ? `<div class="sysrow"><span class="k">错误</span><span class="v" style="color:var(--rose)">${esc(d.db_error)}</span></div>` : ""}
-        </div>
-        <div class="card">
-          <div class="stat"><div class="label">模块分布</div></div>
-          ${bars}
-        </div>
-      </div>`;
-  };
+async function showTable(table) {
+  S.table = table; S.rows = []; S.columns = []; S.types = {};
+  contentEl.innerHTML = '<div class="empty">加载中…</div>';
+  try {
+    const d = await api('/admin/browse?table=' + encodeURIComponent(table) + '&limit=100');
+    S.rows = d.rows; S.columns = d.columns; S.types = d.types || {};
+    renderTable();
+  } catch (e) {
+    contentEl.innerHTML = `<div class="empty">加载失败：${esc(e.message)}</div>`;
+  }
+}
 
-  /* ---------- 数据浏览 ---------- */
-  const showTable = async (table) => {
-    currentTable = table;
-    const meta = TABLE_META[table] || { label: table };
-    view.innerHTML = `
-      <div class="view-head">
-        <div><h2>${esc(meta.label)}</h2><p class="sub">数据浏览（只读）· 加载中…</p></div>
-        <label class="search">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-          <input id="q" type="search" placeholder="在当前结果中筛选…" autocomplete="off" />
-        </label>
-      </div>
-      <div class="panel"><div class="skeleton"><div class="sk-bar"></div><div class="sk-bar"></div><div class="sk-bar"></div></div></div>`;
-    document.getElementById("q").addEventListener("input", (e) => filterRows(e.target.value));
-    try {
-      const d = await api("/admin/browse?table=" + encodeURIComponent(table) + "&limit=200");
-      currentRows = d.rows || [];
-      renderBody(d.columns || [], currentRows, meta.label);
-    } catch (e) {
-      toast("加载失败：" + e.message, true);
-    }
-  };
+function cellHTML(col, v) {
+  if (v === null || v === '') return '<span style="color:var(--ink-faint)">—</span>';
+  if (col === 'is_deleted') return `<span class="badge deleted-${v}">${v == 1 ? '已删除' : '正常'}</span>`;
+  if (col === 'priority') return `<span class="badge prio-${v}">${v == 3 ? '高' : v == 2 ? '中' : '低'}</span>`;
+  if (col === 'status' && S.table === 'tasks') return `<span class="badge status-${v}">${v == 2 ? '已完成' : v == 1 ? '进行中' : '待办'}</span>`;
+  if (isTs(col)) return esc(fmtTs(v));
+  if (isText(col)) return `<div class="cell-text">${esc(v)}</div>`;
+  return esc(v);
+}
 
-  const renderBody = (columns, rows, label) => {
-    const panel = view.querySelector(".panel");
-    const sub = view.querySelector(".sub");
-    if (!rows.length) {
-      panel.innerHTML = `<div class="empty">暂无 ${esc(label)} 数据</div>`;
-      if (sub) sub.textContent = `数据浏览（只读）· 0 条`;
-      return;
-    }
-    const head = columns.map((c) => `<th>${esc(humanize(c))}</th>`).join("");
-    const body = rows
-      .map((r) => {
-        const tds = columns
-          .map((c) => {
-            const cls = isTextCol(c) ? ' class="cell-text"' : "";
-            return `<td${cls}>${cellHtml(currentTable, c, r[c])}</td>`;
-          })
-          .join("");
-        return `<tr>${tds}</tr>`;
-      })
-      .join("");
-    panel.innerHTML = `<div class="table-wrap"><table class="data"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
-    if (sub) sub.textContent = `数据浏览（只读）· 显示 ${rows.length} 条`;
-  };
+function renderTable() {
+  const cols = S.columns;
+  const wrap = document.createElement('div');
+  wrap.className = 'table-wrap';
 
-  const filterRows = (q) => {
-    q = q.trim().toLowerCase();
-    const rows = q
-      ? currentRows.filter((r) => Object.values(r).some((v) => String(v).toLowerCase().includes(q)))
-      : currentRows;
-    const label = (TABLE_META[currentTable] || {}).label || currentTable;
-    if (!currentRows.length) return;
-    const columns = Object.keys(currentRows[0]);
-    renderBody(columns, rows, label);
-  };
+  const tb = document.createElement('div');
+  tb.className = 'table-toolbar';
+  const search = document.createElement('input');
+  search.placeholder = '在当前结果中筛选…';
+  const meta = document.createElement('span');
+  meta.className = 'table-meta';
+  meta.textContent = `共 ${S.rows.length} 行`;
+  tb.append(search, meta);
 
-  /* ---------- 导航 ---------- */
-  document.querySelectorAll(".nav-item").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      document.querySelectorAll(".nav-item").forEach((b) => b.classList.remove("active"));
-      btn.classList.add("active");
-      const v = btn.dataset.view;
-      if (v === "overview") showOverview();
-      else showTable(v);
+  const scroll = document.createElement('div');
+  scroll.className = 'table-scroll';
+  const table = document.createElement('table');
+  table.className = 'data';
+  const thead = document.createElement('thead');
+  const htr = document.createElement('tr');
+  cols.forEach(c => {
+    const th = document.createElement('th');
+    th.textContent = labelOf(c);
+    htr.appendChild(th);
+  });
+  const actionTh = document.createElement('th');
+  actionTh.textContent = '操作';
+  actionTh.className = 'col-actions';
+  htr.appendChild(actionTh);
+  thead.appendChild(htr);
+
+  const tbody = document.createElement('tbody');
+  S.rows.forEach(row => {
+    const tr = document.createElement('tr');
+    cols.forEach(c => {
+      const td = document.createElement('td');
+      td.className = (isTs(c) ? 'num' : '') + (isText(c) ? ' cell-text' : '');
+      td.innerHTML = cellHTML(c, row[c]);
+      tr.appendChild(td);
+    });
+    const tdA = document.createElement('td');
+    tdA.className = 'col-actions';
+    const act = document.createElement('div');
+    act.className = 'row-actions';
+    const editBtn = document.createElement('button');
+    editBtn.className = 'btn-ghost'; editBtn.textContent = '编辑';
+    editBtn.onclick = () => openEdit(row);
+    const delBtn = document.createElement('button');
+    delBtn.className = 'btn-danger'; delBtn.textContent = '删除';
+    delBtn.onclick = () => openDelete(row);
+    act.append(editBtn, delBtn);
+    tdA.appendChild(act);
+    tr.appendChild(tdA);
+    tbody.appendChild(tr);
+  });
+  table.append(thead, tbody);
+  scroll.appendChild(table);
+  wrap.append(tb, scroll);
+  contentEl.innerHTML = '';
+  contentEl.appendChild(wrap);
+
+  search.addEventListener('input', () => {
+    const q = search.value.trim().toLowerCase();
+    Array.from(tbody.children).forEach((tr, i) => {
+      const row = S.rows[i];
+      const hay = cols.map(c => String(row[c] ?? '')).join(' ').toLowerCase();
+      tr.style.display = (!q || hay.includes(q)) ? '' : 'none';
     });
   });
+}
 
-  document.getElementById("refresh").addEventListener("click", () => {
-    checkConn();
-    const active = document.querySelector(".nav-item.active");
-    if (active && active.dataset.view === "overview") showOverview();
-    else if (active) showTable(active.dataset.view);
+/* ---------- 编辑弹窗 ---------- */
+let editContext = null;
+function openEdit(row) {
+  editContext = row;
+  $('editTitle').textContent = `编辑 · ${LABEL[S.table] || S.table}`;
+  const form = $('editForm');
+  form.innerHTML = '';
+  S.columns.forEach(c => {
+    if (c === 'id') return; // 主键不允许编辑
+    const type = (S.types[c] || '').toLowerCase();
+    const field = document.createElement('div');
+    if (c === 'is_deleted') {
+      field.className = 'field check';
+      const id = 'f_' + c;
+      const inp = document.createElement('input');
+      inp.type = 'checkbox'; inp.id = id; inp.dataset.col = c; inp.dataset.kind = 'bool';
+      inp.checked = (row[c] == 1 || row[c] === '1');
+      const lbl = document.createElement('label');
+      lbl.textContent = labelOf(c); lbl.setAttribute('for', id);
+      field.append(inp, lbl);
+    } else if (isText(c) || type.includes('text')) {
+      field.className = 'field';
+      const lbl = document.createElement('label'); lbl.textContent = labelOf(c);
+      const inp = document.createElement('textarea');
+      inp.id = 'f_' + c; inp.value = row[c] ?? ''; inp.dataset.col = c; inp.dataset.kind = 'text';
+      field.append(lbl, inp);
+    } else if (type.includes('int') || type.includes('bigint') || type.includes('float') || type.includes('double') || type.includes('decimal') || type.includes('numeric')) {
+      field.className = 'field';
+      const lbl = document.createElement('label'); lbl.textContent = labelOf(c);
+      const inp = document.createElement('input');
+      inp.type = 'number'; inp.id = 'f_' + c; inp.value = row[c] ?? ''; inp.dataset.col = c; inp.dataset.kind = 'num';
+      if (type.includes('float') || type.includes('double') || type.includes('decimal') || type.includes('numeric')) inp.step = 'any';
+      field.append(lbl, inp);
+    } else {
+      field.className = 'field';
+      const lbl = document.createElement('label'); lbl.textContent = labelOf(c);
+      const inp = document.createElement('input');
+      inp.type = 'text'; inp.id = 'f_' + c; inp.value = row[c] ?? ''; inp.dataset.col = c; inp.dataset.kind = 'text';
+      field.append(lbl, inp);
+      if (isTs(c)) {
+        const hint = document.createElement('div');
+        hint.className = 'hint';
+        hint.textContent = '时间戳(毫秒)：' + (Number(row[c]) ? fmtTs(row[c]) : '未设置');
+        field.appendChild(hint);
+      }
+    }
+    form.appendChild(field);
   });
+  openModal('editModal');
+}
 
-  /* ---------- 启动 ---------- */
-  checkConn();
-  showOverview();
-})();
+$('saveEditBtn').addEventListener('click', async () => {
+  const fields = {};
+  document.querySelectorAll('#editForm [data-col]').forEach(inp => {
+    const col = inp.dataset.col;
+    if (inp.dataset.kind === 'bool') fields[col] = inp.checked ? 1 : 0;
+    else if (inp.dataset.kind === 'num') fields[col] = inp.value === '' ? '' : inp.value;
+    else fields[col] = inp.value;
+  });
+  const btn = $('saveEditBtn');
+  btn.disabled = true;
+  try {
+    await api('/admin/update', { method: 'POST', body: JSON.stringify({ table: S.table, id: editContext.id, fields }) });
+    closeModal('editModal');
+    toast('已保存');
+    showTable(S.table);
+  } catch (e) {
+    toast('保存失败：' + e.message, true);
+  } finally { btn.disabled = false; }
+});
+
+/* ---------- 删除确认 ---------- */
+let delContext = null;
+function openDelete(row) {
+  delContext = row;
+  const label = row.title || row.word || row.book_name || row.name || row.id;
+  $('delText').textContent = `确定删除「${String(label).slice(0, 40)}」(ID: ${row.id})？删除后将同步到各设备。`;
+  openModal('delModal');
+}
+
+$('confirmDelBtn').addEventListener('click', async () => {
+  const btn = $('confirmDelBtn');
+  btn.disabled = true;
+  try {
+    await api('/admin/delete', { method: 'POST', body: JSON.stringify({ table: S.table, id: delContext.id }) });
+    closeModal('delModal');
+    toast('已删除');
+    showTable(S.table);
+  } catch (e) {
+    toast('删除失败：' + e.message, true);
+  } finally { btn.disabled = false; }
+});
+
+/* ---------- 通用事件 ---------- */
+document.querySelectorAll('[data-close]').forEach(btn => {
+  btn.addEventListener('click', () => closeModal(btn.dataset.close));
+});
+document.querySelectorAll('.modal-overlay').forEach(ov => {
+  ov.addEventListener('click', e => { if (e.target === ov) ov.hidden = true; });
+});
+$('refreshBtn').addEventListener('click', () => {
+  if (S.view === 'overview') showOverview();
+  else showTable(S.view);
+});
+$('menuBtn').addEventListener('click', () => appEl.classList.toggle('nav-open'));
+
+/* ---------- 启动 ---------- */
+boot();
