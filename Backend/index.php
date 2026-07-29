@@ -17,6 +17,20 @@
 require_once __DIR__ . '/lib/Response.php';
 require_once __DIR__ . '/lib/ApiResponse.php';
 require_once __DIR__ . '/lib/ApiAuth.php';
+require_once __DIR__ . '/lib/Logger.php';
+
+/** 收集当前请求的关键上下文，便于错误日志排查（不记录敏感体） */
+function requestContext(): array
+{
+    $fwd = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? '';
+    $ip = $fwd !== '' ? trim(explode(',', $fwd)[0]) : ($_SERVER['REMOTE_ADDR'] ?? '');
+    return [
+        'method' => $_SERVER['REQUEST_METHOD'] ?? '',
+        'path'   => parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?? '',
+        'device' => $_SERVER['HTTP_X_DEVICE_ID'] ?? '',
+        'ip'     => $ip,
+    ];
+}
 
 // PSR-4 风格自动加载：App\ 命名空间映射到 src/ 目录
 spl_autoload_register(function (string $class): void {
@@ -50,6 +64,7 @@ try {
     // 数据库不可用时降级：保留 $pdo = null，由各 Controller 优雅处理
     // （例如 HealthController 会返回 db_connected=false 的合法信封，而非白屏 500）
     $pdo = null;
+    \Logger::exception($e, ['stage' => 'db_connect'] + requestContext());
 }
 
 $router = new \App\Router\Router();
@@ -60,8 +75,11 @@ try {
     // App 接口不强制共享令牌，保持本地/自用部署的开箱即用与自动化同步体验。
     $router->dispatch($method, $path);
 } catch (\App\Exception\ApiException $e) {
+    // 业务级预期错误（参数/鉴权失败等）：以 warning 记录便于审计，但保留原始文案返回
+    \Logger::warning('api_error: ' . $e->getMessage(), requestContext());
     \Response::error($e->getMessage(), $e->getCode() ?: 1, $e->httpCode);
 } catch (\Throwable $e) {
-    // 生产环境应写入日志，避免向客户端泄露内部细节
+    // 未捕获异常：写入堆栈日志（含请求上下文），仅向客户端返回笼统文案，避免泄露内部细节
+    \Logger::exception($e, requestContext());
     \Response::error('Internal Server Error', 500, 500);
 }
