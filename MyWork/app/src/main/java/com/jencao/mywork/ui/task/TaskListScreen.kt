@@ -20,6 +20,13 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Label
+import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.navigation.NavHostController
 import com.jencao.mywork.data.local.entity.CategoryEntity
 import com.jencao.mywork.data.local.entity.TaskEntity
@@ -29,6 +36,7 @@ import com.jencao.mywork.data.model.TaskType
 import com.jencao.mywork.data.util.DateUtils
 import com.jencao.mywork.ui.navigation.TaskRoutes
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskListScreen(
     nav: NavHostController,
@@ -49,20 +57,20 @@ fun TaskListScreen(
                 title = { Text("任务") },
                 actions = {
                     IconButton(onClick = { nav.navigate(TaskRoutes.CALENDAR) }) {
-                        Icon(androidx.compose.material.icons.Icons.Filled.CalendarMonth, "日历")
+                        Icon(Icons.Filled.CalendarMonth, "日历")
                     }
                     IconButton(onClick = { nav.navigate(TaskRoutes.STATS) }) {
-                        Icon(androidx.compose.material.icons.Icons.Filled.BarChart, "统计")
+                        Icon(Icons.Filled.BarChart, "统计")
                     }
                     IconButton(onClick = { nav.navigate(TaskRoutes.CATEGORIES) }) {
-                        Icon(androidx.compose.material.icons.Icons.Filled.Label, "分类")
+                        Icon(Icons.Filled.Label, "分类")
                     }
                 }
             )
         },
         floatingActionButton = {
             FloatingActionButton(onClick = { vm.openNew() }) {
-                Icon(androidx.compose.material.icons.Icons.Filled.Add, "新增任务")
+                Icon(Icons.Filled.Add, "新增任务")
             }
         }
     ) { inner ->
@@ -203,8 +211,8 @@ private fun TaskItemCard(
         ) {
             IconButton(onClick = onCheck) {
                 Icon(
-                    imageVector = if (done) androidx.compose.material.icons.Icons.Filled.CheckCircle
-                    else androidx.compose.material.icons.Icons.Filled.RadioButtonUnchecked,
+                    imageVector = if (done) Icons.Filled.CheckCircle
+                    else Icons.Filled.RadioButtonUnchecked,
                     contentDescription = "完成",
                     tint = if (done) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
                     modifier = Modifier.graphicsLayer { scaleX = checkScale; scaleY = checkScale }
