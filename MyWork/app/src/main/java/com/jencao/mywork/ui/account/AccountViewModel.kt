@@ -3,6 +3,7 @@ package com.jencao.mywork.ui.account
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.jencao.mywork.data.model.MonthlyTrendItem
 import com.jencao.mywork.data.repository.AccountRecordRepository
 import com.jencao.mywork.ui.navigation.AccountRoutes
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -10,9 +11,12 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.time.YearMonth
+import java.time.ZoneId
 import javax.inject.Inject
 
 data class AccountStats(
@@ -42,6 +46,25 @@ class AccountViewModel @Inject constructor(
         }
         AccountStats(income, expense)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), AccountStats())
+
+    private val zone = ZoneId.systemDefault()
+    private val currentYm = YearMonth.now()
+    private val monthStart = currentYm.atDay(1).atStartOfDay(zone).toInstant().toEpochMilli()
+    private val monthEnd = currentYm.atEndOfMonth().atTime(23, 59, 59).atZone(zone).toInstant().toEpochMilli()
+
+    /** 本月收支汇总。 */
+    val monthly: StateFlow<MonthlyTrendItem> = flow {
+        emit(repo.monthlySummary(monthStart, monthEnd))
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        MonthlyTrendItem(currentYm.year, currentYm.monthValue, 0.0, 0.0)
+    )
+
+    /** 最近 6 个月收支趋势。 */
+    val monthlyTrend: StateFlow<List<MonthlyTrendItem>> = flow {
+        emit(repo.monthlyTrend(6))
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     private val accountId: String = savedStateHandle["accountId"] ?: AccountRoutes.NEW_ID
     val isNew: Boolean get() = accountId == AccountRoutes.NEW_ID

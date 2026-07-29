@@ -9,6 +9,7 @@ import com.jencao.mywork.data.repository.TaskRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import java.time.LocalDate
+import java.time.YearMonth
 import javax.inject.Inject
 
 @HiltViewModel
@@ -31,6 +32,23 @@ class TaskStatsViewModel @Inject constructor(
         taskRepo.observeActive().map { tasks ->
             tasks.filter { TaskType.from(it.taskType) == TaskType.REPEAT }
                 .map { it to taskRepo.monthlyStats(it.id, y, m) }
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    /** 选中月份里每一天的打卡次数（day -> count）。 */
+    val dailyCounts: StateFlow<Map<Int, Int>> = ymFlow.flatMapLatest { (y, m) ->
+        flow { emit(taskRepo.dailyCheckinCounts(y, m)) }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
+
+    /** 以选中月份为终点的最近 6 个月完成率趋势。 */
+    val trend: StateFlow<List<MonthlyStats>> = ymFlow.flatMapLatest { (y, m) ->
+        flow {
+            val end = YearMonth.of(y, m)
+            val list = (0 until 6).map { i ->
+                val ym = end.minusMonths(i.toLong())
+                taskRepo.monthlyStats(null, ym.year, ym.monthValue)
+            }
+            emit(list.reversed())
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 

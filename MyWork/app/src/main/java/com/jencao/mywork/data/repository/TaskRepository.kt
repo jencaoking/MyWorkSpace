@@ -9,6 +9,7 @@ import com.jencao.mywork.data.sync.Syncer
 import com.jencao.mywork.data.model.TaskSort
 import com.jencao.mywork.data.model.TaskType
 import com.jencao.mywork.data.settings.UserPreferencesRepository
+import com.jencao.mywork.data.util.DateUtils
 import com.jencao.mywork.data.util.RepeatRule
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -156,6 +157,14 @@ class TaskRepository @Inject constructor(
             else -> 0f
         }
         return MonthlyStats(year, month, scheduledDays, doneDays, rate)
+    }
+
+    /** 某月每天的打卡次数，返回 day(1-31) -> 次数。 */
+    suspend fun dailyCheckinCounts(year: Int, month: Int): Map<Int, Int> {
+        val (start, end) = DateUtils.monthRange(year, month)
+        return checkinDao.countByDateInRangeAll(start, end).associate { d ->
+            d.date.substring(8, 10).toInt() to d.cnt
+        }
     }
 
     fun observeCheckinsInRange(start: String, end: String): Flow<List<TaskCheckinEntity>> =

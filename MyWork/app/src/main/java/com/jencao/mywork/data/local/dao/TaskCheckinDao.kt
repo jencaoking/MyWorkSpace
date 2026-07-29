@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.jencao.mywork.data.local.entity.TaskCheckinEntity
+import com.jencao.mywork.data.model.DayCount
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -46,6 +47,13 @@ interface TaskCheckinDao {
 
     @Query("SELECT COUNT(*) FROM task_checkins WHERE task_id = :taskId AND is_deleted = 0")
     suspend fun countByTask(taskId: String): Int
+
+    @Query(
+        "SELECT checkin_date AS date, COUNT(*) AS cnt FROM task_checkins " +
+            "WHERE checkin_date BETWEEN :start AND :end AND is_deleted = 0 " +
+            "GROUP BY checkin_date"
+    )
+    suspend fun countByDateInRangeAll(start: String, end: String): List<DayCount>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(checkin: TaskCheckinEntity)

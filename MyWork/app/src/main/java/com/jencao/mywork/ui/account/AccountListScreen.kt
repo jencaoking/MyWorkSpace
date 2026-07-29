@@ -4,8 +4,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -30,7 +32,12 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import com.jencao.mywork.ui.components.BarChart
+import com.jencao.mywork.ui.components.BarGroup
+import com.jencao.mywork.ui.components.ChartLegend
 import com.jencao.mywork.ui.components.EmptyHint
+import com.jencao.mywork.ui.components.ExpenseColor
+import com.jencao.mywork.ui.components.IncomeColor
 import com.jencao.mywork.ui.navigation.AccountRoutes
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -46,6 +53,8 @@ fun AccountListScreen(
 ) {
     val items by vm.items.collectAsStateWithLifecycle()
     val stats by vm.stats.collectAsStateWithLifecycle()
+    val monthly by vm.monthly.collectAsStateWithLifecycle()
+    val monthlyTrend by vm.monthlyTrend.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = { TopAppBar(title = { Text("记账") }) },
@@ -55,8 +64,11 @@ fun AccountListScreen(
             }
         }
     ) { padding ->
-        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
-            Card(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+        Column(
+            modifier = Modifier.fillMaxSize().padding(padding),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Card(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
                     horizontalArrangement = Arrangement.SpaceBetween
@@ -76,11 +88,46 @@ fun AccountListScreen(
                 }
             }
 
+            if (stats.income + stats.expense > 0.0) {
+                Card(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("近 6 个月收支", style = MaterialTheme.typography.labelMedium)
+                        if (monthlyTrend.all { it.income == 0.0 && it.expense == 0.0 }) {
+                            Text(
+                                "暂无历史收支数据",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        } else {
+                            BarChart(
+                                groups = monthlyTrend.map {
+                                    BarGroup(it.label, listOf(it.income.toFloat(), it.expense.toFloat()))
+                                },
+                                modifier = Modifier.fillMaxWidth().height(220.dp),
+                                seriesColors = listOf(IncomeColor, ExpenseColor),
+                                labelStep = 1
+                            )
+                            ChartLegend(listOf("收入" to IncomeColor, "支出" to ExpenseColor))
+                        }
+                        Spacer(Modifier.height(4.dp))
+                        Text("本月收支对比", style = MaterialTheme.typography.labelMedium)
+                        BarChart(
+                            groups = listOf(
+                                BarGroup("本月", listOf(monthly.income.toFloat(), monthly.expense.toFloat()))
+                            ),
+                            modifier = Modifier.fillMaxWidth().height(120.dp),
+                            seriesColors = listOf(IncomeColor, ExpenseColor),
+                            showValueLabels = true
+                        )
+                    }
+                }
+            }
+
             if (items.isEmpty()) {
                 EmptyHint("还没有记账记录，点右下角记一笔")
             } else {
                 LazyColumn(
-                    modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
+                    modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(items, key = { it.id }) { it ->

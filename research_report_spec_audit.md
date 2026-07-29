@@ -28,11 +28,11 @@ PHP 后端：
 
 | 需求（方案） | 已实现部分 | 缺失 / 未真正落地 |
 |---|---|---|
-| 任务统计（完成率/日历/月度图表） | 完成率（进度条）、真实日历网格视图 | 月度图表仅为 `LinearProgressIndicator`，未引入 MPAndroidChart，无柱状/折线图 |
+| 任务统计（完成率/日历/月度图表） | 完成率（进度条）、真实日历网格视图 | **已补全（2026-07-30）**：月度图表改为自绘 Compose Canvas 柱状图——"本月每日打卡次数"按天柱状图 + "近 6 个月完成率"趋势柱状图（含图例），未引入 MPAndroidChart |
 | 英语学习（翻译/单词/录音跟读） | 单词（音标/释义/例句/熟悉度）、SM-2 间隔重复复习流 | **已补全（2026-07-29）**：翻译页（中↔英互译，经后端 `/api/proxy/translate` 代理有道）；单词编辑页"查询释义"按钮自动拉取音标/释义/例句并播放原音（`/api/proxy/word`）；跟读练习页用 `MediaRecorder` 录音、可播放原音与我的录音对比；单词一键加入单词本。**密钥全部留在服务端后台管理，App 不持有任何 API Key**，经后端代理调用 |
 | 影音书籍（TMDB） | 书单/电影清单、状态标记、星级评分、海报链接字段 | **已补全（2026-07-29）**：影音页新增"TMDB 搜索"入口，经后端 `/api/proxy/tmdb/search`（search/multi，仅 movie/tv）联机检索，结果展示海报/标题/原名/年份/评分；点击即自动拉取并入库（title、poster_url 取 TMDB 图片 CDN、original_title、overview、release_date、vote_average、tmdb_id 均与 TMDB 100% 吻合），随后跳转编辑页补全状态/评分/备注。新增 tv（剧集）类型。**密钥留在服务端后台管理，App 不持有任何 API Key**，经后端代理调用 |
 | 健康就诊（复诊提醒） | 就诊/用药/复诊/体征四类记录完整 | **已补全（2026-07-29）**：健康记录新增 `reminder_time` 字段；复诊/用药类型在编辑页可选"提醒时间"（日期+时间），保存后通过 `AlarmManager.setAlarmClock` 精确排程（免申请精确闹钟权限，低电/熄屏仍可靠触发），到点由 `ReminderReceiver` 弹出高优先级通知；删除或修改自动取消/重排；`BootReceiver` 开机后恢复所有未来提醒；列表卡片显示未来提醒标识；点击通知经 deep link 直达该记录编辑页。提醒为本地优先，不依赖云端 |
-| 记账（月度图表） | 收支记录、分类、收/支/结余数字汇总 | 无可视化月度图表，未引入 MPAndroidChart |
+| 记账（月度图表） | 收支记录、分类、收/支/结余数字汇总 | **已补全（2026-07-30）**：记账页新增"近 6 个月收支"分组柱状图（收入绿/支出红）+ "本月收支对比"柱状图，自绘 Compose Canvas，未引入 MPAndroidChart |
 | 笔记系统（Markdown+图片） | Markdown 编辑+预览（自研轻量渲染器，标题/列表/引用/代码/粗斜体）、列表/搜索/收藏/置顶 | **图片上传未实现**（实体无图片字段，编辑页无选图/上传入口） |
 | 天气（实时，外接 API） | 无 | **整个模块缺失**，无界面、无网络请求、无天气 API 接入 |
 | 第九章 通知提醒 | 无 | **已补全（2026-07-29，至少健康提醒部分）**：新增通知渠道（`health_reminder`）、`ReminderScheduler`（基于 `AlarmManager.setAlarmClock` 的稳定精确闹钟，规避 Android 12+ 精确闹钟权限）、`ReminderReceiver`（弹出通知）、`BootReceiver`（开机/重装后用 Hilt EntryPoint 取仓储恢复未来提醒），并在 Manifest 注册两接收器与 `RECEIVE_BOOT_COMPLETED`。任务（`reminder_time` 字段已存在）的提醒尚未接入同一调度器，仅复诊/用药已打通 |
@@ -47,7 +47,7 @@ PHP 后端：
 重大架构不符：
 - UI 技术栈：方案 4.3 明确要求 `ViewBinding + Fragment + Activity`，分包为 `*Activity/*Fragment`；实际工程用 `Jetpack Compose + Navigation Compose`，入口为单一 `MainActivity`（`setContent{}`），所有页面为 `*Screen` 的 `@Composable` 函数，无任何 Fragment 类（`build.gradle.kts` 用 `kotlin.compose` 插件，`MainActivity.kt`、`MyWorkApp.kt` 为证据）。这是最显著的偏离。
 - Markdown 渲染：方案要求 Markwon 第三方库；实际自写轻量 `MarkdownText`，`build.gradle.kts` 未引入 markwon。
-- MPAndroidChart：方案多处要求（任务月度图表、记账月度图表）；实际 `build.gradle.kts` 无该依赖，全工程无图表控件使用。
+- MPAndroidChart：方案多处要求（任务月度图表、记账月度图表）；实际 `build.gradle.kts` 无该依赖，但已用自绘 Compose Canvas 的轻量 `BarChart` 组件实现上述两类月度图表（2026-07-30），符合工程 Compose-first 且自研组件（如 MarkdownText）的风格，未引入第三方图表库。
 - 包名：方案为 `com.selfdiscipline.app`；实际为 `com.jencao.mywork`。
 
 后端不符：
@@ -64,7 +64,7 @@ PHP 后端：
 
 ## 四、结论
 
-工程已把"本地优先、可离线使用"的主干业务（任务体系、分类、运动含真实计步、健康/记账记录、笔记编辑、番茄钟、后端 CRUD 与基础同步）跑通，可作为可用 MVP。其中"联网与外部服务"一层已补齐：翻译、录音跟读已接入（经 `/api/proxy/translate`、`/api/proxy/word` 代理有道）；影音 TMDB 已接入（经 `/api/proxy/tmdb/search` 联机检索并自动拉取入库，与 TMDB 100% 吻合）。通知提醒方面，复诊/用药的精确闹钟 + 通知已落地（新增 `ReminderScheduler`/`ReminderReceiver`/`BootReceiver`、通知渠道、健康记录 `reminder_time` 字段与 v8 迁移，点击通知可 deep link 直达记录），任务提醒尚未接入同一调度器。以上 App 均不直接持有密钥，统一经后端 `/api/proxy/*` 代理或本地调度。但天气外接 API 仍未接入；跨模块全局搜索、图表可视化、笔记图片、板块开关 UI 也未完成。同时整体技术栈与方案文档不一致（Compose 替代 ViewBinding/Fragment，自研 Markdown 替代 Markwon，无图表库），后端分层与表命名、鉴权、响应字段也与方案描述不符。若要让方案"名副其实"，下一步优先级建议为：① 把任务提醒接入现有 `ReminderScheduler`（复用同一套闹钟/通知）；② 全局 FTS 搜索与板块开关 UI；③ 天气 的外接 API 接入；④ MPAndroidChart 图表与笔记图片上传；⑤ 后端补充 `/sync/full`、LWW 冲突解决，并统一响应字段与表命名。
+工程已把"本地优先、可离线使用"的主干业务（任务体系、分类、运动含真实计步、健康/记账记录、笔记编辑、番茄钟、后端 CRUD 与基础同步）跑通，可作为可用 MVP。其中"联网与外部服务"一层已补齐：翻译、录音跟读已接入（经 `/api/proxy/translate`、`/api/proxy/word` 代理有道）；影音 TMDB 已接入（经 `/api/proxy/tmdb/search` 联机检索并自动拉取入库，与 TMDB 100% 吻合）。通知提醒方面，复诊/用药的精确闹钟 + 通知已落地（新增 `ReminderScheduler`/`ReminderReceiver`/`BootReceiver`、通知渠道、健康记录 `reminder_time` 字段与 v8 迁移，点击通知可 deep link 直达记录），任务提醒尚未接入同一调度器。图表可视化方面，任务月度图表（本月每日打卡次数 + 近 6 个月完成率趋势）与记账月度图表（近 6 个月收支 + 本月对比）均已用自绘 Compose Canvas 柱状图落地（2026-07-30）。以上 App 均不直接持有密钥，统一经后端 `/api/proxy/*` 代理或本地调度。但天气外接 API 仍未接入；跨模块全局搜索、笔记图片、板块开关 UI 也未完成。同时整体技术栈与方案文档不一致（Compose 替代 ViewBinding/Fragment，自研 Markdown 替代 Markwon，无图表库），后端分层与表命名、鉴权、响应字段也与方案描述不符。若要让方案"名副其实"，下一步优先级建议为：① 把任务提醒接入现有 `ReminderScheduler`（复用同一套闹钟/通知）；② 全局 FTS 搜索与板块开关 UI；③ 天气 的外接 API 接入；④ 笔记图片上传；⑤ 后端补充 `/sync/full`、LWW 冲突解决，并统一响应字段与表命名。
 
 ## 参考
 

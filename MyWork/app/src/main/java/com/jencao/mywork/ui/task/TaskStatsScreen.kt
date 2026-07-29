@@ -17,6 +17,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import com.jencao.mywork.data.util.DateUtils
+import com.jencao.mywork.ui.components.BarChart
+import com.jencao.mywork.ui.components.BarGroup
+import com.jencao.mywork.ui.components.ChartLegend
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,6 +32,8 @@ fun TaskStatsScreen(
     val month by vm.month.collectAsStateWithLifecycle()
     val monthly by vm.monthly.collectAsStateWithLifecycle()
     val perTask by vm.perTask.collectAsStateWithLifecycle()
+    val dailyCounts by vm.dailyCounts.collectAsStateWithLifecycle()
+    val trend by vm.trend.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -67,15 +73,50 @@ fun TaskStatsScreen(
                         progress = { monthly.rate.coerceIn(0f, 1f) },
                         modifier = Modifier.fillMaxWidth()
                     )
-                    Text(
-                        "完成率 ${monthly.percentText}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
+            Text(
+                "完成率 ${monthly.percentText}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
 
-            Text("循环任务明细", style = MaterialTheme.typography.titleMedium)
+    val days = DateUtils.daysInMonth(year, month)
+    val dailyGroups = (1..days).map { d ->
+        BarGroup(label = "$d", values = listOf((dailyCounts[d] ?: 0).toFloat()))
+    }
+    val totalChecks = dailyCounts.values.sum()
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("本月每日打卡次数", style = MaterialTheme.typography.labelMedium)
+            BarChart(
+                groups = dailyGroups,
+                modifier = Modifier.fillMaxWidth().height(200.dp),
+                showValueLabels = days <= 16,
+                labelStep = if (days > 16) 5 else 1
+            )
+            Text(
+                "共打卡 ${monthly.doneDays} 天，累计 ${totalChecks} 次",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("近 6 个月完成率", style = MaterialTheme.typography.labelMedium)
+            BarChart(
+                groups = trend.map { BarGroup("${it.month}月", listOf(it.rate * 100f)) },
+                modifier = Modifier.fillMaxWidth().height(180.dp),
+                seriesColors = listOf(MaterialTheme.colorScheme.primary),
+                showValueLabels = true
+            )
+            ChartLegend(listOf("完成率" to MaterialTheme.colorScheme.primary))
+        }
+    }
+
+    Text("循环任务明细", style = MaterialTheme.typography.titleMedium)
             LazyColumn(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
