@@ -97,11 +97,11 @@ class ProxyController
         $sec = $this->config->get('youdao_app_secret', '');
         if (($key === '' || $sec === '') && function_exists('config')) {
             $a = config('api_keys');
-            if (!empty($a['youdao_app_key'])) {
-                $key = $key ?: $a['youdao_app_key'];
+            if (!empty($a['youdao']['app_key'])) {
+                $key = $key ?: $a['youdao']['app_key'];
             }
-            if (!empty($a['youdao_app_secret'])) {
-                $sec = $sec ?: $a['youdao_app_secret'];
+            if (!empty($a['youdao']['app_secret'])) {
+                $sec = $sec ?: $a['youdao']['app_secret'];
             }
         }
         return [$key, $sec];

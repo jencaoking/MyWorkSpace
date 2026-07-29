@@ -3,15 +3,13 @@ package com.jencao.mywork.data.repository
 import com.jencao.mywork.data.remote.ApiService
 import com.jencao.mywork.data.remote.model.TranslateData
 import com.jencao.mywork.data.remote.model.WordLookupData
-import javax.inject.Inject
-import javax.inject.Singleton
 
 /**
  * 第三方 API 代理仓储：App 不持有任何密钥，所有翻译 / 词典请求都经过
- * 服务端代理（/api/proxy/*），密钥统一在后台管理中填写。
+ * 服务端代理（/api/proxy 路径），密钥统一在后台管理中填写。
+ * 由调用方（ViewModel）以 ApiService 构造，不纳入 Hilt 绑定图。
  */
-@Singleton
-class ProxyRepository @Inject constructor(private val api: ApiService) {
+class ProxyRepository(private val api: ApiService) {
 
     suspend fun translate(
         text: String,

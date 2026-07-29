@@ -19,6 +19,7 @@ import com.jencao.mywork.data.remote.model.EnglishPullResponse
 import com.jencao.mywork.data.remote.model.EnglishUploadRequest
 import com.jencao.mywork.data.remote.model.HealthData
 import com.jencao.mywork.data.remote.model.HealthPullResponse
+import com.jencao.mywork.data.remote.model.HealthUploadRequest
 import com.jencao.mywork.data.remote.model.MediaPullResponse
 import com.jencao.mywork.data.remote.model.MediaUploadRequest
 import com.jencao.mywork.data.remote.model.NotePullResponse
@@ -106,7 +107,7 @@ class SyncManager @Inject constructor(
             pull = { t ->
                 val data = api.pull(since = t, deviceId = deviceId).data
                 downloaded += data?.tasks?.size ?: 0
-                PullBundle(data?.serverTime ?: t, data?.tasks ?: emptyList(), emptyList())
+                PullBundle(data?.server_time ?: t, data?.tasks ?: emptyList(), emptyList())
             },
             lastSync, results
         ))
@@ -123,7 +124,7 @@ class SyncManager @Inject constructor(
             pull = { t ->
                 val data = api.pullNotes(t).data
                 downloaded += data?.notes?.size ?: 0
-                PullBundle(data?.serverTime ?: t, data?.notes ?: emptyList(), emptyList())
+                PullBundle(data?.server_time ?: t, data?.notes ?: emptyList(), emptyList())
             },
             lastSync, results
         ))
@@ -140,7 +141,7 @@ class SyncManager @Inject constructor(
             pull = { t ->
                 val data = api.pullSports(t).data
                 downloaded += data?.sports?.size ?: 0
-                PullBundle(data?.serverTime ?: t, data?.sports ?: emptyList(), data?.deletedIds ?: emptyList())
+                PullBundle(data?.server_time ?: t, data?.sports ?: emptyList(), data?.deleted_ids ?: emptyList())
             },
             lastSync, results
         ))
@@ -157,7 +158,7 @@ class SyncManager @Inject constructor(
             pull = { t ->
                 val data = api.pullEnglish(t).data
                 downloaded += data?.words?.size ?: 0
-                PullBundle(data?.serverTime ?: t, data?.words ?: emptyList(), data?.deletedIds ?: emptyList())
+                PullBundle(data?.server_time ?: t, data?.words ?: emptyList(), data?.deleted_ids ?: emptyList())
             },
             lastSync, results
         ))
@@ -174,7 +175,7 @@ class SyncManager @Inject constructor(
             pull = { t ->
                 val data = api.pullMedia(t).data
                 downloaded += data?.media?.size ?: 0
-                PullBundle(data?.serverTime ?: t, data?.media ?: emptyList(), data?.deletedIds ?: emptyList())
+                PullBundle(data?.server_time ?: t, data?.media ?: emptyList(), data?.deleted_ids ?: emptyList())
             },
             lastSync, results
         ))
@@ -191,7 +192,7 @@ class SyncManager @Inject constructor(
             pull = { t ->
                 val data = api.pullHealth(t).data
                 downloaded += data?.health?.size ?: 0
-                PullBundle(data?.serverTime ?: t, data?.health ?: emptyList(), data?.deletedIds ?: emptyList())
+                PullBundle(data?.server_time ?: t, data?.health ?: emptyList(), data?.deleted_ids ?: emptyList())
             },
             lastSync, results
         ))
@@ -208,7 +209,7 @@ class SyncManager @Inject constructor(
             pull = { t ->
                 val data = api.pullCategories(t).data
                 downloaded += data?.dirty?.size ?: 0
-                PullBundle(data?.serverTime ?: t, data?.dirty ?: emptyList(), data?.deletedIds ?: emptyList())
+                PullBundle(data?.server_time ?: t, data?.dirty ?: emptyList(), data?.deleted_ids ?: emptyList())
             },
             lastSync, results
         ))
@@ -225,7 +226,7 @@ class SyncManager @Inject constructor(
             pull = { t ->
                 val data = api.pullAccounts(t).data
                 downloaded += data?.accounts?.size ?: 0
-                PullBundle(data?.serverTime ?: t, data?.accounts ?: emptyList(), data?.deletedIds ?: emptyList())
+                PullBundle(data?.server_time ?: t, data?.accounts ?: emptyList(), data?.deleted_ids ?: emptyList())
             },
             lastSync, results
         ))

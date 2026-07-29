@@ -1,0 +1,51 @@
+﻿Starting a Gradle Daemon, 1 busy and 1 stopped Daemons could not be reused, use --status for details
+Calculating task graph as configuration cache cannot be reused because JVM has changed.
+
+> Configure project :app
+WARNING: The option setting 'android.disallowKotlinSourceSets=false' is experimental.
+The current default is 'true'.
+Add android.sync.suppressAgpWarnings=UNSUPPORTED_PROJECT_OPTION_USE to the gradle.properties file to suppress this warning.
+
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:generateDebugResources UP-TO-DATE
+> Task :app:packageDebugResources UP-TO-DATE
+> Task :app:processDebugNavigationResources UP-TO-DATE
+> Task :app:parseDebugLocalResources UP-TO-DATE
+> Task :app:generateDebugRFile UP-TO-DATE
+
+> Task :app:kspDebugKotlin
+e: [ksp] InjectProcessingStep was unable to process 'EnglishViewModel(com.jencao.mywork.data.repository.EnglishWordRepository,ProxyRepository,androidx.lifecycle.SavedStateHandle)' because 'ProxyRepository' could not be resolved.
+
+Dependency trace:
+    => element (CLASS): com.jencao.mywork.ui.english.EnglishViewModel
+    => element (CONSTRUCTOR): EnglishViewModel(com.jencao.mywork.data.repository.EnglishWordRepository,ProxyRepository,androidx.lifecycle.SavedStateHandle)
+    => type (EXECUTABLE constructor): (com.jencao.mywork.data.repository.EnglishWordRepository,ProxyRepository,androidx.lifecycle.SavedStateHandle)void
+    => type (ERROR parameter type): ProxyRepository
+
+If type 'ProxyRepository' is a generated type, check above for compilation errors that may have prevented the type from being generated. Otherwise, ensure that type 'ProxyRepository' is on your classpath.
+
+> Task :app:kspDebugKotlin FAILED
+.\gradlew : 
+所在位置 行:1 字符: 255
++ ... orkSpace/MyWork; .\gradlew :app:kspDebugKotlin --offline 2>&1 | Out-F ...
++                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:kspDebugKotlin' (registered by plugin 'com.android.internal.application').
+> A failure occurred while executing com.google.devtools.ksp.gradle.KspAAWorkerAction
+   > KSP failed with exit code: PROCESSING_ERROR
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 27s
+6 actionable tasks: 1 executed, 5 up-to-date
+Configuration cache entry stored.

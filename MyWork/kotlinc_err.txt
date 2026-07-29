@@ -1,0 +1,175 @@
+﻿Calculating task graph as no cached configuration is available for tasks: :app:compileDebugKotlin
+
+> Configure project :app
+WARNING: The option setting 'android.disallowKotlinSourceSets=false' is experimental.
+The current default is 'true'.
+Add android.sync.suppressAgpWarnings=UNSUPPORTED_PROJECT_OPTION_USE to the gradle.properties file to suppress this warning.
+
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:generateDebugResources UP-TO-DATE
+> Task :app:generateDebugBuildConfig UP-TO-DATE
+> Task :app:packageDebugResources UP-TO-DATE
+> Task :app:processDebugNavigationResources UP-TO-DATE
+> Task :app:parseDebugLocalResources UP-TO-DATE
+> Task :app:generateDebugRFile UP-TO-DATE
+
+> Task :app:compileDebugKotlin
+.\gradlew : e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/data/repositor
+y/ProxyRepository.kt Syntax error: Unclosed comment.
+所在位置 行:1 字符: 255
++ ... ace/MyWork; .\gradlew :app:compileDebugKotlin -x :app:kspDebugKotlin  ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (e: file:///J:/P...closed comment.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/data/repository/CategoryRe
+pository.kt:64:29 Unresolved reference 'getById'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/data/repository/CategoryRe
+pository.kt:65:36 Unresolved reference 'lastModified'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/data/repository/TaskReposi
+tory.kt:185:17 'getPendingUploads' hides member of supertype 'Syncer' and needs an 'override' modifier.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/data/repository/TaskReposi
+tory.kt:186:17 'getPendingDeletions' hides member of supertype 'Syncer' and needs an 'override' modifier.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/data/repository/TaskReposi
+tory.kt:193:17 'markSynced' hides member of supertype 'Syncer' and needs an 'override' modifier.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/data/repository/TaskReposi
+tory.kt:198:17 'purgeDeleted' hides member of supertype 'Syncer' and needs an 'override' modifier.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/data/repository/TaskReposi
+tory.kt:206:17 'mergeRemote' hides member of supertype 'Syncer' and needs an 'override' modifier.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/data/sync/SyncManager.kt:1
+09:34 Unresolved reference 'serverTime'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/data/sync/SyncManager.kt:1
+26:34 Unresolved reference 'serverTime'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/data/sync/SyncManager.kt:1
+43:34 Unresolved reference 'serverTime'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/data/sync/SyncManager.kt:1
+43:86 Unresolved reference 'deletedIds'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/data/sync/SyncManager.kt:1
+60:34 Unresolved reference 'serverTime'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/data/sync/SyncManager.kt:1
+60:85 Unresolved reference 'deletedIds'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/data/sync/SyncManager.kt:1
+77:34 Unresolved reference 'serverTime'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/data/sync/SyncManager.kt:1
+77:85 Unresolved reference 'deletedIds'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/data/sync/SyncManager.kt:1
+86:65 Unresolved reference 'HealthUploadRequest'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/data/sync/SyncManager.kt:1
+94:34 Unresolved reference 'serverTime'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/data/sync/SyncManager.kt:1
+94:86 Unresolved reference 'deletedIds'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/data/sync/SyncManager.kt:2
+11:34 Unresolved reference 'serverTime'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/data/sync/SyncManager.kt:2
+11:85 Unresolved reference 'deletedIds'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/data/sync/SyncManager.kt:2
+28:34 Unresolved reference 'serverTime'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/data/sync/SyncManager.kt:2
+28:88 Unresolved reference 'deletedIds'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/EnglishEditScre
+en.kt:118:34 Cannot infer type for this parameter. Specify it explicitly.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/EnglishEditScre
+en.kt:118:46 Cannot infer type for this parameter. Specify it explicitly.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/EnglishEditScre
+en.kt:119:43 Unresolved reference 'phonetic'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/EnglishEditScre
+en.kt:119:83 Unresolved reference 'phonetic'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/EnglishEditScre
+en.kt:120:43 Unresolved reference 'explains'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/EnglishEditScre
+en.kt:120:82 Unresolved reference 'explains'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/EnglishEditScre
+en.kt:121:48 Unresolved reference 'translation'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/EnglishEditScre
+en.kt:121:90 Unresolved reference 'translation'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/EnglishEditScre
+en.kt:122:43 Unresolved reference 'examples'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/EnglishEditScre
+en.kt:123:57 Unresolved reference 'examples'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/EnglishEditScre
+en.kt:123:90 Unresolved reference 'it'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/EnglishEditScre
+en.kt:123:105 Unresolved reference 'it'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/EnglishEditScre
+en.kt:125:50 Unresolved reference 'speak_url'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/EnglishEditScre
+en.kt:127:34 Cannot infer type for this parameter. Specify it explicitly.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/EnglishEditScre
+en.kt:127:34 Not enough information to infer type argument for 'T'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/EnglishShadowSc
+reen.kt:70:53 @Composable invocations can only happen from the context of a @Composable function
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/EnglishShadowSc
+reen.kt:173:37 Unresolved reference 'width'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/EnglishShadowSc
+reen.kt:186:41 Unresolved reference 'width'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/EnglishShadowSc
+reen.kt:200:41 Unresolved reference 'width'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/EnglishShadowSc
+reen.kt:209:45 Unresolved reference 'width'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/EnglishShadowVi
+ewModel.kt:8:42 Unresolved reference 'ProxyRepository'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/EnglishShadowVi
+ewModel.kt:23:24 Unresolved reference 'ProxyRepository'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/EnglishShadowVi
+ewModel.kt:52:19 Unresolved reference 'lookupWord'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/EnglishShadowVi
+ewModel.kt:53:18 Cannot infer type for this parameter. Specify it explicitly.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/EnglishShadowVi
+ewModel.kt:53:28 Cannot infer type for this parameter. Specify it explicitly.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/EnglishShadowVi
+ewModel.kt:53:51 Unresolved reference 'speak_url'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/EnglishShadowVi
+ewModel.kt:54:18 Cannot infer type for this parameter. Specify it explicitly.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/EnglishShadowVi
+ewModel.kt:54:18 Not enough information to infer type argument for 'T'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/EnglishViewMode
+l.kt:10:42 Unresolved reference 'ProxyRepository'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/EnglishViewMode
+l.kt:24:24 Unresolved reference 'ProxyRepository'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/EnglishViewMode
+l.kt:117:50 Unresolved reference 'lookupWord'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/EnglishViewMode
+l.kt:124:15 Unresolved reference 'translate'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/EnglishViewMode
+l.kt:128:18 Unresolved reference 'UUID'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/EnglishViewMode
+l.kt:132:17 No parameter with name 'id' found.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/EnglishViewMode
+l.kt:135:17 No parameter with name 'createdAt' found.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/EnglishViewMode
+l.kt:136:17 No parameter with name 'updatedAt' found.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/EnglishViewMode
+l.kt:137:17 No parameter with name 'lastModified' found.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/TranslateScreen
+.kt:56:17 Unresolved reference 'rememberCoroutineScope'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/TranslateScreen
+.kt:97:30 Cannot infer type for this parameter. Specify it explicitly.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/TranslateScreen
+.kt:97:40 Cannot infer type for this parameter. Specify it explicitly.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/TranslateScreen
+.kt:97:54 Unresolved reference 'translation'.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/TranslateScreen
+.kt:98:30 Cannot infer type for this parameter. Specify it explicitly.
+e: file:///J:/PROJECT/Android-Project/MyWorkSpace/MyWork/app/src/main/java/com/jencao/mywork/ui/english/TranslateScreen
+.kt:98:30 Not enough information to infer type argument for 'T'.
+
+> Task :app:compileDebugKotlin FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:compileDebugKotlin' (registered by plugin 'com.android.internal.application').
+> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCo
+mpilerWorkAction
+   > Compilation error. See log for more details
+
+* Try:
+> Run with --stacktrace option to get the stack trace.
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+> Get more help at https://help.gradle.org.
+
+BUILD FAILED in 5s
+7 actionable tasks: 1 executed, 6 up-to-date
+Configuration cache entry stored.

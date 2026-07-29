@@ -14,8 +14,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
+import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -64,6 +66,9 @@ fun EnglishListScreen(nav: NavHostController, vm: EnglishViewModel = hiltViewMod
             TopAppBar(
                 title = { Text("英语单词") },
         actions = {
+            IconButton(onClick = { nav.navigate(EnglishRoutes.TRANSLATE) }) {
+                Icon(Icons.Filled.Translate, contentDescription = "翻译")
+            }
             Text("待复习 $dueCount", style = MaterialTheme.typography.labelMedium)
             if (dueCount > 0) {
                 Spacer(Modifier.width(8.dp))
@@ -88,7 +93,14 @@ fun EnglishListScreen(nav: NavHostController, vm: EnglishViewModel = hiltViewMod
             }
             items(shown, key = { it.id }) { w ->
                 EnglishItemCard(w, fmt, onClick = { nav.navigate(EnglishRoutes.edit(w.id)) }) {
-                    IconButton(onClick = { toDelete = w }) { Icon(Icons.Filled.Delete, contentDescription = "删除") }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(onClick = { nav.navigate(EnglishRoutes.shadow(w.id)) }) {
+                            Icon(Icons.Filled.Mic, contentDescription = "跟读")
+                        }
+                        IconButton(onClick = { toDelete = w }) {
+                            Icon(Icons.Filled.Delete, contentDescription = "删除")
+                        }
+                    }
                 }
             }
         }

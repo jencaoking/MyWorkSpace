@@ -4,12 +4,14 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jencao.mywork.data.local.entity.EnglishWordEntity
+import com.jencao.mywork.data.remote.ApiService
 import com.jencao.mywork.data.remote.model.WordLookupData
 import com.jencao.mywork.data.remote.model.TranslateData
 import com.jencao.mywork.data.repository.EnglishWordRepository
 import com.jencao.mywork.data.repository.ProxyRepository
 import com.jencao.mywork.ui.navigation.EnglishRoutes
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.util.UUID
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -21,9 +23,11 @@ import javax.inject.Inject
 @HiltViewModel
 class EnglishViewModel @Inject constructor(
     private val repo: EnglishWordRepository,
-    private val proxy: ProxyRepository,
+    api: ApiService,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+
+    private val proxy = ProxyRepository(api)
 
     /** 是否只看今日待复习（nextReview <= now）。 */
     private val _dueOnly = MutableStateFlow(false)
@@ -127,16 +131,11 @@ class EnglishViewModel @Inject constructor(
     suspend fun createWord(word: String, meaning: String = ""): String {
         val id = UUID.randomUUID().toString()
         val now = System.currentTimeMillis()
-        repo.upsert(
-            EnglishWordEntity(
-                id = id,
-                word = word,
-                meaning = meaning,
-                createdAt = now,
-                updatedAt = now,
-                lastModified = now
-            )
-        )
+        val entity = EnglishWordEntity(word = word, meaning = meaning)
+        entity.id = id
+        entity.lastModified = now
+        entity.needsSync = true
+        repo.upsert(entity)
         return id
     }
 }
