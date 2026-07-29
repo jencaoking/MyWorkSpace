@@ -213,6 +213,181 @@ CREATE TABLE IF NOT EXISTS app_config (
     PRIMARY KEY (cfg_key)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- ===== 工具箱模块（8 个独立模块，统一同步字段；AI 调用次数走 app_config 的 ai_usage_YYYY-MM-DD） =====
+
+-- 计算器历史
+CREATE TABLE IF NOT EXISTS calc_history (
+    id           CHAR(36)     NOT NULL,
+    expr         VARCHAR(255) NOT NULL,
+    result       TEXT         NOT NULL,
+    created_at   BIGINT       NOT NULL,
+    last_modified BIGINT      NOT NULL,
+    is_deleted   TINYINT(1)   NOT NULL DEFAULT 0,
+    device_id    VARCHAR(64)  NOT NULL DEFAULT '',
+    needs_sync   TINYINT(1)   NOT NULL DEFAULT 0,
+    PRIMARY KEY (id),
+    INDEX idx_calc_device (device_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 扫码历史
+CREATE TABLE IF NOT EXISTS qr_scan_history (
+    id          CHAR(36)     NOT NULL,
+    content     TEXT         NOT NULL,
+    format      VARCHAR(32)  NOT NULL DEFAULT 'QR',
+    note        VARCHAR(255) DEFAULT '',
+    created_at  BIGINT       NOT NULL,
+    last_modified BIGINT     NOT NULL,
+    is_deleted  TINYINT(1)   NOT NULL DEFAULT 0,
+    device_id   VARCHAR(64)  NOT NULL DEFAULT '',
+    needs_sync  TINYINT(1)   NOT NULL DEFAULT 0,
+    PRIMARY KEY (id),
+    INDEX idx_qr_device (device_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 倒计时事件
+CREATE TABLE IF NOT EXISTS countdown_events (
+    id           CHAR(36)    NOT NULL,
+    title        VARCHAR(255) NOT NULL,
+    target_time  BIGINT      NOT NULL,             -- 目标时间（毫秒）
+    remark       VARCHAR(255) DEFAULT '',
+    created_at   BIGINT      NOT NULL,
+    last_modified BIGINT     NOT NULL,
+    is_deleted   TINYINT(1)  NOT NULL DEFAULT 0,
+    device_id    VARCHAR(64) NOT NULL DEFAULT '',
+    needs_sync   TINYINT(1)  NOT NULL DEFAULT 0,
+    PRIMARY KEY (id),
+    INDEX idx_cd_device (device_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 习惯计划（长期目标）
+CREATE TABLE IF NOT EXISTS habit_plans (
+    id           CHAR(36)    NOT NULL,
+    title        VARCHAR(255) NOT NULL,
+    description  TEXT,
+    period       TINYINT     NOT NULL DEFAULT 0,   -- 0未设 1周 2月 3季度 4年
+    start_date   BIGINT      NOT NULL,
+    created_at   BIGINT      NOT NULL,
+    last_modified BIGINT     NOT NULL,
+    is_deleted   TINYINT(1)  NOT NULL DEFAULT 0,
+    device_id    VARCHAR(64) NOT NULL DEFAULT '',
+    needs_sync   TINYINT(1)  NOT NULL DEFAULT 0,
+    PRIMARY KEY (id),
+    INDEX idx_hp_device (device_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 习惯项（隶属于计划）
+CREATE TABLE IF NOT EXISTS habits (
+    id           CHAR(36)    NOT NULL,
+    plan_id      CHAR(36)    NOT NULL,
+    title        VARCHAR(255) NOT NULL,
+    frequency    TINYINT     NOT NULL DEFAULT 1,   -- 1每天 2每周 3每月
+    days         VARCHAR(64) DEFAULT '',          -- 周几位图 "1,3,5"
+    time_min     INT         NOT NULL DEFAULT 0,  -- 提醒分钟(0-1439)，0 表示不提醒
+    created_at   BIGINT      NOT NULL,
+    last_modified BIGINT     NOT NULL,
+    is_deleted   TINYINT(1)  NOT NULL DEFAULT 0,
+    device_id    VARCHAR(64) NOT NULL DEFAULT '',
+    needs_sync   TINYINT(1)  NOT NULL DEFAULT 0,
+    PRIMARY KEY (id),
+    INDEX idx_habit_plan (plan_id),
+    INDEX idx_habit_device (device_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 习惯打卡
+CREATE TABLE IF NOT EXISTS habit_checkins (
+    id           CHAR(36)    NOT NULL,
+    habit_id     CHAR(36)    NOT NULL,
+    date         DATE        NOT NULL,
+    created_at   BIGINT      NOT NULL,
+    last_modified BIGINT     NOT NULL,
+    is_deleted   TINYINT(1)  NOT NULL DEFAULT 0,
+    device_id    VARCHAR(64) NOT NULL DEFAULT '',
+    needs_sync   TINYINT(1)  NOT NULL DEFAULT 0,
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_habit_date (habit_id, date),
+    INDEX idx_hc_device (device_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 闪卡牌组
+CREATE TABLE IF NOT EXISTS flashcard_decks (
+    id           CHAR(36)    NOT NULL,
+    name         VARCHAR(255) NOT NULL,
+    description  TEXT,
+    created_at   BIGINT      NOT NULL,
+    last_modified BIGINT     NOT NULL,
+    is_deleted   TINYINT(1)  NOT NULL DEFAULT 0,
+    device_id    VARCHAR(64) NOT NULL DEFAULT '',
+    needs_sync   TINYINT(1)  NOT NULL DEFAULT 0,
+    PRIMARY KEY (id),
+    INDEX idx_fd_device (device_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 闪卡
+CREATE TABLE IF NOT EXISTS flashcards (
+    id            CHAR(36)    NOT NULL,
+    deck_id       CHAR(36)    NOT NULL,
+    front         TEXT        NOT NULL,
+    back          TEXT        NOT NULL,
+    next_review   BIGINT      NOT NULL DEFAULT 0,   -- 下次复习时间（毫秒）
+    interval_days INT         NOT NULL DEFAULT 0,
+    ease          FLOAT       NOT NULL DEFAULT 2.5,
+    created_at    BIGINT      NOT NULL,
+    last_modified BIGINT      NOT NULL,
+    is_deleted    TINYINT(1)  NOT NULL DEFAULT 0,
+    device_id     VARCHAR(64) NOT NULL DEFAULT '',
+    needs_sync    TINYINT(1)  NOT NULL DEFAULT 0,
+    PRIMARY KEY (id),
+    INDEX idx_fc_deck (deck_id),
+    INDEX idx_fc_device (device_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 灵感/语录收藏
+CREATE TABLE IF NOT EXISTS inspiration_items (
+    id           CHAR(36)    NOT NULL,
+    content      TEXT        NOT NULL,
+    author       VARCHAR(128) DEFAULT '',
+    source       VARCHAR(128) DEFAULT '',
+    tags         VARCHAR(255) DEFAULT '',
+    favorite     TINYINT(1)  NOT NULL DEFAULT 0,
+    created_at   BIGINT      NOT NULL,
+    last_modified BIGINT     NOT NULL,
+    is_deleted   TINYINT(1)  NOT NULL DEFAULT 0,
+    device_id    VARCHAR(64) NOT NULL DEFAULT '',
+    needs_sync   TINYINT(1)  NOT NULL DEFAULT 0,
+    PRIMARY KEY (id),
+    INDEX idx_insp_device (device_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 快递包裹
+CREATE TABLE IF NOT EXISTS express_packages (
+    id            CHAR(36)    NOT NULL,
+    company       VARCHAR(32) NOT NULL DEFAULT '',  -- 快递公司编码
+    company_name  VARCHAR(64) NOT NULL DEFAULT '',
+    tracking_no   VARCHAR(64) NOT NULL DEFAULT '',
+    goods         VARCHAR(255) DEFAULT '',
+    current_status VARCHAR(255) DEFAULT '',
+    last_update   BIGINT      DEFAULT 0,
+    created_at    BIGINT      NOT NULL,
+    last_modified BIGINT      NOT NULL,
+    is_deleted    TINYINT(1)  NOT NULL DEFAULT 0,
+    device_id     VARCHAR(64) NOT NULL DEFAULT '',
+    needs_sync    TINYINT(1)  NOT NULL DEFAULT 0,
+    PRIMARY KEY (id),
+    INDEX idx_express_device (device_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 单位换算缓存（服务端加速，本地计算为主）
+CREATE TABLE IF NOT EXISTS unit_conversion_cache (
+    id          CHAR(36)    NOT NULL,
+    from_unit   VARCHAR(32) NOT NULL,
+    to_unit     VARCHAR(32) NOT NULL,
+    value       DECIMAL(24,8) NOT NULL,
+    result      DECIMAL(24,8) NOT NULL,
+    created_at  BIGINT      NOT NULL,
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_units (from_unit, to_unit, value)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- 设备用户注册表（后台用户管理：以客户端生成的 device_id 作为唯一用户标识，记录封禁状态与备注）
 CREATE TABLE IF NOT EXISTS device_users (
     device_id   VARCHAR(64) NOT NULL,

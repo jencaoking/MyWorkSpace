@@ -22,9 +22,19 @@ import com.jencao.mywork.data.local.entity.*
         HealthRecordEntity::class,
         AccountRecordEntity::class,
         PomodoroSessionEntity::class,
-        DailyPendingLogEntity::class
+        DailyPendingLogEntity::class,
+        CalcHistoryEntity::class,
+        QrScanEntity::class,
+        CountdownEntity::class,
+        HabitPlanEntity::class,
+        HabitEntity::class,
+        HabitCheckinEntity::class,
+        FlashcardDeckEntity::class,
+        FlashcardEntity::class,
+        InspirationEntity::class,
+        ExpressPackageEntity::class
     ],
-    version = 10,
+    version = 11,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -39,6 +49,16 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun accountRecordDao(): AccountRecordDao
     abstract fun pomodoroSessionDao(): PomodoroSessionDao
     abstract fun dailyPendingLogDao(): DailyPendingLogDao
+    abstract fun calcHistoryDao(): CalcHistoryDao
+    abstract fun qrScanDao(): QrScanDao
+    abstract fun countdownDao(): CountdownDao
+    abstract fun habitPlanDao(): HabitPlanDao
+    abstract fun habitDao(): HabitDao
+    abstract fun habitCheckinDao(): HabitCheckinDao
+    abstract fun flashcardDeckDao(): FlashcardDeckDao
+    abstract fun flashcardDao(): FlashcardDao
+    abstract fun inspirationDao(): InspirationDao
+    abstract fun expressPackageDao(): ExpressPackageDao
 
     companion object {
         const val DATABASE_NAME = "mywork.db"

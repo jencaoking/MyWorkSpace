@@ -93,6 +93,10 @@ class TaskController {
     });
   }
 
+  async batchUpsert() {
+    return this.upload();
+  }
+
   async stats() {
     const deviceId = this.deviceId();
     appApiTokenRequired(this.req);

@@ -27,6 +27,15 @@ object Routes {
     const val ENGLISH_REVIEW = "englishReview"
     // 每日未完成作业
     const val DAILY_PENDING = "daily_pending"
+    // 工具箱 8 个模块
+    const val CALC = "calc"
+    const val CONVERTER = "converter"
+    const val QRCODE = "qrcode"
+    const val COUNTDOWN = "countdown"
+    const val FLASHCARD = "flashcard"
+    const val HABIT = "habit"
+    const val INSPIRATION = "inspiration"
+    const val EXPRESS = "express"
 }
 
 /** 任务模块内部嵌套路由（列表 / 详情 / 日历 / 统计 / 分类管理）。 */

@@ -182,8 +182,8 @@ CREATE TABLE IF NOT EXISTS user_settings (
     theme        VARCHAR(16) NOT NULL DEFAULT 'system',
     module_toggles JSON,
     language     VARCHAR(8)  NOT NULL DEFAULT 'zh-CN',
-    created_at   BIGINT      NOT NULL,
-    updated_at   BIGINT      NOT NULL
+    created_at   DATETIME   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at   DATETIME   NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- 后台操作审计日志（编辑/删除记录）

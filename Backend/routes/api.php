@@ -84,6 +84,46 @@ $router->add('POST', '/api/daily-pending/dispose', static fn() => $dailyPending(
 $router->add('GET', '/api/daily-pending/weekly', static fn() => $dailyPending()->weekly());
 $router->add('POST', '/api/daily-pending/archive', static fn() => $dailyPending()->archive());
 
+// ===== 工具箱模块（8 个独立模块：计算器/扫码/倒计时/习惯/闪卡/灵感/快递/单位换算） =====
+use App\Controller\SyncTableController;
+use App\Controller\AiController;
+use App\Controller\CurrencyController;
+use App\Controller\ExpressController;
+
+// AI 统一代理（密钥存 app_config：ai_provider / ai_qwen_key / ai_openai_key ...）
+$ai = static fn() => new AiController($pdo);
+$router->add('POST', '/api/ai', static fn() => $ai()->handle());
+$router->add('GET', '/api/ai/quota', static fn() => $ai()->quota());
+
+// 实时汇率（密钥 currency_key 可选）
+$currency = static fn() => new CurrencyController($pdo);
+$router->add('GET', '/api/currency/rate', static fn() => $currency()->rate());
+
+// 快递实时查询（密钥 express_key / express_secret 存 app_config）
+$express = static fn() => new ExpressController($pdo);
+$router->add('POST', '/api/express/track', static fn() => $express()->track());
+
+// 通用同步表路由（表名 + 列白名单），统一 list / batchUpsert / delete / pull
+$toolTables = [
+    'calc'           => ['table' => 'calc_history',      'cols' => ['expr' => 'string', 'result' => 'string']],
+    'qr'             => ['table' => 'qr_scan_history',  'cols' => ['content' => 'string', 'format' => 'string', 'note' => 'string']],
+    'countdown'      => ['table' => 'countdown_events', 'cols' => ['title' => 'string', 'target_time' => 'long', 'remark' => 'string']],
+    'habit-plan'     => ['table' => 'habit_plans',      'cols' => ['title' => 'string', 'description' => 'string', 'period' => 'int', 'start_date' => 'long']],
+    'habit'          => ['table' => 'habits',           'cols' => ['plan_id' => 'string', 'title' => 'string', 'frequency' => 'int', 'days' => 'string', 'time_min' => 'int']],
+    'habit-checkin'  => ['table' => 'habit_checkins',   'cols' => ['habit_id' => 'string', 'date' => 'string']],
+    'flashcard-deck' => ['table' => 'flashcard_decks',  'cols' => ['name' => 'string', 'description' => 'string']],
+    'flashcard'      => ['table' => 'flashcards',       'cols' => ['deck_id' => 'string', 'front' => 'string', 'back' => 'string', 'next_review' => 'long', 'interval_days' => 'int', 'ease' => 'float']],
+    'inspiration'    => ['table' => 'inspiration_items','cols' => ['content' => 'string', 'author' => 'string', 'source' => 'string', 'tags' => 'string', 'favorite' => 'bool']],
+    'express'        => ['table' => 'express_packages', 'cols' => ['company' => 'string', 'company_name' => 'string', 'tracking_no' => 'string', 'goods' => 'string', 'current_status' => 'string', 'last_update' => 'long']],
+];
+foreach ($toolTables as $base => $cfg) {
+    $ctl = static fn() => new SyncTableController($pdo, $cfg['table'], $cfg['cols']);
+    $router->add('GET', "/api/$base", static fn() => $ctl()->list());
+    $router->add('POST', "/api/$base", static fn() => $ctl()->batchUpsert());
+    $router->add('POST', "/api/$base/delete", static fn() => $ctl()->delete());
+    $router->add('GET', "/api/$base/pull", static fn() => $ctl()->pull());
+}
+
 // 后台管理（只读）：概览 + 通用数据浏览
 use App\Controller\AdminController;
 use App\Controller\DeviceUserController;

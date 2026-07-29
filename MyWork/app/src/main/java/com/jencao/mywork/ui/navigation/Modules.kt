@@ -14,11 +14,19 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBalanceWallet
 import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FitnessCenter
+import androidx.compose.material.icons.filled.FormatQuote
+import androidx.compose.material.icons.filled.HourglassEmpty
+import androidx.compose.material.icons.filled.LocalShipping
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Movie
+import androidx.compose.material.icons.filled.QrCode
+import androidx.compose.material.icons.filled.Repeat
+import androidx.compose.material.icons.filled.Style
+import androidx.compose.material.icons.filled.SwapHoriz
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -44,7 +52,15 @@ val moduleMeta: Map<ModuleKey, ModuleMeta> = mapOf(
     ModuleKey.MEDIA to ModuleMeta("影音书籍", "看过听过", Icons.Filled.Movie),
     ModuleKey.HEALTH to ModuleMeta("健康", "身体数据", Icons.Filled.Favorite),
     ModuleKey.ACCOUNT to ModuleMeta("记账", "收支明细", Icons.Filled.AccountBalanceWallet),
-    ModuleKey.POMODORO to ModuleMeta("番茄钟", "专注计时", Icons.Filled.Timer)
+    ModuleKey.POMODORO to ModuleMeta("番茄钟", "专注计时", Icons.Filled.Timer),
+    ModuleKey.CALC to ModuleMeta("计算器", "表达式计算", Icons.Filled.Calculate),
+    ModuleKey.CONVERTER to ModuleMeta("单位换算", "长度/重量/温度", Icons.Filled.SwapHoriz),
+    ModuleKey.QRCODE to ModuleMeta("扫码", "扫码与生成", Icons.Filled.QrCode),
+    ModuleKey.COUNTDOWN to ModuleMeta("倒计时", "重要日子提醒", Icons.Filled.HourglassEmpty),
+    ModuleKey.FLASHCARD to ModuleMeta("闪卡", "记忆卡片", Icons.Filled.Style),
+    ModuleKey.HABIT to ModuleMeta("习惯养成", "坚持打卡", Icons.Filled.Repeat),
+    ModuleKey.INSPIRATION to ModuleMeta("灵感语录", "收藏好句", Icons.Filled.FormatQuote),
+    ModuleKey.EXPRESS to ModuleMeta("快递查询", "物流追踪", Icons.Filled.LocalShipping)
 )
 
 /** 功能板块映射到对应路由（未实现的板块回退首页）。 */
@@ -57,6 +73,14 @@ fun moduleRoute(key: ModuleKey): String = when (key) {
     ModuleKey.HEALTH -> Routes.HEALTH
     ModuleKey.ACCOUNT -> Routes.ACCOUNT
     ModuleKey.POMODORO -> Routes.POMODORO
+    ModuleKey.CALC -> Routes.CALC
+    ModuleKey.CONVERTER -> Routes.CONVERTER
+    ModuleKey.QRCODE -> Routes.QRCODE
+    ModuleKey.COUNTDOWN -> Routes.COUNTDOWN
+    ModuleKey.FLASHCARD -> Routes.FLASHCARD
+    ModuleKey.HABIT -> Routes.HABIT
+    ModuleKey.INSPIRATION -> Routes.INSPIRATION
+    ModuleKey.EXPRESS -> Routes.EXPRESS
     else -> Routes.HOME
 }
 

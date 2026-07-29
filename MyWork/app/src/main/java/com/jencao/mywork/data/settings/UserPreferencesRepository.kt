@@ -28,7 +28,15 @@ private val DEFAULT_TOGGLES: Map<ModuleKey, Boolean> = mapOf(
     ModuleKey.MEDIA to false,
     ModuleKey.HEALTH to false,
     ModuleKey.ACCOUNT to false,
-    ModuleKey.WEATHER to false
+    ModuleKey.WEATHER to false,
+    ModuleKey.CALC to true,
+    ModuleKey.CONVERTER to true,
+    ModuleKey.QRCODE to true,
+    ModuleKey.COUNTDOWN to true,
+    ModuleKey.FLASHCARD to true,
+    ModuleKey.HABIT to true,
+    ModuleKey.INSPIRATION to true,
+    ModuleKey.EXPRESS to true
 )
 
 /**

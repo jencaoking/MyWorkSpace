@@ -190,7 +190,9 @@ final class AdminController
     {
         $this->requireAuth();
         $repo = new ConfigRepository($this->pdo);
-        $keys = ['youdao_app_key', 'youdao_app_secret', 'tmdb_key', 'qweather_key', 'qweather_token', 'qweather_host'];
+        $keys = ['youdao_app_key', 'youdao_app_secret', 'tmdb_key', 'qweather_key', 'qweather_token', 'qweather_host',
+            'ai_provider', 'ai_qwen_key', 'ai_qwen_model', 'ai_openai_key', 'ai_openai_base', 'ai_openai_model', 'ai_daily_limit',
+            'currency_key', 'express_key', 'express_secret'];
         $out  = [];
         foreach ($keys as $k) {
             $v       = $repo->get($k, '');
@@ -209,7 +211,9 @@ final class AdminController
         $this->requireAuth();
         $body = $this->jsonBody();
         $repo = new ConfigRepository($this->pdo);
-        foreach (['youdao_app_key', 'youdao_app_secret', 'tmdb_key', 'qweather_key', 'qweather_token', 'qweather_host'] as $k) {
+        foreach (['youdao_app_key', 'youdao_app_secret', 'tmdb_key', 'qweather_key', 'qweather_token', 'qweather_host',
+            'ai_provider', 'ai_qwen_key', 'ai_qwen_model', 'ai_openai_key', 'ai_openai_base', 'ai_openai_model', 'ai_daily_limit',
+            'currency_key', 'express_key', 'express_secret'] as $k) {
             if (array_key_exists($k, $body) && is_string($body[$k]) && $body[$k] !== '') {
                 $repo->set($k, trim($body[$k]));
             }
