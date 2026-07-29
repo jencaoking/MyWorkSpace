@@ -24,7 +24,6 @@ import androidx.navigation.NavHostController
 import com.jencao.mywork.data.settings.ModuleKey
 import com.jencao.mywork.ui.AppViewModel
 import com.jencao.mywork.ui.navigation.Routes
-import java.text.SimpleDateFormat
 import java.util.Locale
 
 /** 将功能板块映射到对应路由（未实现的板块回退首页）。 */

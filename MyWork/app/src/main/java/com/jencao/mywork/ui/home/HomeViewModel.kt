@@ -3,16 +3,11 @@ package com.jencao.mywork.ui.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jencao.mywork.data.local.entity.TaskEntity
-import com.jencao.mywork.data.remote.model.HealthData
 import com.jencao.mywork.data.repository.TaskRepository
-import com.jencao.mywork.data.sync.SyncManager
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 sealed interface ServerStatus {
@@ -24,8 +19,7 @@ sealed interface ServerStatus {
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val taskRepo: TaskRepository,
-    private val sync: SyncManager
+    private val taskRepo: TaskRepository
 ) : ViewModel() {
 
     val activeTasks: StateFlow<List<TaskEntity>> = taskRepo.observeActive().stateIn(
