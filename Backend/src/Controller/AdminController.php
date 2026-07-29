@@ -111,7 +111,9 @@ final class AdminController
                 'columns' => $rows ? array_keys($rows[0]) : [],
                 'types' => $types,
                 'rows' => $rows,
-                'total' => count($rows),
+                'total' => $repo->countRows($table),
+                'limit' => $limit,
+                'offset' => $offset,
                 'deletable' => AdminRepository::canDelete($table),
             ],
         ]);

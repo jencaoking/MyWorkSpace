@@ -17,7 +17,7 @@ const NAV = [
 const LABEL = Object.fromEntries(NAV.map(n => [n.key, n.label]));
 
 /* ---------- 全局状态 ---------- */
-const S = { view: 'overview', table: '', rows: [], columns: [], types: {}, deletable: true };
+const S = { view: 'overview', table: '', rows: [], columns: [], types: {}, deletable: true, limit: 50, offset: 0, total: 0 };
 
 /* ---------- DOM 引用 ---------- */
 const $ = id => document.getElementById(id);
@@ -180,17 +180,28 @@ function renderOverview(d) {
   contentEl.append(sys, grid);
 }
 
-async function showTable(table) {
-  S.table = table; S.rows = []; S.columns = []; S.types = {};
+async function showTable(table, resetOffset = true) {
+  S.view = table; S.table = table; S.rows = []; S.columns = []; S.types = {};
+  if (resetOffset) S.offset = 0;
   contentEl.innerHTML = '<div class="empty">加载中…</div>';
   try {
-    const d = await api('/admin/browse?table=' + encodeURIComponent(table) + '&limit=100');
+    const d = await api('/admin/browse?table=' + encodeURIComponent(table) +
+      '&limit=' + S.limit + '&offset=' + S.offset);
     S.rows = d.rows; S.columns = d.columns; S.types = d.types || {};
     S.deletable = (d.deletable !== false);
+    S.total = (d.total != null) ? d.total : d.rows.length;
     renderTable();
   } catch (e) {
     contentEl.innerHTML = `<div class="empty">加载失败：${esc(e.message)}</div>`;
   }
+}
+
+/* 翻页：保留当前表与筛选，按页大小前进/后退 */
+function gotoPage(delta) {
+  const target = S.offset + delta * S.limit;
+  if (target < 0 || target >= S.total) return;
+  S.offset = target;
+  showTable(S.table, false);
 }
 
 function cellHTML(col, v) {
@@ -214,8 +225,18 @@ function renderTable() {
   search.placeholder = '在当前结果中筛选…';
   const meta = document.createElement('span');
   meta.className = 'table-meta';
-  meta.textContent = `共 ${S.rows.length} 行`;
-  tb.append(search, meta);
+  const from = S.total === 0 ? 0 : S.offset + 1;
+  const to = Math.min(S.offset + S.rows.length, S.total);
+  meta.textContent = `共 ${S.total} 行 · 显示 ${from}–${to}`;
+  const prev = document.createElement('button');
+  prev.className = 'btn-ghost'; prev.textContent = '上一页';
+  prev.disabled = S.offset <= 0;
+  prev.onclick = () => gotoPage(-1);
+  const next = document.createElement('button');
+  next.className = 'btn-ghost'; next.textContent = '下一页';
+  next.disabled = S.offset + S.rows.length >= S.total;
+  next.onclick = () => gotoPage(1);
+  tb.append(search, meta, prev, next);
 
   const scroll = document.createElement('div');
   scroll.className = 'table-scroll';

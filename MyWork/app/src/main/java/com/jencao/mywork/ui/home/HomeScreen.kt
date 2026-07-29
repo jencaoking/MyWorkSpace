@@ -30,6 +30,8 @@ import com.jencao.mywork.ui.navigation.Routes
 import com.jencao.mywork.ui.navigation.moduleMeta
 import com.jencao.mywork.ui.navigation.moduleRoute
 
+private val syncFmt = SimpleDateFormat("MM-dd HH:mm", Locale.CHINA)
+
 @Composable
 fun HomeScreen(
     appVm: AppViewModel,
@@ -38,7 +40,9 @@ fun HomeScreen(
     homeVm: HomeViewModel = hiltViewModel()
 ) {
     val activeCount by homeVm.activeCount.collectAsStateWithLifecycle()
-    val syncStatus by homeVm.syncStatus.collectAsStateWithLifecycle()
+    val isSyncing by homeVm.isSyncing.collectAsStateWithLifecycle()
+    val lastSyncFailed by homeVm.lastSyncFailed.collectAsStateWithLifecycle()
+    val lastSyncAt by homeVm.lastSyncAt.collectAsStateWithLifecycle()
 
     Column(
         modifier = Modifier
@@ -108,33 +112,33 @@ fun HomeScreen(
         // 云端同步（保留，移除原"云端连接"测试卡片）
         NeuCard(Modifier.fillMaxWidth()) {
             Text("云端同步", style = MaterialTheme.typography.titleMedium)
-            when (val s = syncStatus) {
-                SyncStatus.Idle -> Text(
-                    "点击同步，将本地数据推送到云端并拉取远端变更",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                SyncStatus.Syncing -> Text(
+            when {
+                isSyncing -> Text(
                     "同步中…", style = MaterialTheme.typography.bodySmall
                 )
 
-                is SyncStatus.Success -> Text(
-                    "同步完成 ✓ 上行 ${s.uploaded} · 下行 ${s.downloaded} · 删除 ${s.deleted}",
+                lastSyncFailed -> Text(
+                    "同步失败，将在下一周期自动重试",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
+                )
+
+                lastSyncAt > 0 -> Text(
+                    "上次同步：${syncFmt.format(Date(lastSyncAt))}",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.primary
                 )
 
-                is SyncStatus.Error -> Text(
-                    "同步失败：${s.message}",
+                else -> Text(
+                    "点击同步，将本地数据推送到云端并拉取远端变更",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.error
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             NeuButton(
                 "同步数据",
                 onClick = { homeVm.syncNow() },
-                enabled = syncStatus != SyncStatus.Syncing,
+                enabled = !isSyncing,
                 modifier = Modifier.padding(top = 8.dp)
             )
         }

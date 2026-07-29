@@ -57,12 +57,35 @@ final class AdminRepository
         return (int) $this->pdo->query("SELECT COUNT(DISTINCT device_id) FROM tasks WHERE device_id <> ''")->fetchColumn();
     }
 
-    /** 通用浏览：白名单表 + 分页，返回原生行（列名由前端人性化展示） */
+    /**
+     * 通用浏览：白名单表 + 分页，返回原生行（列名由前端人性化展示）。
+     * 排序优先用时间戳列（created_at/updated_at/last_modified），让分页稳定且贴近「最新在前」，
+     * 缺失时退回主键 id。
+     */
     public function browse(string $table, int $limit = 50, int $offset = 0): array
     {
-        $stmt = $this->pdo->prepare("SELECT * FROM `$table` ORDER BY 1 DESC LIMIT ? OFFSET ?");
+        $order = $this->orderCol($table);
+        $stmt = $this->pdo->prepare("SELECT * FROM `$table` ORDER BY `$order` DESC LIMIT ? OFFSET ?");
         $stmt->execute([$limit, $offset]);
         return $stmt->fetchAll();
+    }
+
+    /** 表的真实总行数（供分页使用，不受 LIMIT 影响） */
+    public function countRows(string $table): int
+    {
+        return (int) $this->pdo->query("SELECT COUNT(*) FROM `$table`")->fetchColumn();
+    }
+
+    /** 选取用于排序的列：优先时间列，其次主键 */
+    private function orderCol(string $table): string
+    {
+        $cols = $this->columnsOf($table);
+        foreach (['created_at', 'updated_at', 'last_modified', 'id'] as $pref) {
+            if (array_key_exists($pref, $cols)) {
+                return $pref;
+            }
+        }
+        return 'id';
     }
 
     /** 返回表的列元信息：['列名' => ['type' => 'varchar(255)', 'nullable' => true, ...]] */
