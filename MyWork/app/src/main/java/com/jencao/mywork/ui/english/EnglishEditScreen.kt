@@ -15,7 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.VolumeUp
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -136,7 +136,7 @@ fun EnglishEditScreen(nav: NavHostController, vm: EnglishViewModel = hiltViewMod
 
             if (speakUrl.isNotBlank()) {
                 TextButton(onClick = { play(speakUrl) }) {
-                    Icon(Icons.Filled.VolumeUp, contentDescription = null)
+                    Icon(Icons.AutoMirrored.Filled.VolumeUp, contentDescription = null)
                     Text("  播放原音")
                 }
             }
