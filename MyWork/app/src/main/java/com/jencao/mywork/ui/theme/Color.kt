@@ -2,7 +2,7 @@ package com.jencao.mywork.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// 浅色主题配色（沉静的青绿 productivity 风格，背景偏中性灰以便新拟物阴影可读）
+// 浅色主题配色（沉静的青绿 productivity 风格 + 奶白色背景，新拟物阴影由 surface 推导）
 val LightPrimary = Color(0xFF3F8E7D)
 val LightOnPrimary = Color(0xFFFFFFFF)
 val LightPrimaryContainer = Color(0xFFBFE9DD)
@@ -15,17 +15,17 @@ val LightTertiary = Color(0xFFB5794E)
 val LightOnTertiary = Color(0xFFFFFFFF)
 val LightTertiaryContainer = Color(0xFFFAD9C2)
 val LightOnTertiaryContainer = Color(0xFF321202)
-val LightBackground = Color(0xFFE9EDEC)
-val LightOnBackground = Color(0xFF1A1F1D)
-val LightSurface = Color(0xFFE9EDEC)
-val LightOnSurface = Color(0xFF1A1F1D)
-val LightSurfaceVariant = Color(0xFFD7DEDC)
-val LightOnSurfaceVariant = Color(0xFF3F4845)
+val LightBackground = Color(0xFFFBF6EE)
+val LightOnBackground = Color(0xFF2E2A24)
+val LightSurface = Color(0xFFFBF6EE)
+val LightOnSurface = Color(0xFF2E2A24)
+val LightSurfaceVariant = Color(0xFFF1EADC)
+val LightOnSurfaceVariant = Color(0xFF6B6256)
 val LightError = Color(0xFFBA1A1A)
 val LightOnError = Color(0xFFFFFFFF)
 val LightErrorContainer = Color(0xFFFFDAD6)
 val LightOnErrorContainer = Color(0xFF410002)
-val LightOutline = Color(0xFF6F7976)
+val LightOutline = Color(0xFFDBD0BD)
 
 // 深色主题配色
 val DarkPrimary = Color(0xFF7FCBB9)
