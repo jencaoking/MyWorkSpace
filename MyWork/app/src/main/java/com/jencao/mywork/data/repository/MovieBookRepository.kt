@@ -2,6 +2,7 @@ package com.jencao.mywork.data.repository
 
 import com.jencao.mywork.data.local.dao.MovieBookDao
 import com.jencao.mywork.data.local.entity.MovieBookEntity
+import com.jencao.mywork.data.util.touch
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -47,8 +48,8 @@ class MovieBookRepository @Inject constructor(
 
     suspend fun markDeleted(id: String) = dao.softDelete(id)
 
-    suspend fun pendingUploads(): List<MovieBookEntity> = dao.pendingUploads()
-    suspend fun pendingDeletions(): List<String> = dao.pendingDeletions()
+    suspend fun pendingUploads(): List<MovieBookEntity> = dao.getPendingUploads()
+    suspend fun pendingDeletions(): List<String> = dao.getPendingDeletions().map { it.id }
 
     suspend fun clearSyncFlags(ids: List<String>, deletedIds: List<String>) {
         dao.clearUploadFlag(ids)

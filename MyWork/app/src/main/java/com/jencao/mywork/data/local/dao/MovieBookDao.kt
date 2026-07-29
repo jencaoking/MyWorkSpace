@@ -13,6 +13,12 @@ interface MovieBookDao {
     @Query("SELECT * FROM movie_books WHERE is_deleted = 0 ORDER BY updated_at DESC")
     fun observeAll(): Flow<List<MovieBookEntity>>
 
+    @Query("SELECT * FROM movie_books WHERE is_deleted = 0 AND (:type IS NULL OR type = :type) ORDER BY updated_at DESC")
+    fun observeByType(type: String?): Flow<List<MovieBookEntity>>
+
+    @Query("SELECT * FROM movie_books WHERE id = :id AND is_deleted = 0")
+    suspend fun getById(id: String): MovieBookEntity?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(item: MovieBookEntity)
 
@@ -30,4 +36,10 @@ interface MovieBookDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertAll(items: List<MovieBookEntity>)
+
+    @Query("UPDATE movie_books SET needs_sync = 0 WHERE id IN (:ids)")
+    suspend fun clearUploadFlag(ids: List<String>)
+
+    @Query("UPDATE movie_books SET needs_sync = 0 WHERE id IN (:ids)")
+    suspend fun clearDeleteFlag(ids: List<String>)
 }

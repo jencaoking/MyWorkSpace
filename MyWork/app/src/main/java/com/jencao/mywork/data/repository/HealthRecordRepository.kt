@@ -2,6 +2,7 @@ package com.jencao.mywork.data.repository
 
 import com.jencao.mywork.data.local.dao.HealthRecordDao
 import com.jencao.mywork.data.local.entity.HealthRecordEntity
+import com.jencao.mywork.data.util.touch
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -43,8 +44,8 @@ class HealthRecordRepository @Inject constructor(
 
     suspend fun markDeleted(id: String) = dao.softDelete(id)
 
-    suspend fun pendingUploads(): List<HealthRecordEntity> = dao.pendingUploads()
-    suspend fun pendingDeletions(): List<String> = dao.pendingDeletions()
+    suspend fun pendingUploads(): List<HealthRecordEntity> = dao.getPendingUploads()
+    suspend fun pendingDeletions(): List<String> = dao.getPendingDeletions().map { it.id }
 
     suspend fun clearSyncFlags(ids: List<String>, deletedIds: List<String>) {
         dao.clearUploadFlag(ids)

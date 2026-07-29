@@ -2,6 +2,7 @@ package com.jencao.mywork.data.repository
 
 import com.jencao.mywork.data.local.dao.SportRecordDao
 import com.jencao.mywork.data.local.entity.SportRecordEntity
+import com.jencao.mywork.data.util.touch
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -46,10 +47,10 @@ class SportRecordRepository @Inject constructor(
     suspend fun markDeleted(id: String) = dao.softDelete(id)
 
     /** 待上传的本地变更（含新增/修改）。 */
-    suspend fun pendingUploads(): List<SportRecordEntity> = dao.pendingUploads()
+    suspend fun pendingUploads(): List<SportRecordEntity> = dao.getPendingUploads()
 
     /** 待删除的 id 列表。 */
-    suspend fun pendingDeletions(): List<String> = dao.pendingDeletions()
+    suspend fun pendingDeletions(): List<String> = dao.getPendingDeletions().map { it.id }
 
     /** 同步完成后清空标记。 */
     suspend fun clearSyncFlags(ids: List<String>, deletedIds: List<String>) {

@@ -13,6 +13,12 @@ interface HealthRecordDao {
     @Query("SELECT * FROM health_records WHERE is_deleted = 0 ORDER BY record_time DESC")
     fun observeAll(): Flow<List<HealthRecordEntity>>
 
+    @Query("SELECT * FROM health_records WHERE is_deleted = 0 AND (:type IS NULL OR type = :type) ORDER BY record_time DESC")
+    fun observeByType(type: String?): Flow<List<HealthRecordEntity>>
+
+    @Query("SELECT * FROM health_records WHERE id = :id AND is_deleted = 0")
+    suspend fun getById(id: String): HealthRecordEntity?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(item: HealthRecordEntity)
 
@@ -30,4 +36,10 @@ interface HealthRecordDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertAll(items: List<HealthRecordEntity>)
+
+    @Query("UPDATE health_records SET needs_sync = 0 WHERE id IN (:ids)")
+    suspend fun clearUploadFlag(ids: List<String>)
+
+    @Query("UPDATE health_records SET needs_sync = 0 WHERE id IN (:ids)")
+    suspend fun clearDeleteFlag(ids: List<String>)
 }
