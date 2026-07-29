@@ -12,11 +12,12 @@ const NAV = [
   { key: 'account_records', label: '记账',     ico: '¥' },
   { key: 'categories',      label: '分类',     ico: '#' },
   { key: 'user_settings',   label: '设置',     ico: '⚙' },
+  { key: 'audit',           label: '审计日志', ico: '✦' },
 ];
 const LABEL = Object.fromEntries(NAV.map(n => [n.key, n.label]));
 
 /* ---------- 全局状态 ---------- */
-const S = { view: 'overview', table: '', rows: [], columns: [], types: {} };
+const S = { view: 'overview', table: '', rows: [], columns: [], types: {}, deletable: true };
 
 /* ---------- DOM 引用 ---------- */
 const $ = id => document.getElementById(id);
@@ -135,6 +136,7 @@ function navigate(key) {
   document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.key === key));
   $('viewTitle').textContent = LABEL[key] || '概览';
   if (key === 'overview') showOverview();
+  else if (key === 'audit') showAudit();
   else showTable(key);
 }
 
@@ -184,6 +186,7 @@ async function showTable(table) {
   try {
     const d = await api('/admin/browse?table=' + encodeURIComponent(table) + '&limit=100');
     S.rows = d.rows; S.columns = d.columns; S.types = d.types || {};
+    S.deletable = (d.deletable !== false);
     renderTable();
   } catch (e) {
     contentEl.innerHTML = `<div class="empty">加载失败：${esc(e.message)}</div>`;
@@ -247,10 +250,13 @@ function renderTable() {
     const editBtn = document.createElement('button');
     editBtn.className = 'btn-ghost'; editBtn.textContent = '编辑';
     editBtn.onclick = () => openEdit(row);
-    const delBtn = document.createElement('button');
-    delBtn.className = 'btn-danger'; delBtn.textContent = '删除';
-    delBtn.onclick = () => openDelete(row);
-    act.append(editBtn, delBtn);
+    act.append(editBtn);
+    if (S.deletable) {
+      const delBtn = document.createElement('button');
+      delBtn.className = 'btn-danger'; delBtn.textContent = '删除';
+      delBtn.onclick = () => openDelete(row);
+      act.append(delBtn);
+    }
     tdA.appendChild(act);
     tr.appendChild(tdA);
     tbody.appendChild(tr);
@@ -364,6 +370,60 @@ $('confirmDelBtn').addEventListener('click', async () => {
   } finally { btn.disabled = false; }
 });
 
+/* ---------- 审计日志视图 ---------- */
+async function showAudit() {
+  S.table = ''; S.rows = [];
+  contentEl.innerHTML = '<div class="empty">加载中…</div>';
+  try {
+    const d = await api('/admin/audit?limit=200');
+    renderAudit(d.rows);
+  } catch (e) {
+    contentEl.innerHTML = `<div class="empty">加载失败：${esc(e.message)}</div>`;
+  }
+}
+
+function renderAudit(rows) {
+  if (!rows || !rows.length) {
+    contentEl.innerHTML = '<div class="empty">暂无操作记录</div>';
+    return;
+  }
+  const wrap = document.createElement('div');
+  wrap.className = 'table-wrap';
+  const scroll = document.createElement('div');
+  scroll.className = 'table-scroll';
+  const table = document.createElement('table');
+  table.className = 'data';
+  const thead = document.createElement('thead');
+  thead.innerHTML = '<tr><th>时间</th><th>操作</th><th>数据表</th><th>行 ID</th><th>变更内容</th><th>IP</th></tr>';
+  const tbody = document.createElement('tbody');
+  rows.forEach(r => {
+    const tr = document.createElement('tr');
+    let changes = null;
+    if (r.changes) {
+      try { changes = JSON.parse(r.changes); } catch (e) { changes = r.changes; }
+    }
+    const changeText = changes && typeof changes === 'object'
+      ? Object.entries(changes).map(([k, v]) => `${labelOf(k) || k}: ${v}`).join('，')
+      : '—';
+    const actionBadge = r.action === 'delete'
+      ? '<span class="badge deleted-1">删除</span>'
+      : '<span class="badge prio-1">编辑</span>';
+    tr.innerHTML =
+      `<td class="num">${esc(fmtTs(r.created_at))}</td>` +
+      `<td>${actionBadge}</td>` +
+      `<td>${esc(LABEL[r.table_name] || r.table_name)}</td>` +
+      `<td class="mono">${esc(r.row_id)}</td>` +
+      `<td class="cell-text">${esc(String(changeText))}</td>` +
+      `<td>${esc(r.ip || '')}</td>`;
+    tbody.appendChild(tr);
+  });
+  table.append(thead, tbody);
+  scroll.appendChild(table);
+  wrap.appendChild(scroll);
+  contentEl.innerHTML = '';
+  contentEl.appendChild(wrap);
+}
+
 /* ---------- 通用事件 ---------- */
 document.querySelectorAll('[data-close]').forEach(btn => {
   btn.addEventListener('click', () => closeModal(btn.dataset.close));
@@ -373,6 +433,7 @@ document.querySelectorAll('.modal-overlay').forEach(ov => {
 });
 $('refreshBtn').addEventListener('click', () => {
   if (S.view === 'overview') showOverview();
+  else if (S.view === 'audit') showAudit();
   else showTable(S.view);
 });
 $('menuBtn').addEventListener('click', () => appEl.classList.toggle('nav-open'));

@@ -25,7 +25,13 @@ final class AdminController
         $password = is_string($body['password'] ?? null) ? $body['password'] : ($_POST['password'] ?? '');
 
         $cfg = require __DIR__ . '/../../config/admin.php';
-        if (!is_string($password) || $password === '' || !password_verify($password, $cfg['password_hash'])) {
+        $ok = false;
+        if (!empty($cfg['password_hash'])) {
+            $ok = password_verify($password, $cfg['password_hash']);
+        } elseif (!empty($cfg['password_plain'])) {
+            $ok = hash_equals($cfg['password_plain'], $password);
+        }
+        if (!is_string($password) || $password === '' || !$ok) {
             throw new ApiException('用户名或密码错误', 401, 401);
         }
 
@@ -106,6 +112,7 @@ final class AdminController
                 'types' => $types,
                 'rows' => $rows,
                 'total' => count($rows),
+                'deletable' => AdminRepository::canDelete($table),
             ],
         ]);
     }
@@ -126,11 +133,13 @@ final class AdminController
             throw new ApiException('缺少 id 或 fields', 400, 400);
         }
 
-        $affected = (new AdminRepository($this->pdo))->updateRow($table, $id, $fields);
-        if ($affected < 1) {
+        $repo = new AdminRepository($this->pdo);
+        $res = $repo->updateRow($table, $id, $fields);
+        if ($res['count'] < 1) {
             throw new ApiException('未找到记录或无字段变更', 404, 404);
         }
-        \Response::json(['code' => 0, 'message' => 'ok', 'data' => ['affected' => $affected]]);
+        $repo->audit('update', $table, $id, $res['applied']);
+        \Response::json(['code' => 0, 'message' => 'ok', 'data' => ['affected' => $res['count']]]);
     }
 
     /** POST /admin/delete —— 删除一行：{table, id}（含 is_deleted 的表走软删除） */
@@ -144,14 +153,32 @@ final class AdminController
         if (!AdminRepository::isAllowed($table)) {
             throw new ApiException('unknown or disallowed table', 404, 404);
         }
+        if (!AdminRepository::canDelete($table)) {
+            throw new ApiException('该表不允许在后台删除', 403, 403);
+        }
         if ($id === '') {
             throw new ApiException('缺少 id', 400, 400);
         }
 
-        $affected = (new AdminRepository($this->pdo))->deleteRow($table, $id);
-        if ($affected < 1) {
+        $repo = new AdminRepository($this->pdo);
+        $res = $repo->deleteRow($table, $id);
+        if ($res['count'] < 1) {
             throw new ApiException('未找到记录', 404, 404);
         }
-        \Response::json(['code' => 0, 'message' => 'ok', 'data' => ['affected' => $affected]]);
+        $repo->audit('delete', $table, $id, null, $res['mode']);
+        \Response::json(['code' => 0, 'message' => 'ok', 'data' => ['affected' => $res['count'], 'mode' => $res['mode']]]);
+    }
+
+    /** GET /admin/audit?limit=100 —— 操作审计日志（编辑/删除记录） */
+    public function audit(): void
+    {
+        $this->requireAuth();
+        $limit = min(500, max(1, (int) ($_GET['limit'] ?? 100)));
+        $rows = (new AdminRepository($this->pdo))->recentAudit($limit);
+        \Response::json([
+            'code' => 0,
+            'message' => 'ok',
+            'data' => ['rows' => $rows, 'total' => count($rows)],
+        ]);
     }
 }

@@ -7,7 +7,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.Dp
@@ -57,20 +56,22 @@ fun Modifier.neumorphic(
         isAntiAlias = true
         color = backgroundColor
     }
-    val fw = paint.asFrameworkPaint()
     val e = elevation.toPx()
     onDrawWithContent {
         val (lx, ly) = if (pressed) (e to e) else (-e to -e)
         val (dx, dy) = if (pressed) (-e to -e) else (e to e)
-        // 暗阴影（右下）
-        fw.setShadowLayer(e, dx, dy, darkColor.toArgb())
-        drawOutline(outline, paint)
-        // 亮阴影（左上）
-        fw.setShadowLayer(e, lx, ly, lightColor.toArgb())
-        drawOutline(outline, paint)
-        // 本体填充（无阴影）
-        fw.clearShadowLayer()
-        drawOutline(outline, paint)
+        val fw = paint.asFrameworkPaint()
+        drawIntoCanvas { canvas ->
+            // 暗阴影（右下）
+            fw.setShadowLayer(e, dx, dy, darkColor.toArgb())
+            canvas.drawOutline(outline, paint)
+            // 亮阴影（左上）
+            fw.setShadowLayer(e, lx, ly, lightColor.toArgb())
+            canvas.drawOutline(outline, paint)
+            // 本体填充（无阴影）
+            fw.clearShadowLayer()
+            canvas.drawOutline(outline, paint)
+        }
         drawContent()
     }
 }

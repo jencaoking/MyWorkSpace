@@ -80,3 +80,4 @@ $router->add('POST', '/admin/login', static fn() => $admin()->login());
 $router->add('POST', '/admin/logout', static fn() => $admin()->logout());
 $router->add('POST', '/admin/update', static fn() => $admin()->update());
 $router->add('POST', '/admin/delete', static fn() => $admin()->delete());
+$router->add('GET', '/admin/audit', static fn() => $admin()->audit());

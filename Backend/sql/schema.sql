@@ -164,3 +164,20 @@ CREATE TABLE IF NOT EXISTS user_settings (
     created_at   BIGINT      NOT NULL,
     updated_at   BIGINT      NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 后台操作审计日志（编辑/删除记录）
+CREATE TABLE IF NOT EXISTS admin_audit_log (
+    id          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    actor       VARCHAR(64) NOT NULL DEFAULT 'admin',
+    action      VARCHAR(16) NOT NULL COMMENT 'update|delete',
+    table_name  VARCHAR(64) NOT NULL,
+    row_id      CHAR(36)     NOT NULL,
+    change_mode VARCHAR(8)   NULL COMMENT 'soft|hard',
+    changes     TEXT         NULL COMMENT 'JSON: 实际变更的字段',
+    ip          VARCHAR(45)  NULL,
+    user_agent  TEXT         NULL,
+    created_at  BIGINT       NOT NULL,
+    PRIMARY KEY (id),
+    KEY idx_table_row (table_name, row_id),
+    KEY idx_created (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

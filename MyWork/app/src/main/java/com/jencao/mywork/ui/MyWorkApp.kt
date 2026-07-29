@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -32,7 +33,7 @@ import androidx.navigation.compose.rememberNavController
 import com.jencao.mywork.data.settings.ThemeMode
 import com.jencao.mywork.ui.account.AccountScreen
 import com.jencao.mywork.ui.components.NeuFab
-import com.jencao.mywork.ui.components.NeuRadiusLarge
+import com.jencao.mywork.ui.theme.NeuRadiusLarge
 import com.jencao.mywork.ui.english.EnglishScreen
 import com.jencao.mywork.ui.english.EnglishReviewScreen
 import com.jencao.mywork.ui.health.HealthScreen
