@@ -87,6 +87,24 @@
 
   <div id="toast" class="toast" hidden></div>
 
+  <!-- 用户管理操作确认（封禁 / 解封 / 清除数据 / 备注） -->
+  <div id="userModal" class="modal-overlay" hidden>
+    <div class="modal modal-sm glass">
+      <div class="modal-head">
+        <h3 id="userModalTitle">操作</h3>
+        <button class="icon-btn" data-close="userModal" aria-label="关闭">✕</button>
+      </div>
+      <div class="modal-body">
+        <p id="userModalText"></p>
+        <textarea id="userModalInput" class="field" rows="3" placeholder="备注（可选）" hidden></textarea>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-ghost" data-close="userModal">取消</button>
+        <button id="userModalOk" class="btn-danger">确认</button>
+      </div>
+    </div>
+  </div>
+
   <script src="admin.js"></script>
 </body>
 </html>

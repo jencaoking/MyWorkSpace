@@ -75,9 +75,16 @@ $router->add('GET', '/api/health-records/pull', static fn() => $healthRecord()->
 
 // 后台管理（只读）：概览 + 通用数据浏览
 use App\Controller\AdminController;
+use App\Controller\DeviceUserController;
 $admin = static fn() => new AdminController($pdo);
+$users = static fn() => new DeviceUserController($pdo);
 $router->add('GET', '/admin/overview', static fn() => $admin()->overview());
 $router->add('GET', '/admin/browse', static fn() => $admin()->browse());
+
+// 后台用户管理：以设备 ID 聚合的「用户」视图（列表 / 封禁备注 / 清除数据）
+$router->add('GET', '/admin/users', static fn() => $users()->list());
+$router->add('POST', '/admin/users/set', static fn() => $users()->set());
+$router->add('POST', '/admin/users/delete', static fn() => $users()->delete());
 
 // 第三方 API 代理：密钥保留在服务端后台管理，App 只调用 /api/proxy/*
 use App\Controller\ProxyController;

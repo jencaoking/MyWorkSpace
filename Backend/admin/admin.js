@@ -12,12 +12,13 @@ const NAV = [
   { key: 'account_records', label: '记账',     ico: '¥' },
   { key: 'categories',      label: '分类',     ico: '#' },
   { key: 'user_settings',   label: '设置',     ico: '⚙' },
+  { key: 'users',           label: '用户',     ico: '◉' },
   { key: 'audit',           label: '审计日志', ico: '✦' },
 ];
 const LABEL = Object.fromEntries(NAV.map(n => [n.key, n.label]));
 
 /* ---------- 全局状态 ---------- */
-const S = { view: 'overview', table: '', rows: [], columns: [], types: {}, deletable: true, limit: 50, offset: 0, total: 0 };
+const S = { view: 'overview', table: '', rows: [], columns: [], types: {}, deletable: true, limit: 50, offset: 0, total: 0, userQ: '' };
 
 /* ---------- DOM 引用 ---------- */
 const $ = id => document.getElementById(id);
@@ -138,6 +139,7 @@ function navigate(key) {
   if (key === 'overview') showOverview();
   else if (key === 'audit') showAudit();
   else if (key === 'apikeys') showApiKeys();
+  else if (key === 'users') showUsers();
   else showTable(key);
 }
 
@@ -511,6 +513,160 @@ function renderAudit(rows) {
   contentEl.appendChild(wrap);
 }
 
+/* ---------- 用户管理视图（以设备 ID 聚合的「用户」） ---------- */
+function shortId(id) {
+  if (!id) return '—';
+  return id.length > 16 ? id.slice(0, 8) + '…' + id.slice(-4) : id;
+}
+
+let userCtx = null;
+
+async function showUsers(resetOffset = true) {
+  S.view = 'users'; S.table = '';
+  if (resetOffset) S.offset = 0;
+  contentEl.innerHTML = '<div class="empty">加载中…</div>';
+  try {
+    const q = (S.userQ || '').trim();
+    const url = '/admin/users?limit=' + S.limit + '&offset=' + S.offset + (q ? '&q=' + encodeURIComponent(q) : '');
+    const d = await api(url);
+    S.rows = d.rows || [];
+    S.total = d.total || 0;
+    renderUsers();
+  } catch (e) {
+    contentEl.innerHTML = `<div class="empty">加载失败：${esc(e.message)}</div>`;
+  }
+}
+
+function renderUsers() {
+  const wrap = document.createElement('div');
+  wrap.className = 'table-wrap';
+
+  const tb = document.createElement('div');
+  tb.className = 'table-toolbar';
+  const search = document.createElement('input');
+  search.placeholder = '按设备 ID 筛选…';
+  search.value = S.userQ || '';
+  const meta = document.createElement('span');
+  meta.className = 'table-meta';
+  const from = S.total === 0 ? 0 : S.offset + 1;
+  const to = Math.min(S.offset + S.rows.length, S.total);
+  meta.textContent = `共 ${S.total} 个设备 · 显示 ${from}–${to}`;
+  const prev = document.createElement('button');
+  prev.className = 'btn-ghost'; prev.textContent = '上一页';
+  prev.disabled = S.offset <= 0;
+  prev.onclick = () => { S.offset = Math.max(0, S.offset - S.limit); showUsers(false); };
+  const next = document.createElement('button');
+  next.className = 'btn-ghost'; next.textContent = '下一页';
+  next.disabled = S.offset + S.rows.length >= S.total;
+  next.onclick = () => { S.offset += S.limit; showUsers(false); };
+  tb.append(search, meta, prev, next);
+
+  const scroll = document.createElement('div');
+  scroll.className = 'table-scroll';
+  const table = document.createElement('table');
+  table.className = 'data';
+  const thead = document.createElement('thead');
+  thead.innerHTML = '<tr><th>设备 ID</th><th>首次活跃</th><th>最后活跃</th><th>记录数</th><th>状态</th><th>备注</th><th class="col-actions">操作</th></tr>';
+  const tbody = document.createElement('tbody');
+  (S.rows || []).forEach(row => {
+    const banned = row.status === 'banned';
+    const tr = document.createElement('tr');
+    tr.innerHTML =
+      `<td class="mono" title="${esc(row.device_id)}">${esc(shortId(row.device_id))}</td>` +
+      `<td class="num">${esc(fmtTs(row.first_seen))}</td>` +
+      `<td class="num">${esc(fmtTs(row.last_seen))}</td>` +
+      `<td class="num">${row.total_records}</td>` +
+      `<td>${banned ? '<span class="badge deleted-1">已封禁</span>' : '<span class="badge prio-1">正常</span>'}</td>` +
+      `<td>${esc(row.note || '')}</td>`;
+    const tdA = document.createElement('td');
+    tdA.className = 'col-actions';
+    const act = document.createElement('div');
+    act.className = 'row-actions';
+    const banBtn = document.createElement('button');
+    banBtn.className = banned ? 'btn-ghost' : 'btn-danger';
+    banBtn.textContent = banned ? '解封' : '封禁';
+    banBtn.onclick = () => userConfirm(row.device_id, banned ? 'unban' : 'ban');
+    const noteBtn = document.createElement('button');
+    noteBtn.className = 'btn-ghost'; noteBtn.textContent = '备注';
+    noteBtn.onclick = () => userNote(row);
+    const delBtn = document.createElement('button');
+    delBtn.className = 'btn-danger'; delBtn.textContent = '清除数据';
+    delBtn.onclick = () => userConfirm(row.device_id, 'delete');
+    act.append(banBtn, noteBtn, delBtn);
+    tdA.appendChild(act);
+    tr.appendChild(tdA);
+    tbody.appendChild(tr);
+  });
+  table.append(thead, tbody);
+  scroll.appendChild(table);
+  wrap.append(tb, scroll);
+  contentEl.innerHTML = '';
+  contentEl.appendChild(wrap);
+
+  search.addEventListener('input', () => {
+    clearTimeout(search._t);
+    search._t = setTimeout(() => {
+      S.userQ = search.value;
+      S.offset = 0;
+      showUsers(false);
+    }, 300);
+  });
+}
+
+function userConfirm(deviceId, mode) {
+  userCtx = { deviceId, mode };
+  const inp = $('userModalInput');
+  inp.hidden = true; inp.value = '';
+  $('userModalOk').className = 'btn-danger';
+  if (mode === 'ban') {
+    $('userModalTitle').textContent = '封禁设备';
+    $('userModalText').textContent = '确认封禁设备「' + shortId(deviceId) + '」？封禁仅作标记，不影响其已同步数据。';
+  } else if (mode === 'unban') {
+    $('userModalTitle').textContent = '解封设备';
+    $('userModalText').textContent = '确认解封设备「' + shortId(deviceId) + '」？';
+  } else {
+    $('userModalTitle').textContent = '清除数据';
+    $('userModalText').textContent = '确认清除设备「' + shortId(deviceId) + '」的全部数据？该操作不可撤销，且会同步到其设备。';
+  }
+  openModal('userModal');
+}
+
+function userNote(row) {
+  userCtx = { deviceId: row.device_id, mode: 'note' };
+  $('userModalTitle').textContent = '编辑备注';
+  $('userModalText').textContent = '设备 ' + shortId(row.device_id);
+  const inp = $('userModalInput');
+  inp.hidden = false; inp.value = row.note || '';
+  $('userModalOk').className = 'btn-primary';
+  openModal('userModal');
+}
+
+$('userModalOk').addEventListener('click', async () => {
+  if (!userCtx) return;
+  const { deviceId, mode } = userCtx;
+  const btn = $('userModalOk');
+  btn.disabled = true;
+  try {
+    if (mode === 'ban') {
+      await api('/admin/users/set', { method: 'POST', body: JSON.stringify({ device_id: deviceId, status: 'banned' }) });
+    } else if (mode === 'unban') {
+      await api('/admin/users/set', { method: 'POST', body: JSON.stringify({ device_id: deviceId, status: 'active' }) });
+    } else if (mode === 'note') {
+      await api('/admin/users/set', { method: 'POST', body: JSON.stringify({ device_id: deviceId, note: $('userModalInput').value }) });
+    } else if (mode === 'delete') {
+      await api('/admin/users/delete', { method: 'POST', body: JSON.stringify({ device_id: deviceId }) });
+    }
+    closeModal('userModal');
+    $('userModalInput').hidden = true;
+    toast('操作成功');
+    showUsers(false);
+  } catch (e) {
+    toast('操作失败：' + e.message, true);
+  } finally {
+    btn.disabled = false;
+  }
+});
+
 /* ---------- 通用事件 ---------- */
 document.querySelectorAll('[data-close]').forEach(btn => {
   btn.addEventListener('click', () => closeModal(btn.dataset.close));
@@ -521,6 +677,7 @@ document.querySelectorAll('.modal-overlay').forEach(ov => {
 $('refreshBtn').addEventListener('click', () => {
   if (S.view === 'overview') showOverview();
   else if (S.view === 'audit') showAudit();
+  else if (S.view === 'users') showUsers(false);
   else showTable(S.view);
 });
 $('menuBtn').addEventListener('click', () => appEl.classList.toggle('nav-open'));

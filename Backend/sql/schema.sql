@@ -189,3 +189,14 @@ CREATE TABLE IF NOT EXISTS app_config (
     cfg_value TEXT,
     PRIMARY KEY (cfg_key)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 设备用户注册表（后台用户管理：以客户端生成的 device_id 作为唯一用户标识，记录封禁状态与备注）
+CREATE TABLE IF NOT EXISTS device_users (
+    device_id   VARCHAR(64) NOT NULL,
+    status      VARCHAR(16) NOT NULL DEFAULT 'active',  -- active | banned
+    note        VARCHAR(255) DEFAULT '',
+    created_at  BIGINT      NOT NULL,
+    updated_at  BIGINT      NOT NULL,
+    PRIMARY KEY (device_id),
+    KEY idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
