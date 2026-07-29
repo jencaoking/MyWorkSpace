@@ -23,7 +23,7 @@ import com.jencao.mywork.data.local.entity.*
         AccountRecordEntity::class,
         PomodoroSessionEntity::class
     ],
-    version = 7,
+    version = 8,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -58,6 +58,13 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /** 版本 7 -> 8：健康记录新增提醒时间字段（复诊 / 用药闹钟）。 */
+        private val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE health_records ADD COLUMN reminder_time INTEGER")
+            }
+        }
+
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
@@ -70,7 +77,7 @@ abstract class AppDatabase : RoomDatabase() {
                 )
                     // 阶段1 开发期：结构变更直接重建，避免手动 Migration
                     .fallbackToDestructiveMigration(dropAllTables = true)
-                    .addMigrations(MIGRATION_5_6, MIGRATION_6_7)
+                    .addMigrations(MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
                     .build()
                 INSTANCE = instance
                 instance

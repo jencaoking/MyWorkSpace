@@ -19,6 +19,9 @@ interface HealthRecordDao {
     @Query("SELECT * FROM health_records WHERE id = :id AND is_deleted = 0")
     suspend fun getById(id: String): HealthRecordEntity?
 
+    @Query("SELECT * FROM health_records WHERE is_deleted = 0 AND reminder_time IS NOT NULL AND reminder_time > :now ORDER BY reminder_time ASC")
+    suspend fun getUpcomingReminders(now: Long): List<HealthRecordEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(item: HealthRecordEntity)
 

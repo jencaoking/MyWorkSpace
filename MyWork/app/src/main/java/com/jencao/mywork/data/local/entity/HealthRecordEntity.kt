@@ -17,5 +17,6 @@ data class HealthRecordEntity(
     @ColumnInfo(name = "value") var value: Float = 0f,
     @ColumnInfo(name = "unit") var unit: String = "",
     @ColumnInfo(name = "record_time") var recordTime: Long = System.currentTimeMillis(),
-    @ColumnInfo(name = "note") var note: String = ""
+    @ColumnInfo(name = "note") var note: String = "",
+    @ColumnInfo(name = "reminder_time") var reminderTime: Long? = null
 ) : BaseEntity()

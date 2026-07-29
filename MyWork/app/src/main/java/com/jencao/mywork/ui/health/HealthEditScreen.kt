@@ -1,6 +1,11 @@
 package com.jencao.mywork.ui.health
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,11 +34,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.jencao.mywork.ui.components.DateField
+import com.jencao.mywork.ui.components.DateTimeField
 import com.jencao.mywork.ui.components.DropdownField
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -44,8 +52,23 @@ fun HealthEditScreen(nav: NavHostController, vm: HealthViewModel = hiltViewModel
     val unit by vm.unit.collectAsStateWithLifecycle()
     val time by vm.time.collectAsStateWithLifecycle()
     val note by vm.note.collectAsStateWithLifecycle()
+    val reminderTime by vm.reminderTime.collectAsStateWithLifecycle()
     val saved by vm.saved.collectAsStateWithLifecycle()
+    val context = LocalContext.current
     var confirmDelete by remember { mutableStateOf(false) }
+
+    // 复诊 / 用药可设置提醒；设置后若未授权通知权限则申请
+    val notifyLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { /* 授权结果不影响保存，仅影响通知是否弹出 */ }
+    fun requestNotifyPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+        ) {
+            notifyLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+    val showReminder = type == "revisit" || type == "medication"
 
     LaunchedEffect(saved) { if (saved) nav.popBackStack() }
     BackHandler { vm.save() }
@@ -82,6 +105,16 @@ fun HealthEditScreen(nav: NavHostController, vm: HealthViewModel = hiltViewModel
             OutlinedTextField(value = unit, onValueChange = vm::setUnit, label = { Text("单位（可选，如 mmHg、次/分）") },
                 modifier = Modifier.fillMaxWidth())
             DateField("日期", time, vm::setTime)
+            if (showReminder) {
+                DateTimeField(
+                    label = "提醒时间（复诊 / 用药闹钟）",
+                    millis = reminderTime,
+                    onMillisChange = {
+                        vm.setReminderTime(it)
+                        if (it != null) requestNotifyPermission()
+                    }
+                )
+            }
             OutlinedTextField(value = note, onValueChange = vm::setNote, label = { Text("备注（可选）") },
                 modifier = Modifier.fillMaxWidth(), minLines = 2)
         }
@@ -91,7 +124,7 @@ fun HealthEditScreen(nav: NavHostController, vm: HealthViewModel = hiltViewModel
         AlertDialog(
             onDismissRequest = { confirmDelete = false },
             title = { Text("删除记录") },
-            text = { Text("确定删除这条健康记录吗？") },
+            text = { Text("确定删除这条健康记录吗？删除后会一并取消其提醒闹钟。") },
             confirmButton = { TextButton(onClick = { confirmDelete = false; vm.delete() }) { Text("删除") } },
             dismissButton = { TextButton(onClick = { confirmDelete = false }) { Text("取消") } }
         )

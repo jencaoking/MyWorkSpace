@@ -21,6 +21,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -52,7 +56,7 @@ import com.jencao.mywork.ui.theme.neumorphic
 import com.jencao.mywork.ui.tools.ToolsScreen
 
 @Composable
-fun MyWorkApp(appVm: AppViewModel) {
+fun MyWorkApp(appVm: AppViewModel, deepLinkHealthId: String? = null, onDeepLinkConsumed: () -> Unit = {}) {
     val themeMode by appVm.themeMode.collectAsStateWithLifecycle()
 
     val darkTheme = when (themeMode) {
@@ -61,10 +65,14 @@ fun MyWorkApp(appVm: AppViewModel) {
         ThemeMode.DARK -> true
     }
 
-    MyWorkTheme(darkTheme = darkTheme) {
-        val navController: NavHostController = rememberNavController()
-        val navBackStackEntry by navController.currentBackStackEntryAsState()
-        val currentRoute = navBackStackEntry?.destination?.route
+        MyWorkTheme(darkTheme = darkTheme) {
+            val navController: NavHostController = rememberNavController()
+            val navBackStackEntry by navController.currentBackStackEntryAsState()
+            val currentRoute = navBackStackEntry?.destination?.route
+            var pendingHealthId by remember { mutableStateOf<String?>(null) }
+            LaunchedEffect(deepLinkHealthId) {
+                if (!deepLinkHealthId.isNullOrBlank()) pendingHealthId = deepLinkHealthId
+            }
 
         Scaffold(
             bottomBar = { NeumorphNavBar(currentRoute, navController) }
@@ -83,7 +91,10 @@ fun MyWorkApp(appVm: AppViewModel) {
                 composable(Routes.SPORT) { SportScreen(navController, padding) }
                 composable(Routes.ENGLISH) { EnglishScreen(navController, padding) }
                 composable(Routes.MEDIA) { MediaScreen(navController, padding) }
-                composable(Routes.HEALTH) { HealthScreen(navController, padding) }
+                composable(Routes.HEALTH) { HealthScreen(navController, padding, pendingHealthId) {
+                    pendingHealthId = null
+                    onDeepLinkConsumed()
+                } }
                 // 阶段5
                 composable(Routes.ACCOUNT) { AccountScreen(navController, padding) }
                 composable(Routes.POMODORO) { PomodoroScreen(navController, padding) }

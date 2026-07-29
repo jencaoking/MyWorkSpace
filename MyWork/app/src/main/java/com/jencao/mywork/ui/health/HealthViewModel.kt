@@ -1,10 +1,12 @@
 package com.jencao.mywork.ui.health
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jencao.mywork.data.local.entity.HealthRecordEntity
 import com.jencao.mywork.data.repository.HealthRecordRepository
+import com.jencao.mywork.reminder.ReminderScheduler
 import com.jencao.mywork.ui.navigation.HealthRoutes
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,8 +26,9 @@ fun healthTypeLabel(t: String?) = HEALTH_TYPES.firstOrNull { it.first == t }?.se
 @HiltViewModel
 class HealthViewModel @Inject constructor(
     private val repo: HealthRecordRepository,
+    private val application: Application,
     savedStateHandle: SavedStateHandle
-) : ViewModel() {
+) : AndroidViewModel(application) {
 
     private val _typeFilter = MutableStateFlow<String?>(null)
     val typeFilter: StateFlow<String?> = _typeFilter
@@ -55,6 +58,9 @@ class HealthViewModel @Inject constructor(
     private val _note = MutableStateFlow("")
     val note: StateFlow<String> = _note
 
+    private val _reminderTime = MutableStateFlow<Long?>(null)
+    val reminderTime: StateFlow<Long?> = _reminderTime
+
     private val _saved = MutableStateFlow(false)
     val saved: StateFlow<Boolean> = _saved
 
@@ -70,6 +76,7 @@ class HealthViewModel @Inject constructor(
                     _unit.value = it.unit
                     _time.value = it.recordTime
                     _note.value = it.note
+                    _reminderTime.value = it.reminderTime
                 }
             }
         }
@@ -80,16 +87,25 @@ class HealthViewModel @Inject constructor(
     fun setUnit(v: String) { _unit.value = v }
     fun setTime(v: Long) { _time.value = v }
     fun setNote(v: String) { _note.value = v }
+    fun setReminderTime(v: Long?) { _reminderTime.value = v }
+
+    /** 安排 / 取消该记录的提醒（保存或删除后调用）。 */
+    private fun armReminder(entity: HealthRecordEntity) {
+        val ctx = getApplication<Application>().applicationContext
+        ReminderScheduler.reschedule(ctx, entity)
+    }
 
     fun save() = viewModelScope.launch {
         val v = _value.value.toFloatOrNull() ?: 0f
-        if (loaded == null) {
+        val reminder = _reminderTime.value
+        val entity = if (loaded == null) {
             repo.create(
                 type = _type.value,
                 value = v,
                 unit = _unit.value.trim(),
                 recordTime = _time.value,
-                note = _note.value.trim()
+                note = _note.value.trim(),
+                reminderTime = reminder
             )
         } else {
             loaded!!.apply {
@@ -98,17 +114,26 @@ class HealthViewModel @Inject constructor(
                 unit = _unit.value.trim()
                 recordTime = _time.value
                 note = _note.value.trim()
+                reminderTime = reminder
             }
             repo.upsert(loaded!!)
+            loaded!!
         }
+        armReminder(entity)
         _saved.value = true
     }
 
     fun delete() = viewModelScope.launch {
-        if (!isNew) repo.markDeleted(recordId)
+        if (!isNew) {
+            ReminderScheduler.cancel(getApplication<Application>().applicationContext, recordId)
+            repo.markDeleted(recordId)
+        }
         _saved.value = true
     }
 
-    /** 列表项删除（按 id 软删）。 */
-    fun deleteItem(id: String) = viewModelScope.launch { repo.markDeleted(id) }
+    /** 列表项删除（按 id 软删）；同时取消其提醒闹钟。 */
+    fun deleteItem(id: String) = viewModelScope.launch {
+        ReminderScheduler.cancel(getApplication<Application>().applicationContext, id)
+        repo.markDeleted(id)
+    }
 }

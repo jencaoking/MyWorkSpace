@@ -24,18 +24,23 @@ class HealthRecordRepository @Inject constructor(
         value: Float = 0f,
         unit: String = "",
         recordTime: Long = System.currentTimeMillis(),
-        note: String = ""
+        note: String = "",
+        reminderTime: Long? = null
     ): HealthRecordEntity {
         val item = HealthRecordEntity(
             type = type,
             value = value,
             unit = unit,
             recordTime = recordTime,
-            note = note
+            note = note,
+            reminderTime = reminderTime
         ).apply { touch() }
         dao.insert(item)
         return item
     }
+
+    suspend fun getUpcomingReminders(now: Long = System.currentTimeMillis()): List<HealthRecordEntity> =
+        dao.getUpcomingReminders(now)
 
     suspend fun upsert(item: HealthRecordEntity): HealthRecordEntity {
         item.touch()

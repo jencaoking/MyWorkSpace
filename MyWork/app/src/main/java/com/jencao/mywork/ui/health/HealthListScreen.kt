@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
@@ -122,6 +123,14 @@ private fun HealthItemCard(
                 Text(h.note, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Text(fmt.format(h.recordTime), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline)
+            if (h.reminderTime != null && h.reminderTime!! > System.currentTimeMillis()) {
+                val reminderFmt = SimpleDateFormat("MM-dd HH:mm", Locale.getDefault())
+                AssistChip(
+                    onClick = {},
+                    leadingIcon = { Icon(Icons.Filled.Schedule, contentDescription = null) },
+                    label = { Text("提醒 ${reminderFmt.format(h.reminderTime!!)}") }
+                )
+            }
         }
     }
 }
