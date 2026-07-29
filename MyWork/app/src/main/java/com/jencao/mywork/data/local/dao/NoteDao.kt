@@ -72,4 +72,10 @@ interface NoteDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertAll(items: List<NoteEntity>)
+
+    @Query("UPDATE notes SET needs_sync = 0 WHERE id IN (:ids)")
+    suspend fun markSynced(ids: List<String>)
+
+    @Query("DELETE FROM notes WHERE id IN (:ids)")
+    suspend fun deleteByIds(ids: List<String>)
 }

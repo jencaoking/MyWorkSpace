@@ -39,4 +39,10 @@ interface SportRecordDao {
 
     @Query("UPDATE sport_records SET needs_sync = 0 WHERE id IN (:ids)")
     suspend fun clearDeleteFlag(ids: List<String>)
+
+    @Query("UPDATE sport_records SET needs_sync = 0 WHERE id IN (:ids)")
+    suspend fun markSynced(ids: List<String>)
+
+    @Query("DELETE FROM sport_records WHERE id IN (:ids)")
+    suspend fun deleteByIds(ids: List<String>)
 }

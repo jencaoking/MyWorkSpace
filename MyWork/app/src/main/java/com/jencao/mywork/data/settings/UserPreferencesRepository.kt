@@ -16,8 +16,6 @@ private val Context.dataStore by preferencesDataStore(name = "user_prefs")
 
 private val THEME_MODE = intPreferencesKey("theme_mode")
 private val DEVICE_ID = stringPreferencesKey("device_id")
-/** App 接口共享令牌（与后端 .env 的 SELFWORK_API_TOKEN 对应；为空表示不启用鉴权）。 */
-private val API_TOKEN = stringPreferencesKey("api_token")
 
 private fun moduleKey(key: ModuleKey) = booleanPreferencesKey("module_${key.name}")
 
@@ -68,14 +66,6 @@ class UserPreferencesRepository @Inject constructor(
 
     val deviceId: Flow<String> = dataStore.data.map { it[DEVICE_ID] ?: "" }
 
-    /** 读取 App 接口共享令牌（与后端 SELFWORK_API_TOKEN 对应）；空字符串表示未配置。 */
-    suspend fun getApiToken(): String = dataStore.data.first()[API_TOKEN] ?: ""
-
-    /** 响应式令牌流，供设置页展示与编辑。 */
-    val apiToken: Flow<String> = dataStore.data.map { it[API_TOKEN] ?: "" }
-
-    suspend fun setApiToken(token: String) = dataStore.edit { it[API_TOKEN] = token }
-
     /** 云端已连接状态（供首页连接测试展示） */
     private val CLOUD_CONNECTED = booleanPreferencesKey("cloud_connected")
     fun observeCloudConnected(): Flow<Boolean> = dataStore.data.map { it[CLOUD_CONNECTED] ?: false }
@@ -89,6 +79,15 @@ class UserPreferencesRepository @Inject constructor(
     suspend fun setModuleEnabled(key: ModuleKey, enabled: Boolean) {
         if (key.locked) return
         dataStore.edit { it[moduleKey(key)] = enabled }
+    }
+
+    /** 批量写入模块开关（供设置同步时整体覆盖） */
+    suspend fun setModuleToggles(toggles: Map<ModuleKey, Boolean>) {
+        dataStore.edit { prefs ->
+            toggles.forEach { (key, enabled) ->
+                if (!key.locked) prefs[moduleKey(key)] = enabled
+            }
+        }
     }
 
     /** 上一次成功增量拉取的服务器时间戳（毫秒），用于 /sync/pull?since= 游标 */

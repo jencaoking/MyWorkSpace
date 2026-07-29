@@ -2,6 +2,7 @@ package com.jencao.mywork.data.repository
 
 import com.jencao.mywork.data.local.dao.SportRecordDao
 import com.jencao.mywork.data.local.entity.SportRecordEntity
+import com.jencao.mywork.data.sync.Syncer
 import com.jencao.mywork.data.util.touch
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -10,7 +11,7 @@ import javax.inject.Singleton
 @Singleton
 class SportRecordRepository @Inject constructor(
     private val dao: SportRecordDao
-) {
+) : Syncer<SportRecordEntity> {
     fun observeAll() = dao.observeAll()
 
     suspend fun getById(id: String): SportRecordEntity? = dao.getById(id)
@@ -48,15 +49,22 @@ class SportRecordRepository @Inject constructor(
     /** 软删除：标记 isDeleted 而非物理删除，便于后续同步。 */
     suspend fun markDeleted(id: String) = dao.softDelete(id)
 
-    /** 待上传的本地变更（含新增/修改）。 */
-    suspend fun pendingUploads(): List<SportRecordEntity> = dao.getPendingUploads()
+    override suspend fun getPendingUploads(): List<SportRecordEntity> = dao.getPendingUploads()
+    override suspend fun getPendingDeletions(): List<String> = dao.getPendingDeletions().map { it.id }
 
-    /** 待删除的 id 列表。 */
-    suspend fun pendingDeletions(): List<String> = dao.getPendingDeletions().map { it.id }
+    override suspend fun mergeRemote(remote: List<SportRecordEntity>) {
+        val toUpsert = remote.filter { r ->
+            val local = dao.getById(r.id)
+            local == null || local.lastModified <= r.lastModified
+        }.onEach { it.needsSync = false }
+        if (toUpsert.isNotEmpty()) dao.upsertAll(toUpsert)
+    }
 
-    /** 同步完成后清空标记。 */
-    suspend fun clearSyncFlags(ids: List<String>, deletedIds: List<String>) {
-        dao.clearUploadFlag(ids)
-        dao.clearDeleteFlag(deletedIds)
+    override suspend fun markSynced(ids: List<String>) {
+        if (ids.isNotEmpty()) dao.markSynced(ids)
+    }
+
+    override suspend fun purgeDeleted(ids: List<String>) {
+        if (ids.isNotEmpty()) dao.deleteByIds(ids)
     }
 }

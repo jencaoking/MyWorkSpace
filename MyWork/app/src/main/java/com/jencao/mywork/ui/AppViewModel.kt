@@ -33,14 +33,8 @@ class AppViewModel @Inject constructor(
         viewModelScope, SharingStarted.WhileSubscribed(5000), ""
     )
 
-    val apiToken: StateFlow<String> = prefs.apiToken.stateIn(
-        viewModelScope, SharingStarted.WhileSubscribed(5000), ""
-    )
-
     fun setThemeMode(mode: ThemeMode) = viewModelScope.launch { prefs.setThemeMode(mode) }
 
     fun toggleModule(key: ModuleKey, enabled: Boolean) =
         viewModelScope.launch { prefs.setModuleEnabled(key, enabled) }
-
-    fun setApiToken(token: String) = viewModelScope.launch { prefs.setApiToken(token) }
 }

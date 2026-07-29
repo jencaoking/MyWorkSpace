@@ -30,4 +30,10 @@ interface CategoryDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertAll(items: List<CategoryEntity>)
+
+    @Query("UPDATE categories SET needs_sync = 0 WHERE id IN (:ids)")
+    suspend fun markSynced(ids: List<String>)
+
+    @Query("DELETE FROM categories WHERE id IN (:ids)")
+    suspend fun deleteByIds(ids: List<String>)
 }

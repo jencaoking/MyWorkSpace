@@ -39,4 +39,10 @@ interface AccountRecordDao {
 
     @Query("UPDATE account_records SET needs_sync = 0 WHERE id IN (:ids)")
     suspend fun clearDeleteFlag(ids: List<String>)
+
+    @Query("UPDATE account_records SET needs_sync = 0 WHERE id IN (:ids)")
+    suspend fun markSynced(ids: List<String>)
+
+    @Query("DELETE FROM account_records WHERE id IN (:ids)")
+    suspend fun deleteByIds(ids: List<String>)
 }

@@ -25,6 +25,17 @@ import com.jencao.mywork.data.remote.model.NoteUploadResponse
 import com.jencao.mywork.data.remote.model.SportDeleteResponse
 import com.jencao.mywork.data.remote.model.SportListResponse
 import com.jencao.mywork.data.remote.model.SportPullResponse
+import com.jencao.mywork.data.remote.model.AccountDeleteResponse
+import com.jencao.mywork.data.remote.model.AccountPullResponse
+import com.jencao.mywork.data.remote.model.AccountUploadRequest
+import com.jencao.mywork.data.remote.model.AccountUploadResponse
+import com.jencao.mywork.data.remote.model.CategoryDeleteResponse
+import com.jencao.mywork.data.remote.model.CategoryPullResponse
+import com.jencao.mywork.data.remote.model.CategoryUploadRequest
+import com.jencao.mywork.data.remote.model.CategoryUploadResponse
+import com.jencao.mywork.data.remote.model.SettingsResponse
+import com.jencao.mywork.data.remote.model.SettingsSaveRequest
+import com.jencao.mywork.data.remote.model.SettingsSaveResponse
 import com.jencao.mywork.data.remote.model.SportUploadRequest
 import com.jencao.mywork.data.remote.model.SportUploadResponse
 import com.jencao.mywork.data.remote.model.SyncPullResponse
@@ -138,4 +149,31 @@ interface ApiService {
 
     @GET("api/health-records/pull")
     suspend fun pullHealth(@Query("since") since: Long): HealthPullResponse
+
+    // —— 分类（categories） ——
+    @POST("api/categories")
+    suspend fun uploadCategories(@Body req: CategoryUploadRequest): CategoryUploadResponse
+
+    @POST("api/categories/delete")
+    suspend fun deleteCategories(@Body req: TaskDeleteRequest): CategoryDeleteResponse
+
+    @GET("api/categories/pull")
+    suspend fun pullCategories(@Query("since") since: Long): CategoryPullResponse
+
+    // —— 记账（accounts） ——
+    @POST("api/accounts")
+    suspend fun uploadAccounts(@Body req: AccountUploadRequest): AccountUploadResponse
+
+    @POST("api/accounts/delete")
+    suspend fun deleteAccounts(@Body req: TaskDeleteRequest): AccountDeleteResponse
+
+    @GET("api/accounts/pull")
+    suspend fun pullAccounts(@Query("since") since: Long): AccountPullResponse
+
+    // —— 设置（settings，单行镜像） ——
+    @GET("api/settings")
+    suspend fun getSettings(): SettingsResponse
+
+    @POST("api/settings")
+    suspend fun saveSettings(@Body req: SettingsSaveRequest): SettingsSaveResponse
 }

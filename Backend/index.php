@@ -56,12 +56,8 @@ $router = new \App\Router\Router();
 require __DIR__ . '/routes/api.php';
 
 try {
-    // App 接口鉴权：除健康检查外，所有 /api 与 /sync 接口需携带 API Token
-    // （令牌未配置时不强制，保持开发态兼容；配置 SELFWORK_API_TOKEN 后自动生效）
-    if ((str_starts_with($path, '/api/') || str_starts_with($path, '/sync/')) && $path !== '/api/health') {
-        app_api_token_required();
-    }
-
+    // 同步鉴权：采用「无登录 + 设备 ID 隔离」方案（各 Controller 已校验 X-Device-ID）。
+    // App 接口不强制共享令牌，保持本地/自用部署的开箱即用与自动化同步体验。
     $router->dispatch($method, $path);
 } catch (\App\Exception\ApiException $e) {
     \Response::error($e->getMessage(), $e->getCode() ?: 1, $e->httpCode);

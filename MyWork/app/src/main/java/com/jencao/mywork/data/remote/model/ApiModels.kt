@@ -1,5 +1,7 @@
 package com.jencao.mywork.data.remote.model
 
+import com.jencao.mywork.data.local.entity.AccountRecordEntity
+import com.jencao.mywork.data.local.entity.CategoryEntity
 import com.jencao.mywork.data.local.entity.EnglishWordEntity
 import com.jencao.mywork.data.local.entity.HealthRecordEntity
 import com.jencao.mywork.data.local.entity.MovieBookEntity
@@ -155,4 +157,43 @@ data class HealthPullData(
     val deleted_ids: List<String> = emptyList()
 )
 typealias HealthPullResponse = ApiEnvelope<HealthPullData>
+
+// 分类（categories）
+data class CategoryUploadRequest(val categories: List<CategoryEntity> = emptyList())
+typealias CategoryUploadResponse = ApiEnvelope<SyncUploadResult>
+typealias CategoryDeleteResponse = ApiEnvelope<TaskDeleteResult>
+data class CategoryPullData(
+    val server_time: Long = 0L,
+    val dirty: List<CategoryEntity> = emptyList(),
+    val deleted_ids: List<String> = emptyList()
+)
+typealias CategoryPullResponse = ApiEnvelope<CategoryPullData>
+
+// 记账（accounts）
+data class AccountUploadRequest(val accounts: List<AccountRecordEntity> = emptyList())
+typealias AccountUploadResponse = ApiEnvelope<SyncUploadResult>
+typealias AccountDeleteResponse = ApiEnvelope<TaskDeleteResult>
+data class AccountPullData(
+    val server_time: Long = 0L,
+    val accounts: List<AccountRecordEntity> = emptyList(),
+    val deleted_ids: List<String> = emptyList()
+)
+typealias AccountPullResponse = ApiEnvelope<AccountPullData>
+
+// 设置（settings）：单行镜像，theme + module_toggles
+data class UserSettingsDto(
+    val id: String = "local",
+    val theme: String? = null,
+    val module_toggles: Map<String, Boolean>? = null,
+    val language: String? = null,
+    val created_at: String? = null,
+    val updated_at: String? = null
+)
+data class SettingsData(val settings: UserSettingsDto? = null)
+typealias SettingsResponse = ApiEnvelope<SettingsData>
+data class SettingsSaveRequest(
+    val theme: String = "system",
+    val module_toggles: Map<String, Boolean>? = null
+)
+typealias SettingsSaveResponse = ApiEnvelope<Any>
 

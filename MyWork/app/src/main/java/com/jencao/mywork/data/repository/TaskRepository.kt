@@ -5,6 +5,7 @@ import com.jencao.mywork.data.local.dao.TaskDao
 import com.jencao.mywork.data.local.entity.TaskCheckinEntity
 import com.jencao.mywork.data.local.entity.TaskEntity
 import com.jencao.mywork.data.model.MonthlyStats
+import com.jencao.mywork.data.sync.Syncer
 import com.jencao.mywork.data.model.TaskSort
 import com.jencao.mywork.data.model.TaskType
 import com.jencao.mywork.data.settings.UserPreferencesRepository
@@ -20,7 +21,7 @@ class TaskRepository @Inject constructor(
     private val dao: TaskDao,
     private val checkinDao: TaskCheckinDao,
     private val prefs: UserPreferencesRepository
-) {
+) : Syncer<TaskEntity> {
     // —— 观察 ——
     fun observeActive(): Flow<List<TaskEntity>> = dao.observeActive()
     fun observeActiveCount(): Flow<Int> = dao.observeActiveCount()

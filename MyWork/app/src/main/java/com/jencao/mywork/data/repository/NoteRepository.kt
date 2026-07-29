@@ -2,6 +2,7 @@ package com.jencao.mywork.data.repository
 
 import com.jencao.mywork.data.local.dao.NoteDao
 import com.jencao.mywork.data.local.entity.NoteEntity
+import com.jencao.mywork.data.sync.Syncer
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -12,7 +13,7 @@ import javax.inject.Singleton
 @Singleton
 class NoteRepository @Inject constructor(
     private val dao: NoteDao
-) {
+) : Syncer<NoteEntity> {
     fun observeAll(): Flow<List<NoteEntity>> = dao.observeAll()
 
     fun observeFavorites(): Flow<List<NoteEntity>> = dao.observeFavorites()
@@ -49,6 +50,25 @@ class NoteRepository @Inject constructor(
     suspend fun setFavorite(id: String, favorite: Boolean) = dao.setFavorite(id, favorite)
 
     suspend fun delete(id: String) = dao.softDelete(id)
+
+    override suspend fun getPendingUploads(): List<NoteEntity> = dao.getPendingUploads()
+    override suspend fun getPendingDeletions(): List<String> = dao.getPendingDeletions().map { it.id }
+
+    override suspend fun mergeRemote(remote: List<NoteEntity>) {
+        val toUpsert = remote.filter { r ->
+            val local = dao.getById(r.id)
+            local == null || local.lastModified <= r.lastModified
+        }.onEach { it.needsSync = false }
+        if (toUpsert.isNotEmpty()) dao.upsertAll(toUpsert)
+    }
+
+    override suspend fun markSynced(ids: List<String>) {
+        if (ids.isNotEmpty()) dao.markSynced(ids)
+    }
+
+    override suspend fun purgeDeleted(ids: List<String>) {
+        if (ids.isNotEmpty()) dao.deleteByIds(ids)
+    }
 
     /**
      * 全文搜索：把关键字规范化为 FTS MATCH 串（去引号、按空白分词、每词加 * 前缀匹配），

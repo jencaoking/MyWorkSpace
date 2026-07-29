@@ -42,4 +42,10 @@ interface HealthRecordDao {
 
     @Query("UPDATE health_records SET needs_sync = 0 WHERE id IN (:ids)")
     suspend fun clearDeleteFlag(ids: List<String>)
+
+    @Query("UPDATE health_records SET needs_sync = 0 WHERE id IN (:ids)")
+    suspend fun markSynced(ids: List<String>)
+
+    @Query("DELETE FROM health_records WHERE id IN (:ids)")
+    suspend fun deleteByIds(ids: List<String>)
 }

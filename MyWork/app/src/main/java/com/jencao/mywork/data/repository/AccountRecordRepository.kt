@@ -2,6 +2,7 @@ package com.jencao.mywork.data.repository
 
 import com.jencao.mywork.data.local.dao.AccountRecordDao
 import com.jencao.mywork.data.local.entity.AccountRecordEntity
+import com.jencao.mywork.data.sync.Syncer
 import com.jencao.mywork.data.util.touch
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -9,7 +10,7 @@ import javax.inject.Singleton
 @Singleton
 class AccountRecordRepository @Inject constructor(
     private val dao: AccountRecordDao
-) {
+) : Syncer<AccountRecordEntity> {
     fun observeAll() = dao.observeAll()
     suspend fun getById(id: String): AccountRecordEntity? = dao.getById(id)
 
@@ -42,11 +43,22 @@ class AccountRecordRepository @Inject constructor(
 
     suspend fun markDeleted(id: String) = dao.softDelete(id)
 
-    suspend fun pendingUploads() = dao.getPendingUploads()
-    suspend fun pendingDeletions() = dao.getPendingDeletions()
+    override suspend fun getPendingUploads(): List<AccountRecordEntity> = dao.getPendingUploads()
+    override suspend fun getPendingDeletions(): List<String> = dao.getPendingDeletions().map { it.id }
 
-    suspend fun clearSyncFlags(ids: List<String>, deletedIds: List<String>) {
-        if (ids.isNotEmpty()) dao.clearUploadFlag(ids)
-        if (deletedIds.isNotEmpty()) dao.clearDeleteFlag(deletedIds)
+    override suspend fun mergeRemote(remote: List<AccountRecordEntity>) {
+        val toUpsert = remote.filter { r ->
+            val local = dao.getById(r.id)
+            local == null || local.lastModified <= r.lastModified
+        }.onEach { it.needsSync = false }
+        if (toUpsert.isNotEmpty()) dao.upsertAll(toUpsert)
+    }
+
+    override suspend fun markSynced(ids: List<String>) {
+        if (ids.isNotEmpty()) dao.markSynced(ids)
+    }
+
+    override suspend fun purgeDeleted(ids: List<String>) {
+        if (ids.isNotEmpty()) dao.deleteByIds(ids)
     }
 }

@@ -48,4 +48,10 @@ interface EnglishWordDao {
 
     @Query("UPDATE english_words SET needs_sync = 0 WHERE id IN (:ids)")
     suspend fun clearDeleteFlag(ids: List<String>)
+
+    @Query("UPDATE english_words SET needs_sync = 0 WHERE id IN (:ids)")
+    suspend fun markSynced(ids: List<String>)
+
+    @Query("DELETE FROM english_words WHERE id IN (:ids)")
+    suspend fun deleteByIds(ids: List<String>)
 }

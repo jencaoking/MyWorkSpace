@@ -2,6 +2,7 @@ package com.jencao.mywork.data.repository
 
 import com.jencao.mywork.data.local.dao.MovieBookDao
 import com.jencao.mywork.data.local.entity.MovieBookEntity
+import com.jencao.mywork.data.sync.Syncer
 import com.jencao.mywork.data.util.touch
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -10,7 +11,7 @@ import javax.inject.Singleton
 @Singleton
 class MovieBookRepository @Inject constructor(
     private val dao: MovieBookDao
-) {
+) : Syncer<MovieBookEntity> {
     fun observeAll() = dao.observeAll()
 
     /** 按类型筛选：type 传 null 表示全部（"movie" / "book"）。 */
@@ -48,11 +49,22 @@ class MovieBookRepository @Inject constructor(
 
     suspend fun markDeleted(id: String) = dao.softDelete(id)
 
-    suspend fun pendingUploads(): List<MovieBookEntity> = dao.getPendingUploads()
-    suspend fun pendingDeletions(): List<String> = dao.getPendingDeletions().map { it.id }
+    override suspend fun getPendingUploads(): List<MovieBookEntity> = dao.getPendingUploads()
+    override suspend fun getPendingDeletions(): List<String> = dao.getPendingDeletions().map { it.id }
 
-    suspend fun clearSyncFlags(ids: List<String>, deletedIds: List<String>) {
-        dao.clearUploadFlag(ids)
-        dao.clearDeleteFlag(deletedIds)
+    override suspend fun mergeRemote(remote: List<MovieBookEntity>) {
+        val toUpsert = remote.filter { r ->
+            val local = dao.getById(r.id)
+            local == null || local.lastModified <= r.lastModified
+        }.onEach { it.needsSync = false }
+        if (toUpsert.isNotEmpty()) dao.upsertAll(toUpsert)
+    }
+
+    override suspend fun markSynced(ids: List<String>) {
+        if (ids.isNotEmpty()) dao.markSynced(ids)
+    }
+
+    override suspend fun purgeDeleted(ids: List<String>) {
+        if (ids.isNotEmpty()) dao.deleteByIds(ids)
     }
 }
