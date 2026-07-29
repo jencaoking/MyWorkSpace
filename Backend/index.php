@@ -15,6 +15,8 @@
  */
 
 require_once __DIR__ . '/lib/Response.php';
+require_once __DIR__ . '/lib/ApiResponse.php';
+require_once __DIR__ . '/lib/ApiAuth.php';
 
 // PSR-4 风格自动加载：App\ 命名空间映射到 src/ 目录
 spl_autoload_register(function (string $class): void {
@@ -54,6 +56,12 @@ $router = new \App\Router\Router();
 require __DIR__ . '/routes/api.php';
 
 try {
+    // App 接口鉴权：除健康检查外，所有 /api 与 /sync 接口需携带 API Token
+    // （令牌未配置时不强制，保持开发态兼容；配置 SELFWORK_API_TOKEN 后自动生效）
+    if ((str_starts_with($path, '/api/') || str_starts_with($path, '/sync/')) && $path !== '/api/health') {
+        app_api_token_required();
+    }
+
     $router->dispatch($method, $path);
 } catch (\App\Exception\ApiException $e) {
     \Response::error($e->getMessage(), $e->getCode() ?: 1, $e->httpCode);

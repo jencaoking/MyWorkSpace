@@ -3,6 +3,7 @@ package com.jencao.mywork.ui.tools
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,10 +29,11 @@ import com.jencao.mywork.ui.navigation.moduleMeta
 import com.jencao.mywork.ui.navigation.moduleRoute
 
 @Composable
-fun ToolsScreen(rootNav: NavHostController) {
+fun ToolsScreen(rootNav: NavHostController, padding: PaddingValues) {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .padding(padding)
             .padding(16.dp)
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)

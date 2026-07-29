@@ -78,16 +78,16 @@ fun MyWorkApp(appVm: AppViewModel) {
                 composable(Routes.TASKS) { TaskScreen(padding) }
                 composable(Routes.NOTES) { NotesScreen(padding) }
                 composable(Routes.SETTINGS) { SettingsScreen(appVm, padding) }
-                composable(Routes.TOOLS) { ToolsScreen(navController) }
+                composable(Routes.TOOLS) { ToolsScreen(navController, padding) }
                 // 阶段4 专项模块
-                composable(Routes.SPORT) { SportScreen(navController) }
-                composable(Routes.ENGLISH) { EnglishScreen(navController) }
-                composable(Routes.MEDIA) { MediaScreen(navController) }
-                composable(Routes.HEALTH) { HealthScreen(navController) }
+                composable(Routes.SPORT) { SportScreen(navController, padding) }
+                composable(Routes.ENGLISH) { EnglishScreen(navController, padding) }
+                composable(Routes.MEDIA) { MediaScreen(navController, padding) }
+                composable(Routes.HEALTH) { HealthScreen(navController, padding) }
                 // 阶段5
-                composable(Routes.ACCOUNT) { AccountScreen(navController) }
+                composable(Routes.ACCOUNT) { AccountScreen(navController, padding) }
                 composable(Routes.POMODORO) { PomodoroScreen(navController, padding) }
-                composable(Routes.ENGLISH_REVIEW) { EnglishReviewScreen(navController) }
+                composable(Routes.ENGLISH_REVIEW) { EnglishReviewScreen(navController, padding) }
             }
         }
     }

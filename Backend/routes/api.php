@@ -75,6 +75,20 @@ $admin = static fn() => new AdminController($pdo);
 $router->add('GET', '/admin/overview', static fn() => $admin()->overview());
 $router->add('GET', '/admin/browse', static fn() => $admin()->browse());
 
+// 分类（categories）：列表 / 批量 upsert / 删除 / 增量拉取
+use App\Controller\CategoryController;
+$category = static fn() => new CategoryController($pdo);
+$router->add('GET', '/api/categories', static fn() => $category()->list());
+$router->add('POST', '/api/categories', static fn() => $category()->batchUpsert());
+$router->add('POST', '/api/categories/delete', static fn() => $category()->delete());
+$router->add('GET', '/api/categories/pull', static fn() => $category()->pull());
+
+// 设置（user_settings 单行镜像）：读取 / 保存
+use App\Controller\SettingsController;
+$settings = static fn() => new SettingsController($pdo);
+$router->add('GET', '/api/settings', static fn() => $settings()->get());
+$router->add('POST', '/api/settings', static fn() => $settings()->save());
+
 // 后台鉴权与数据写操作（编辑/删除行）
 $router->add('POST', '/admin/login', static fn() => $admin()->login());
 $router->add('POST', '/admin/logout', static fn() => $admin()->logout());

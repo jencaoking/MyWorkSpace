@@ -1,5 +1,7 @@
 package com.jencao.mywork.ui.sport
 
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -13,9 +15,13 @@ import com.jencao.mywork.ui.navigation.SportRoutes
 
 /** 运动模块嵌套导航宿主：列表 <-> 编辑。 */
 @Composable
-fun SportScreen(rootNav: NavHostController) {
+fun SportScreen(rootNav: NavHostController, padding: PaddingValues) {
     val nav = rememberNavController()
-    NavHost(nav, startDestination = SportRoutes.LIST) {
+    NavHost(
+        navController = nav,
+        startDestination = SportRoutes.LIST,
+        modifier = Modifier.fillMaxSize().padding(padding)
+    ) {
         composable(SportRoutes.LIST) {
             SportListScreen(nav = nav)
         }

@@ -37,6 +37,7 @@ import com.jencao.mywork.ui.components.EmptyHint
 @Composable
 fun EnglishReviewScreen(
     rootNav: NavHostController,
+    padding: PaddingValues,
     vm: EnglishReviewViewModel = hiltViewModel()
 ) {
     val due by vm.due.collectAsStateWithLifecycle()
@@ -45,6 +46,7 @@ fun EnglishReviewScreen(
     val word = due.getOrNull(index)
 
     Scaffold(
+        modifier = Modifier.fillMaxSize().padding(padding),
         topBar = {
             TopAppBar(
                 title = { Text("记忆曲线复习") },

@@ -49,6 +49,8 @@ val moduleMeta: Map<ModuleKey, ModuleMeta> = mapOf(
 
 /** 功能板块映射到对应路由（未实现的板块回退首页）。 */
 fun moduleRoute(key: ModuleKey): String = when (key) {
+    ModuleKey.TASK -> Routes.TASKS
+    ModuleKey.NOTE -> Routes.NOTES
     ModuleKey.SPORT -> Routes.SPORT
     ModuleKey.ENGLISH -> Routes.ENGLISH
     ModuleKey.MEDIA -> Routes.MEDIA
