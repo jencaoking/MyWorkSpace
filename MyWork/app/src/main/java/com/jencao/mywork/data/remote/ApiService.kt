@@ -1,6 +1,12 @@
 package com.jencao.mywork.data.remote
 
 import com.jencao.mywork.data.remote.model.HealthResponse
+import com.jencao.mywork.data.remote.model.NoteDeleteResponse
+import com.jencao.mywork.data.remote.model.NoteListResponse
+import com.jencao.mywork.data.remote.model.NotePullResponse
+import com.jencao.mywork.data.remote.model.NoteSearchResponse
+import com.jencao.mywork.data.remote.model.NoteUploadRequest
+import com.jencao.mywork.data.remote.model.NoteUploadResponse
 import com.jencao.mywork.data.remote.model.SyncPullResponse
 import com.jencao.mywork.data.remote.model.SyncUploadRequest
 import com.jencao.mywork.data.remote.model.SyncUploadResponse
@@ -43,4 +49,20 @@ interface ApiService {
 
     @POST("api/tasks/delete")
     suspend fun deleteTasks(@Body req: TaskDeleteRequest): TaskDeleteResponse
+
+    // —— 阶段3 笔记接口（本地优先；云端接口已就绪，供后续同步/跨端使用） ——
+    @GET("api/notes")
+    suspend fun listNotes(@Query("favorite") favorite: String = ""): NoteListResponse
+
+    @POST("api/notes")
+    suspend fun uploadNotes(@Body req: NoteUploadRequest): NoteUploadResponse
+
+    @POST("api/notes/delete")
+    suspend fun deleteNotes(@Body req: TaskDeleteRequest): NoteDeleteResponse
+
+    @GET("api/notes/search")
+    suspend fun searchNotes(@Query("q") keyword: String): NoteSearchResponse
+
+    @GET("api/notes/pull")
+    suspend fun pullNotes(@Query("since") since: Long): NotePullResponse
 }

@@ -70,8 +70,13 @@ CREATE TABLE IF NOT EXISTS notes (
     device_id     VARCHAR(64) NOT NULL DEFAULT '',
     needs_sync    TINYINT(1)  NOT NULL DEFAULT 1,
     INDEX idx_pin (is_pinned),
-    INDEX idx_sync (needs_sync)
+    INDEX idx_sync (needs_sync),
+    -- 阶段3：全文索引（ngram 解析器支持中文分词；MySQL 5.7.6+ / 8.0）
+    FULLTEXT INDEX ft_title_content (title, content) WITH PARSER ngram
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 已建库升级用（表已存在时执行）：
+-- ALTER TABLE notes ADD FULLTEXT INDEX ft_title_content (title, content) WITH PARSER ngram;
 
 CREATE TABLE IF NOT EXISTS sport_records (
     id           CHAR(36) PRIMARY KEY,

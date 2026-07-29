@@ -26,6 +26,18 @@ object TaskRoutes {
     fun detail(taskId: String) = "task_detail/$taskId"
 }
 
+/** 笔记模块内部嵌套路由（列表 / 编辑 / 搜索）。 */
+object NoteRoutes {
+    const val LIST = "note_list"
+    const val EDIT = "note_edit/{noteId}"
+    const val SEARCH = "note_search"
+
+    /** noteId 传 "new" 表示新建 */
+    const val NEW_ID = "new"
+
+    fun edit(noteId: String) = "note_edit/$noteId"
+}
+
 data class BottomNavItem(
     val route: String,
     val label: String,

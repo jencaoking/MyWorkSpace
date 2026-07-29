@@ -13,13 +13,14 @@ import com.jencao.mywork.data.local.entity.*
         TaskCheckinEntity::class,
         CategoryEntity::class,
         NoteEntity::class,
+        NoteFtsEntity::class,
         SportRecordEntity::class,
         EnglishWordEntity::class,
         MovieBookEntity::class,
         HealthRecordEntity::class,
         AccountRecordEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

@@ -1,5 +1,6 @@
 package com.jencao.mywork.data.remote.model
 
+import com.jencao.mywork.data.local.entity.NoteEntity
 import com.jencao.mywork.data.local.entity.TaskEntity
 
 /** 统一响应信封：{ code, message, data } */
@@ -66,4 +67,34 @@ data class TaskDeleteResult(
 )
 
 typealias TaskDeleteResponse = ApiEnvelope<TaskDeleteResult>
+
+/** 阶段3 笔记接口模型 */
+
+data class NoteListData(
+    val notes: List<NoteEntity> = emptyList()
+)
+
+typealias NoteListResponse = ApiEnvelope<NoteListData>
+
+data class NoteSearchData(
+    val keyword: String = "",
+    val notes: List<NoteEntity> = emptyList()
+)
+
+typealias NoteSearchResponse = ApiEnvelope<NoteSearchData>
+
+data class NoteUploadRequest(
+    val notes: List<NoteEntity> = emptyList()
+)
+
+typealias NoteUploadResponse = ApiEnvelope<SyncUploadResult>
+
+data class NotePullData(
+    val server_time: Long = 0L,
+    val notes: List<NoteEntity> = emptyList()
+)
+
+typealias NotePullResponse = ApiEnvelope<NotePullData>
+
+typealias NoteDeleteResponse = ApiEnvelope<TaskDeleteResult>
 
