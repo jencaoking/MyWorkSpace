@@ -9,6 +9,7 @@ use App\Controller\HealthController;
 use App\Controller\HealthRecordController;
 use App\Controller\MovieBookController;
 use App\Controller\NoteController;
+use App\Controller\NoteImageController;
 use App\Controller\SportRecordController;
 use App\Controller\TaskController;
 use App\Controller\AccountRecordController;
@@ -16,6 +17,7 @@ use App\Controller\AccountRecordController;
 $health = static fn() => new HealthController($pdo);
 $task = static fn() => new TaskController($pdo);
 $note = static fn() => new NoteController($pdo);
+$noteImage = static fn() => new NoteImageController($pdo);
 $sport = static fn() => new SportRecordController($pdo);
 $english = static fn() => new EnglishWordController($pdo);
 $media = static fn() => new MovieBookController($pdo);
@@ -41,6 +43,8 @@ $router->add('POST', '/api/notes', static fn() => $note()->batchUpsert());
 $router->add('POST', '/api/notes/delete', static fn() => $note()->delete());
 $router->add('GET', '/api/notes/search', static fn() => $note()->search());
 $router->add('GET', '/api/notes/pull', static fn() => $note()->pull());
+// 笔记图片上传（multipart）
+$router->add('POST', '/api/notes/image', static fn() => $noteImage()->upload());
 
 // 阶段4 专项模块接口
 // 记账记录

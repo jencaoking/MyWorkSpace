@@ -21,6 +21,7 @@ import com.jencao.mywork.data.remote.model.NoteListResponse
 import com.jencao.mywork.data.remote.model.NotePullResponse
 import com.jencao.mywork.data.remote.model.NoteSearchResponse
 import com.jencao.mywork.data.remote.model.NoteUploadRequest
+import com.jencao.mywork.data.remote.model.NoteImageUploadResponse
 import com.jencao.mywork.data.remote.model.NoteUploadResponse
 import com.jencao.mywork.data.remote.model.SportDeleteResponse
 import com.jencao.mywork.data.remote.model.SportListResponse
@@ -50,8 +51,11 @@ import com.jencao.mywork.data.remote.model.TaskListResponse
 import com.jencao.mywork.data.remote.model.TaskStatsResponse
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.Multipart
 import retrofit2.http.POST
+import retrofit2.http.Part
 import retrofit2.http.Query
+import okhttp3.MultipartBody
 
 /**
  * 后端接口定义。路径与方案 V1.1 一致：/api/health、/sync/upload、/sync/pull。
@@ -99,6 +103,11 @@ interface ApiService {
 
     @GET("api/notes/pull")
     suspend fun pullNotes(@Query("since") since: Long): NotePullResponse
+
+    /** 笔记图片上传（multipart）：返回可访问的图片 URL */
+    @Multipart
+    @POST("api/notes/image")
+    suspend fun uploadNoteImage(@Part file: MultipartBody.Part): NoteImageUploadResponse
 
     // —— 阶段4 专项模块接口（本地优先；云端接口已就绪，供后续同步/跨端使用） ——
     // 运动记录

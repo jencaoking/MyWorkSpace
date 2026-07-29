@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,6 +16,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -23,11 +26,13 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
+import java.io.File
 
 /**
  * 轻量 Markdown 渲染器（阶段3，无第三方依赖）。
  * 支持：# 标题(1-3级)、- / * 无序列表、1. 有序列表、> 引用、--- 分隔线、
- * ``` 代码块、行内 **粗体**、*斜体*、`代码`、~~删除线~~。
+ * ``` 代码块、行内 **粗体**、*斜体*、`代码`、~~删除线~~，以及 ![alt](url) 图片。
  */
 @Composable
 fun MarkdownText(markdown: String, modifier: Modifier = Modifier) {
@@ -71,6 +76,12 @@ fun MarkdownText(markdown: String, modifier: Modifier = Modifier) {
                     BulletLine(trimmed.substring(0, idx + 1), inline(trimmed.substring(idx + 2)))
                 }
                 trimmed.isEmpty() -> Spacer(Modifier.height(2.dp))
+                // 整行图片语法 ![alt](url)：本地 file:// 或远程 http(s) URL
+                Regex("^!\\[(.*?)\\]\\((.*?)\\)$").containsMatchIn(trimmed) -> {
+                    val m = Regex("^!\\[(.*?)\\]\\((.*?)\\)$").find(trimmed)!!
+                    val (alt, url) = m.destructured
+                    MarkdownImageBlock(url, alt)
+                }
                 else -> Text(inline(line), style = MaterialTheme.typography.bodyMedium)
             }
             i++
@@ -116,6 +127,22 @@ private fun BulletLine(marker: String, text: AnnotatedString) {
         Spacer(Modifier.width(8.dp))
         Text(text, style = MaterialTheme.typography.bodyMedium)
     }
+}
+
+@Composable
+private fun MarkdownImageBlock(url: String, alt: String) {
+    // 本地引用 file:///... 转换为 File 直接加载（Coil 读取应用私有目录）
+    val model: Any = if (url.startsWith("file://")) File(url.removePrefix("file://")) else url
+    Spacer(Modifier.height(4.dp))
+    AsyncImage(
+        model = model,
+        contentDescription = alt.ifEmpty { "图片" },
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .heightIn(max = 320.dp),
+        contentScale = ContentScale.FillWidth
+    )
 }
 
 /** 行内样式解析：**粗体**、*斜体*、`代码`、~~删除线~~ */

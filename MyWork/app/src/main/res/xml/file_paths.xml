@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- 拍照临时文件，供相机 App 写回 -->
+    <cache-path name="camera" path="camera" />
+    <!-- 笔记图片私有目录（从相册复制进来后用于上传/预览） -->
+    <files-path name="note_images" path="note_images" />
+</paths>

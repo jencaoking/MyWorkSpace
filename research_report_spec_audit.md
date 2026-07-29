@@ -33,7 +33,7 @@ PHP 后端：
 | 影音书籍（TMDB） | 书单/电影清单、状态标记、星级评分、海报链接字段 | **已补全（2026-07-29）**：影音页新增"TMDB 搜索"入口，经后端 `/api/proxy/tmdb/search`（search/multi，仅 movie/tv）联机检索，结果展示海报/标题/原名/年份/评分；点击即自动拉取并入库（title、poster_url 取 TMDB 图片 CDN、original_title、overview、release_date、vote_average、tmdb_id 均与 TMDB 100% 吻合），随后跳转编辑页补全状态/评分/备注。新增 tv（剧集）类型。**密钥留在服务端后台管理，App 不持有任何 API Key**，经后端代理调用 |
 | 健康就诊（复诊提醒） | 就诊/用药/复诊/体征四类记录完整 | **已补全（2026-07-29）**：健康记录新增 `reminder_time` 字段；复诊/用药类型在编辑页可选"提醒时间"（日期+时间），保存后通过 `AlarmManager.setAlarmClock` 精确排程（免申请精确闹钟权限，低电/熄屏仍可靠触发），到点由 `ReminderReceiver` 弹出高优先级通知；删除或修改自动取消/重排；`BootReceiver` 开机后恢复所有未来提醒；列表卡片显示未来提醒标识；点击通知经 deep link 直达该记录编辑页。提醒为本地优先，不依赖云端 |
 | 记账（月度图表） | 收支记录、分类、收/支/结余数字汇总 | **已补全（2026-07-30）**：记账页新增"近 6 个月收支"分组柱状图（收入绿/支出红）+ "本月收支对比"柱状图，自绘 Compose Canvas，未引入 MPAndroidChart |
-| 笔记系统（Markdown+图片） | Markdown 编辑+预览（自研轻量渲染器，标题/列表/引用/代码/粗斜体）、列表/搜索/收藏/置顶 | **图片上传未实现**（实体无图片字段，编辑页无选图/上传入口） |
+| 笔记系统（Markdown+图片） | Markdown 编辑+预览（自研轻量渲染器，标题/列表/引用/代码/粗斜体）、列表/搜索/收藏/置顶、图片上传（相册/拍照→后端存储→Markdown 内 ![图片](url) 内联，预览用 Coil 渲染） | 已实现（2026-07-30）：编辑页新增“插入图片/拍照”按钮，图片复制到私有目录并上传至后端 `/api/notes/image`，返回 URL 替换本地引用；MarkdownText 已支持 `![alt](url)` 渲染（本地 file:// 与远程 URL） |
 | 天气（实时，外接 API） | 无 | **整个模块缺失**，无界面、无网络请求、无天气 API 接入 |
 | 第九章 通知提醒 | 无 | **已补全（2026-07-29，至少健康提醒部分）**：新增通知渠道（`health_reminder`）、`ReminderScheduler`（基于 `AlarmManager.setAlarmClock` 的稳定精确闹钟，规避 Android 12+ 精确闹钟权限）、`ReminderReceiver`（弹出通知）、`BootReceiver`（开机/重装后用 Hilt EntryPoint 取仓储恢复未来提醒），并在 Manifest 注册两接收器与 `RECEIVE_BOOT_COMPLETED`。任务（`reminder_time` 字段已存在）的提醒尚未接入同一调度器，仅复诊/用药已打通 |
 | 全局搜索（跨模块 FTS） | 无 | **未实现**：全工程 0 处 Room FTS（`@Fts4/@Fts5`）、无虚拟表，仅笔记可能有基础 LIKE 查询 |
@@ -64,7 +64,7 @@ PHP 后端：
 
 ## 四、结论
 
-工程已把"本地优先、可离线使用"的主干业务（任务体系、分类、运动含真实计步、健康/记账记录、笔记编辑、番茄钟、后端 CRUD 与基础同步）跑通，可作为可用 MVP。其中"联网与外部服务"一层已补齐：翻译、录音跟读已接入（经 `/api/proxy/translate`、`/api/proxy/word` 代理有道）；影音 TMDB 已接入（经 `/api/proxy/tmdb/search` 联机检索并自动拉取入库，与 TMDB 100% 吻合）。通知提醒方面，复诊/用药的精确闹钟 + 通知已落地（新增 `ReminderScheduler`/`ReminderReceiver`/`BootReceiver`、通知渠道、健康记录 `reminder_time` 字段与 v8 迁移，点击通知可 deep link 直达记录），任务提醒尚未接入同一调度器。图表可视化方面，任务月度图表（本月每日打卡次数 + 近 6 个月完成率趋势）与记账月度图表（近 6 个月收支 + 本月对比）均已用自绘 Compose Canvas 柱状图落地（2026-07-30）。以上 App 均不直接持有密钥，统一经后端 `/api/proxy/*` 代理或本地调度。但天气外接 API 仍未接入；跨模块全局搜索、笔记图片、板块开关 UI 也未完成。同时整体技术栈与方案文档不一致（Compose 替代 ViewBinding/Fragment，自研 Markdown 替代 Markwon，无图表库），后端分层与表命名、鉴权、响应字段也与方案描述不符。若要让方案"名副其实"，下一步优先级建议为：① 把任务提醒接入现有 `ReminderScheduler`（复用同一套闹钟/通知）；② 全局 FTS 搜索与板块开关 UI；③ 天气 的外接 API 接入；④ 笔记图片上传；⑤ 后端补充 `/sync/full`、LWW 冲突解决，并统一响应字段与表命名。
+工程已把"本地优先、可离线使用"的主干业务（任务体系、分类、运动含真实计步、健康/记账记录、笔记编辑、番茄钟、后端 CRUD 与基础同步）跑通，可作为可用 MVP。其中"联网与外部服务"一层已补齐：翻译、录音跟读已接入（经 `/api/proxy/translate`、`/api/proxy/word` 代理有道）；影音 TMDB 已接入（经 `/api/proxy/tmdb/search` 联机检索并自动拉取入库，与 TMDB 100% 吻合）。通知提醒方面，复诊/用药的精确闹钟 + 通知已落地（新增 `ReminderScheduler`/`ReminderReceiver`/`BootReceiver`、通知渠道、健康记录 `reminder_time` 字段与 v8 迁移，点击通知可 deep link 直达记录），任务提醒尚未接入同一调度器。图表可视化方面，任务月度图表（本月每日打卡次数 + 近 6 个月完成率趋势）与记账月度图表（近 6 个月收支 + 本月对比）均已用自绘 Compose Canvas 柱状图落地（2026-07-30）。以上 App 均不直接持有密钥，统一经后端 `/api/proxy/*` 代理或本地调度。但天气外接 API 仍未接入；跨模块全局搜索、板块开关 UI 也未完成（笔记图片上传已于 2026-07-30 实现）。同时整体技术栈与方案文档不一致（Compose 替代 ViewBinding/Fragment，自研 Markdown 替代 Markwon，无图表库），后端分层与表命名、鉴权、响应字段也与方案描述不符。若要让方案"名副其实"，下一步优先级建议为：① 把任务提醒接入现有 `ReminderScheduler`（复用同一套闹钟/通知）；② 全局 FTS 搜索与板块开关 UI；③ 天气 的外接 API 接入；④ 后端补充 `/sync/full`、LWW 冲突解决，并统一响应字段与表命名。
 
 ## 参考
 

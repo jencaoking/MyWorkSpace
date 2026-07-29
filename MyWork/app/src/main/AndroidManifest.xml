@@ -14,6 +14,9 @@
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
     <!-- 跟读录音所需：麦克风 -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- 笔记图片：从相册选择 / 拍照上传 -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <application
         android:name=".MyWorkApplication"
@@ -52,6 +55,17 @@
                 <action android:name="android.intent.action.QUICKBOOT_POWERON" />
             </intent-filter>
         </receiver>
+
+        <!-- 笔记拍照临时文件共享 -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
     </application>
 
 </manifest>
