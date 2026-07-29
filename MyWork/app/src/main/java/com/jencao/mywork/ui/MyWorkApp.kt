@@ -18,10 +18,14 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.jencao.mywork.data.settings.ThemeMode
 import com.jencao.mywork.ui.home.HomeScreen
+import com.jencao.mywork.ui.english.EnglishScreen
+import com.jencao.mywork.ui.health.HealthScreen
+import com.jencao.mywork.ui.media.MediaScreen
 import com.jencao.mywork.ui.navigation.Routes
 import com.jencao.mywork.ui.navigation.bottomNavItems
 import com.jencao.mywork.ui.notes.NotesScreen
 import com.jencao.mywork.ui.settings.SettingsScreen
+import com.jencao.mywork.ui.sport.SportScreen
 import com.jencao.mywork.ui.task.TaskScreen
 import com.jencao.mywork.ui.theme.MyWorkTheme
 
@@ -67,10 +71,15 @@ fun MyWorkApp(appVm: AppViewModel) {
                 startDestination = Routes.HOME,
                 modifier = Modifier.fillMaxSize()
             ) {
-                composable(Routes.HOME) { HomeScreen(appVm, padding) }
+                composable(Routes.HOME) { HomeScreen(appVm, padding, navController) }
                 composable(Routes.TASKS) { TaskScreen(padding) }
                 composable(Routes.NOTES) { NotesScreen(padding) }
                 composable(Routes.SETTINGS) { SettingsScreen(appVm, padding) }
+                // 阶段4 专项模块（由首页卡片进入）
+                composable(Routes.SPORT) { SportScreen(navController) }
+                composable(Routes.ENGLISH) { EnglishScreen(navController) }
+                composable(Routes.MEDIA) { MediaScreen(navController) }
+                composable(Routes.HEALTH) { HealthScreen(navController) }
             }
         }
     }

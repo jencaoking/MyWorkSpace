@@ -1,12 +1,32 @@
 package com.jencao.mywork.data.remote
 
+import com.jencao.mywork.data.remote.model.EnglishDeleteResponse
+import com.jencao.mywork.data.remote.model.EnglishListResponse
+import com.jencao.mywork.data.remote.model.EnglishPullResponse
+import com.jencao.mywork.data.remote.model.EnglishUploadRequest
+import com.jencao.mywork.data.remote.model.EnglishUploadResponse
+import com.jencao.mywork.data.remote.model.HealthDeleteResponse
+import com.jencao.mywork.data.remote.model.HealthListResponse
+import com.jencao.mywork.data.remote.model.HealthPullResponse
+import com.jencao.mywork.data.remote.model.HealthUploadRequest
+import com.jencao.mywork.data.remote.model.HealthUploadResponse
 import com.jencao.mywork.data.remote.model.HealthResponse
+import com.jencao.mywork.data.remote.model.MediaDeleteResponse
+import com.jencao.mywork.data.remote.model.MediaListResponse
+import com.jencao.mywork.data.remote.model.MediaPullResponse
+import com.jencao.mywork.data.remote.model.MediaUploadRequest
+import com.jencao.mywork.data.remote.model.MediaUploadResponse
 import com.jencao.mywork.data.remote.model.NoteDeleteResponse
 import com.jencao.mywork.data.remote.model.NoteListResponse
 import com.jencao.mywork.data.remote.model.NotePullResponse
 import com.jencao.mywork.data.remote.model.NoteSearchResponse
 import com.jencao.mywork.data.remote.model.NoteUploadRequest
 import com.jencao.mywork.data.remote.model.NoteUploadResponse
+import com.jencao.mywork.data.remote.model.SportDeleteResponse
+import com.jencao.mywork.data.remote.model.SportListResponse
+import com.jencao.mywork.data.remote.model.SportPullResponse
+import com.jencao.mywork.data.remote.model.SportUploadRequest
+import com.jencao.mywork.data.remote.model.SportUploadResponse
 import com.jencao.mywork.data.remote.model.SyncPullResponse
 import com.jencao.mywork.data.remote.model.SyncUploadRequest
 import com.jencao.mywork.data.remote.model.SyncUploadResponse
@@ -65,4 +85,57 @@ interface ApiService {
 
     @GET("api/notes/pull")
     suspend fun pullNotes(@Query("since") since: Long): NotePullResponse
+
+    // —— 阶段4 专项模块接口（本地优先；云端接口已就绪，供后续同步/跨端使用） ——
+    // 运动记录
+    @GET("api/sports")
+    suspend fun listSports(): SportListResponse
+
+    @POST("api/sports")
+    suspend fun uploadSports(@Body req: SportUploadRequest): SportUploadResponse
+
+    @POST("api/sports/delete")
+    suspend fun deleteSports(@Body req: TaskDeleteRequest): SportDeleteResponse
+
+    @GET("api/sports/pull")
+    suspend fun pullSports(@Query("since") since: Long): SportPullResponse
+
+    // 英语单词
+    @GET("api/english")
+    suspend fun listEnglish(): EnglishListResponse
+
+    @POST("api/english")
+    suspend fun uploadEnglish(@Body req: EnglishUploadRequest): EnglishUploadResponse
+
+    @POST("api/english/delete")
+    suspend fun deleteEnglish(@Body req: TaskDeleteRequest): EnglishDeleteResponse
+
+    @GET("api/english/pull")
+    suspend fun pullEnglish(@Query("since") since: Long): EnglishPullResponse
+
+    // 影音书籍
+    @GET("api/media")
+    suspend fun listMedia(): MediaListResponse
+
+    @POST("api/media")
+    suspend fun uploadMedia(@Body req: MediaUploadRequest): MediaUploadResponse
+
+    @POST("api/media/delete")
+    suspend fun deleteMedia(@Body req: TaskDeleteRequest): MediaDeleteResponse
+
+    @GET("api/media/pull")
+    suspend fun pullMedia(@Query("since") since: Long): MediaPullResponse
+
+    // 健康记录（路径避免与 /api/health 健康检查冲突）
+    @GET("api/health-records")
+    suspend fun listHealth(): HealthListResponse
+
+    @POST("api/health-records")
+    suspend fun uploadHealth(@Body req: HealthUploadRequest): HealthUploadResponse
+
+    @POST("api/health-records/delete")
+    suspend fun deleteHealth(@Body req: TaskDeleteRequest): HealthDeleteResponse
+
+    @GET("api/health-records/pull")
+    suspend fun pullHealth(@Query("since") since: Long): HealthPullResponse
 }

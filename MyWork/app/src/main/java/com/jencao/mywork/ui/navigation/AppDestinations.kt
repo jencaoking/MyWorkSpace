@@ -13,6 +13,11 @@ object Routes {
     const val TASKS = "tasks"
     const val NOTES = "notes"
     const val SETTINGS = "settings"
+    // 阶段4 专项模块（首页卡片进入，不占底部导航）
+    const val SPORT = "sport"
+    const val ENGLISH = "english"
+    const val MEDIA = "media"
+    const val HEALTH = "health"
 }
 
 /** 任务模块内部嵌套路由（列表 / 详情 / 日历 / 统计 / 分类管理）。 */
@@ -36,6 +41,38 @@ object NoteRoutes {
     const val NEW_ID = "new"
 
     fun edit(noteId: String) = "note_edit/$noteId"
+}
+
+/** 运动模块内部嵌套路由（列表 / 编辑）。 */
+object SportRoutes {
+    const val LIST = "sport_list"
+    const val EDIT = "sport_edit/{sportId}"
+    const val NEW_ID = "new"
+    fun edit(sportId: String) = "sport_edit/$sportId"
+}
+
+/** 英语模块内部嵌套路由（列表 / 编辑）。 */
+object EnglishRoutes {
+    const val LIST = "english_list"
+    const val EDIT = "english_edit/{wordId}"
+    const val NEW_ID = "new"
+    fun edit(wordId: String) = "english_edit/$wordId"
+}
+
+/** 影音书籍模块内部嵌套路由（列表 / 编辑）。 */
+object MediaRoutes {
+    const val LIST = "media_list"
+    const val EDIT = "media_edit/{mediaId}"
+    const val NEW_ID = "new"
+    fun edit(mediaId: String) = "media_edit/$mediaId"
+}
+
+/** 健康模块内部嵌套路由（列表 / 编辑）。 */
+object HealthRoutes {
+    const val LIST = "health_list"
+    const val EDIT = "health_edit/{healthId}"
+    const val NEW_ID = "new"
+    fun edit(healthId: String) = "health_edit/$healthId"
 }
 
 data class BottomNavItem(

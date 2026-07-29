@@ -1,5 +1,6 @@
 package com.jencao.mywork.ui.home
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -21,15 +22,27 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import com.jencao.mywork.data.settings.ModuleKey
 import com.jencao.mywork.ui.AppViewModel
+import com.jencao.mywork.ui.navigation.Routes
 import java.text.SimpleDateFormat
 import java.util.Locale
+
+/** 将功能板块映射到对应路由（未实现的板块回退首页）。 */
+private fun moduleRoute(key: ModuleKey): String = when (key) {
+    ModuleKey.SPORT -> Routes.SPORT
+    ModuleKey.ENGLISH -> Routes.ENGLISH
+    ModuleKey.MEDIA -> Routes.MEDIA
+    ModuleKey.HEALTH -> Routes.HEALTH
+    else -> Routes.HOME
+}
 
 @Composable
 fun HomeScreen(
     appVm: AppViewModel,
     padding: PaddingValues,
+    nav: NavHostController,
     homeVm: HomeViewModel = hiltViewModel()
 ) {
     val toggles by appVm.moduleToggles.collectAsStateWithLifecycle()
@@ -62,7 +75,11 @@ fun HomeScreen(
         ) {
             items(ModuleKey.entries) { key ->
                 val enabled = toggles[key] ?: false
-                Card(modifier = Modifier.fillMaxWidth()) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable(enabled = enabled) { nav.navigate(moduleRoute(key)) }
+                ) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -72,6 +89,12 @@ fun HomeScreen(
                         Text(key.displayName, style = MaterialTheme.typography.titleSmall)
                         if (key.locked) {
                             Text("核心模块（常开）", style = MaterialTheme.typography.labelSmall)
+                        } else if (enabled) {
+                            Text("已开启 · 点击进入", style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.primary)
+                        } else {
+                            Text("未开启", style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.outline)
                         }
                         Switch(
                             checked = enabled,
