@@ -66,6 +66,12 @@ class UserPreferencesRepository @Inject constructor(
 
     val deviceId: Flow<String> = dataStore.data.map { it[DEVICE_ID] ?: "" }
 
+    /** 云端已连接状态（供首页连接测试展示） */
+    private val CLOUD_CONNECTED = booleanPreferencesKey("cloud_connected")
+    fun observeCloudConnected(): Flow<Boolean> = dataStore.data.map { it[CLOUD_CONNECTED] ?: false }
+    suspend fun setCloudConnected(connected: Boolean) =
+        dataStore.edit { it[CLOUD_CONNECTED] = connected }
+
     suspend fun setThemeMode(mode: ThemeMode) {
         dataStore.edit { it[THEME_MODE] = mode.ordinal }
     }

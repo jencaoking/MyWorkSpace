@@ -86,7 +86,6 @@ dependencies {
 
     // WorkManager（自动后台同步）
     implementation(libs.androidx.work.runtime)
-    implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.hilt.work)
 
     // Coroutines
