@@ -34,7 +34,7 @@ import com.jencao.mywork.data.local.entity.*
         InspirationEntity::class,
         ExpressPackageEntity::class
     ],
-    version = 11,
+    version = 12,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -131,7 +131,7 @@ abstract class AppDatabase : RoomDatabase() {
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_calc_history_created_at` ON `calc_history` (`created_at`)")
                 db.execSQL(
                     """CREATE TABLE IF NOT EXISTS `qr_scan_history` (
-                        `id` TEXT NOT NULL, `content` TEXT NOT NULL, `format` TEXT NOT NULL, `note` TEXT,
+                        `id` TEXT NOT NULL, `content` TEXT NOT NULL, `format` TEXT NOT NULL, `note` TEXT NOT NULL,
                         `created_at` INTEGER NOT NULL, `last_modified` INTEGER NOT NULL,
                         `is_deleted` INTEGER NOT NULL, `device_id` TEXT NOT NULL, `needs_sync` INTEGER NOT NULL,
                         PRIMARY KEY(`id`))"""
@@ -139,7 +139,7 @@ abstract class AppDatabase : RoomDatabase() {
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_qr_scan_history_created_at` ON `qr_scan_history` (`created_at`)")
                 db.execSQL(
                     """CREATE TABLE IF NOT EXISTS `countdown_events` (
-                        `id` TEXT NOT NULL, `title` TEXT NOT NULL, `target_time` INTEGER NOT NULL, `remark` TEXT,
+                        `id` TEXT NOT NULL, `title` TEXT NOT NULL, `target_time` INTEGER NOT NULL, `remark` TEXT NOT NULL,
                         `created_at` INTEGER NOT NULL, `last_modified` INTEGER NOT NULL,
                         `is_deleted` INTEGER NOT NULL, `device_id` TEXT NOT NULL, `needs_sync` INTEGER NOT NULL,
                         PRIMARY KEY(`id`))"""
@@ -147,7 +147,7 @@ abstract class AppDatabase : RoomDatabase() {
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_countdown_events_target_time` ON `countdown_events` (`target_time`)")
                 db.execSQL(
                     """CREATE TABLE IF NOT EXISTS `habit_plans` (
-                        `id` TEXT NOT NULL, `title` TEXT NOT NULL, `description` TEXT, `period` INTEGER NOT NULL,
+                        `id` TEXT NOT NULL, `title` TEXT NOT NULL, `description` TEXT NOT NULL, `period` INTEGER NOT NULL,
                         `start_date` INTEGER NOT NULL, `created_at` INTEGER NOT NULL, `last_modified` INTEGER NOT NULL,
                         `is_deleted` INTEGER NOT NULL, `device_id` TEXT NOT NULL, `needs_sync` INTEGER NOT NULL,
                         PRIMARY KEY(`id`))"""
@@ -156,7 +156,7 @@ abstract class AppDatabase : RoomDatabase() {
                 db.execSQL(
                     """CREATE TABLE IF NOT EXISTS `habits` (
                         `id` TEXT NOT NULL, `plan_id` TEXT NOT NULL, `title` TEXT NOT NULL, `frequency` INTEGER NOT NULL,
-                        `days` TEXT, `time_min` INTEGER NOT NULL, `created_at` INTEGER NOT NULL, `last_modified` INTEGER NOT NULL,
+                        `days` TEXT NOT NULL, `time_min` INTEGER NOT NULL, `created_at` INTEGER NOT NULL, `last_modified` INTEGER NOT NULL,
                         `is_deleted` INTEGER NOT NULL, `device_id` TEXT NOT NULL, `needs_sync` INTEGER NOT NULL,
                         PRIMARY KEY(`id`))"""
                 )
@@ -171,7 +171,7 @@ abstract class AppDatabase : RoomDatabase() {
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_habit_checkins_date` ON `habit_checkins` (`date`)")
                 db.execSQL(
                     """CREATE TABLE IF NOT EXISTS `flashcard_decks` (
-                        `id` TEXT NOT NULL, `name` TEXT NOT NULL, `description` TEXT, `created_at` INTEGER NOT NULL,
+                        `id` TEXT NOT NULL, `name` TEXT NOT NULL, `description` TEXT NOT NULL, `created_at` INTEGER NOT NULL,
                         `last_modified` INTEGER NOT NULL, `is_deleted` INTEGER NOT NULL, `device_id` TEXT NOT NULL, `needs_sync` INTEGER NOT NULL,
                         PRIMARY KEY(`id`))"""
                 )
@@ -188,7 +188,7 @@ abstract class AppDatabase : RoomDatabase() {
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_flashcards_next_review` ON `flashcards` (`next_review`)")
                 db.execSQL(
                     """CREATE TABLE IF NOT EXISTS `inspiration_items` (
-                        `id` TEXT NOT NULL, `content` TEXT NOT NULL, `author` TEXT, `source` TEXT, `tags` TEXT,
+                        `id` TEXT NOT NULL, `content` TEXT NOT NULL, `author` TEXT NOT NULL, `source` TEXT NOT NULL, `tags` TEXT NOT NULL,
                         `favorite` INTEGER NOT NULL, `created_at` INTEGER NOT NULL, `last_modified` INTEGER NOT NULL,
                         `is_deleted` INTEGER NOT NULL, `device_id` TEXT NOT NULL, `needs_sync` INTEGER NOT NULL,
                         PRIMARY KEY(`id`))"""
@@ -197,11 +197,20 @@ abstract class AppDatabase : RoomDatabase() {
                 db.execSQL(
                     """CREATE TABLE IF NOT EXISTS `express_packages` (
                         `id` TEXT NOT NULL, `company` TEXT NOT NULL, `company_name` TEXT NOT NULL, `tracking_no` TEXT NOT NULL,
-                        `goods` TEXT, `current_status` TEXT, `last_update` INTEGER, `created_at` INTEGER NOT NULL,
+                        `goods` TEXT NOT NULL, `current_status` TEXT NOT NULL, `last_update` INTEGER NOT NULL, `created_at` INTEGER NOT NULL,
                         `last_modified` INTEGER NOT NULL, `is_deleted` INTEGER NOT NULL, `device_id` TEXT NOT NULL, `needs_sync` INTEGER NOT NULL,
                         PRIMARY KEY(`id`))"""
                 )
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_express_packages_tracking_no` ON `express_packages` (`tracking_no`)")
+            }
+        }
+
+        /** 版本 11 -> 12：扫码历史新增 type（内容类型）与 scanned_at（扫码时间）字段。 */
+        private val MIGRATION_11_12 = object : Migration(11, 12) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE qr_scan_history ADD COLUMN type INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE qr_scan_history ADD COLUMN scanned_at INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_qr_scan_history_scanned_at` ON `qr_scan_history` (`scanned_at`)")
             }
         }
 
@@ -217,7 +226,14 @@ abstract class AppDatabase : RoomDatabase() {
                 )
                     // 阶段1 开发期：结构变更直接重建，避免手动 Migration
                     .fallbackToDestructiveMigration(dropAllTables = true)
-                    .addMigrations(MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_9_10, MIGRATION_10_11)
+                    .addMigrations(
+                        MIGRATION_5_6,
+                        MIGRATION_6_7,
+                        MIGRATION_7_8,
+                        MIGRATION_9_10,
+                        MIGRATION_10_11,
+                        MIGRATION_11_12
+                    )
                     .build()
                 INSTANCE = instance
                 instance

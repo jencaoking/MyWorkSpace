@@ -13,6 +13,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -31,6 +32,7 @@ import androidx.navigation.NavHostController
 import com.jencao.mywork.ui.AppViewModel
 import com.jencao.mywork.ui.components.NeuButton
 import com.jencao.mywork.ui.components.NeuCard
+import com.jencao.mywork.ui.components.NeuIconButton
 import com.jencao.mywork.ui.navigation.ModuleTile
 import com.jencao.mywork.ui.navigation.Routes
 import com.jencao.mywork.ui.navigation.moduleMeta
@@ -72,6 +74,7 @@ fun HomeScreen(
     val weatherSearching by weatherVm.searching.collectAsStateWithLifecycle()
     val weatherResults by weatherVm.searchResults.collectAsStateWithLifecycle()
     var showCityPicker by remember { mutableStateOf(false) }
+    var showQuick by remember { mutableStateOf(false) }
     val ctx = LocalContext.current
 
     val locationPermissionLauncher = rememberLauncherForActivityResult(
@@ -115,6 +118,10 @@ fun HomeScreen(
             }
             Spacer(Modifier.width(12.dp))
             WeatherCard(state = weatherState, onOpenPicker = { showCityPicker = true })
+            Spacer(Modifier.width(8.dp))
+            NeuIconButton(onClick = { showQuick = true }) {
+                Icon(Icons.Filled.Add, "快捷功能", tint = MaterialTheme.colorScheme.primary)
+            }
         }
 
         // 每日作业提醒横条（有未处理的过期任务时显示）
@@ -269,6 +276,13 @@ fun HomeScreen(
                 onToggleAuto = { weatherVm.enableAutoLocation() },
                 onSearch = { weatherVm.searchCity(it) },
                 onSelect = { weatherVm.selectCity(it); showCityPicker = false }
+            )
+        }
+
+        if (showQuick) {
+            QuickActionsSheet(
+                onDismiss = { showQuick = false },
+                onNavigate = { route -> showQuick = false; nav.navigate(route) }
             )
         }
     }

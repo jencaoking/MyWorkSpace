@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -38,6 +40,7 @@ fun SettingsScreen(appVm: AppViewModel, padding: PaddingValues) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(padding)
+            .verticalScroll(rememberScrollState())
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
@@ -67,23 +70,6 @@ fun SettingsScreen(appVm: AppViewModel, padding: PaddingValues) {
 
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text("设备标识", style = MaterialTheme.typography.titleMedium)
-                Text(
-                    if (deviceId.isBlank()) "生成中…" else deviceId,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    "无登录设计：以设备 ID 作为用户标识，首次启动自动生成，后端据此隔离各设备数据。",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
-            }
-        }
-
-        Card(modifier = Modifier.fillMaxWidth()) {
-            Column(modifier = Modifier.padding(16.dp)) {
                 Text("功能板块", style = MaterialTheme.typography.titleMedium)
                 Text(
                     "开关控制首页是否显示；上下箭头调整首页排列顺序。锁定的核心板块不可关闭。",
@@ -93,11 +79,23 @@ fun SettingsScreen(appVm: AppViewModel, padding: PaddingValues) {
                 )
                 moduleOrder.forEachIndexed { index, key ->
                     val meta = moduleMeta[key] ?: return@forEachIndexed
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(meta.icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                        Column(Modifier.weight(1f).padding(start = 12.dp)) {
-                            Text(meta.label, style = MaterialTheme.typography.bodyMedium)
-                        }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(
+                            meta.icon,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            meta.label,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(start = 12.dp)
+                        )
                         IconButton(
                             onClick = {
                                 val list = moduleOrder.toMutableList()
@@ -117,10 +115,28 @@ fun SettingsScreen(appVm: AppViewModel, padding: PaddingValues) {
                         Switch(
                             checked = moduleToggles[key] != false,
                             enabled = !key.locked,
-                            onCheckedChange = { appVm.toggleModule(key, it) }
+                            onCheckedChange = { appVm.toggleModule(key, it) },
+                            modifier = Modifier.padding(end = 4.dp)
                         )
                     }
                 }
+            }
+        }
+
+        Card(modifier = Modifier.fillMaxWidth()) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text("设备标识", style = MaterialTheme.typography.titleMedium)
+                Text(
+                    if (deviceId.isBlank()) "生成中…" else deviceId,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    "无登录设计：以设备 ID 作为用户标识，首次启动自动生成，后端据此隔离各设备数据。",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
             }
         }
     }
