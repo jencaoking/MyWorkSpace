@@ -90,6 +90,94 @@ class ProxyController
         ]);
     }
 
+    /**
+     * GET /api/proxy/tmdb/search?query=...&page=1
+     * TMDB 搜索代理（search/multi，仅 movie/tv）。密钥仅服务端持有，App 经此检索，
+     * 返回归一化结果：tmdb_id / media_type / title / original_title / overview /
+     * poster_url / release_date / vote_average。
+     */
+    public function searchTmdb(): void
+    {
+        $query = trim((string) ($_GET['query'] ?? ''));
+        $page  = max(1, (int) ($_GET['page'] ?? 1));
+        if ($query === '') {
+            ApiResponse::json(['code' => 1, 'message' => '缺少 query 参数', 'data' => null], 400);
+            return;
+        }
+        $apiKey = $this->tmdbKey();
+        if ($apiKey === '') {
+            ApiResponse::json(['code' => 1, 'message' => '服务端未配置 TMDB API Key（请在后台管理填写）', 'data' => null], 412);
+            return;
+        }
+        $url = 'https://api.themoviedb.org/3/search/multi?api_key=' . urlencode($apiKey)
+            . '&language=zh-CN&include_adult=false&page=' . $page
+            . '&query=' . urlencode($query);
+        $raw = $this->httpGet($url);
+        if ($raw === false || $raw === '') {
+            ApiResponse::json(['code' => 1, 'message' => 'TMDB 请求失败（网络或密钥无效）', 'data' => null], 502);
+            return;
+        }
+        $json = json_decode($raw, true);
+        if (!is_array($json) || !isset($json['results'])) {
+            ApiResponse::json(['code' => 1, 'message' => 'TMDB 返回异常', 'data' => null], 502);
+            return;
+        }
+        $results = [];
+        foreach ($json['results'] as $r) {
+            $type = (string) ($r['media_type'] ?? '');
+            if ($type === 'person') {
+                continue; // 仅保留影视（movie/tv），剔除人物
+            }
+            $poster = isset($r['poster_path']) && $r['poster_path']
+                ? 'https://image.tmdb.org/t/p/w342' . $r['poster_path']
+                : '';
+            if ($type === 'tv') {
+                $title    = (string) ($r['name'] ?? $r['original_name'] ?? '');
+                $original = (string) ($r['original_name'] ?? $r['name'] ?? '');
+                $release  = (string) ($r['first_air_date'] ?? '');
+            } else {
+                $title    = (string) ($r['title'] ?? $r['original_title'] ?? '');
+                $original = (string) ($r['original_title'] ?? $r['title'] ?? '');
+                $release  = (string) ($r['release_date'] ?? '');
+            }
+            $results[] = [
+                'tmdb_id'        => (int) ($r['id'] ?? 0),
+                'media_type'     => $type,
+                'title'          => $title,
+                'original_title' => $original,
+                'overview'       => (string) ($r['overview'] ?? ''),
+                'poster_url'     => $poster,
+                'release_date'   => $release,
+                'vote_average'   => isset($r['vote_average']) ? (float) $r['vote_average'] : 0.0,
+            ];
+        }
+        ApiResponse::json([
+            'code'    => 0,
+            'message' => 'ok',
+            'data'    => [
+                'query'         => $query,
+                'page'          => (int) ($json['page'] ?? $page),
+                'total_results' => (int) ($json['total_results'] ?? count($results)),
+                'total_pages'   => (int) ($json['total_pages'] ?? 1),
+                'results'       => $results,
+            ],
+        ]);
+    }
+
+    /** 读取 TMDB 密钥：优先后台管理填写的 app_config.tmdb_key，回退 config('api_keys')['tmdb']。 */
+    private function tmdbKey(): string
+    {
+        $cfg = $this->config->get('tmdb_key', '');
+        if ($cfg !== '') {
+            return $cfg;
+        }
+        if (function_exists('config')) {
+            $a = config('api_keys');
+            return (string) ($a['tmdb'] ?? '');
+        }
+        return '';
+    }
+
     /** 读取密钥：优先后台管理填写的 app_config，回退到 config/api_keys.php。 */
     private function keys(): array
     {

@@ -47,6 +47,35 @@ class MovieBookRepository @Inject constructor(
         return item
     }
 
+    /**
+     * 由 TMDB 搜索结果直接创建条目，字段与 TMDB 100% 吻合。
+     * type 取自 TMDB 的 media_type（movie / tv）。
+     */
+    suspend fun createFromTmdb(
+        type: String,
+        title: String,
+        tmdbId: String,
+        posterUrl: String = "",
+        originalTitle: String = "",
+        overview: String = "",
+        releaseDate: String = "",
+        voteAverage: Float = 0f
+    ): MovieBookEntity {
+        val item = MovieBookEntity(
+            type = type,
+            title = title,
+            tmdbId = tmdbId,
+            status = "wish",
+            posterUrl = posterUrl,
+            originalTitle = originalTitle,
+            overview = overview,
+            releaseDate = releaseDate,
+            voteAverage = voteAverage
+        ).apply { touch() }
+        dao.insert(item)
+        return item
+    }
+
     suspend fun markDeleted(id: String) = dao.softDelete(id)
 
     override suspend fun getPendingUploads(): List<MovieBookEntity> = dao.getPendingUploads()

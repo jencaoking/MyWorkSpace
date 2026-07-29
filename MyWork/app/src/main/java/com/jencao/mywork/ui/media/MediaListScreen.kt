@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.AlertDialog
@@ -52,7 +53,16 @@ fun MediaListScreen(nav: NavHostController, vm: MediaViewModel = hiltViewModel()
     var toDelete by remember { mutableStateOf<MovieBookEntity?>(null) }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("影音书籍") }) },
+        topBar = {
+            TopAppBar(
+                title = { Text("影音书籍") },
+                actions = {
+                    IconButton(onClick = { nav.navigate(MediaRoutes.SEARCH) }) {
+                        Icon(Icons.Filled.Search, contentDescription = "TMDB 搜索")
+                    }
+                }
+            )
+        },
         floatingActionButton = {
             FloatingActionButton(onClick = { nav.navigate(MediaRoutes.edit(MediaRoutes.NEW_ID)) }) {
                 Icon(Icons.Filled.Add, contentDescription = "新建")

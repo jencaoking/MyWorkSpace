@@ -5,8 +5,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -29,8 +31,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil3.compose.AsyncImage
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.jencao.mywork.ui.components.DropdownField
@@ -88,6 +93,17 @@ fun MediaEditScreen(nav: NavHostController, vm: MediaViewModel = hiltViewModel()
             StarRating(rating = rating, onRatingChange = vm::setRating)
             OutlinedTextField(value = posterUrl ?: "", onValueChange = vm::setPosterUrl, label = { Text("海报链接（可选）") },
                 modifier = Modifier.fillMaxWidth())
+            if ((posterUrl ?: "").isNotBlank()) {
+                AsyncImage(
+                    model = posterUrl,
+                    contentDescription = title,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(180.dp)
+                        .clip(RoundedCornerShape(12.dp)),
+                    contentScale = ContentScale.Crop
+                )
+            }
             OutlinedTextField(value = note, onValueChange = vm::setNote, label = { Text("备注（可选）") },
                 modifier = Modifier.fillMaxWidth(), minLines = 2)
         }

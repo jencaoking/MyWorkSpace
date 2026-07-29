@@ -23,7 +23,7 @@ import com.jencao.mywork.data.local.entity.*
         AccountRecordEntity::class,
         PomodoroSessionEntity::class
     ],
-    version = 6,
+    version = 7,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -48,6 +48,16 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /** 版本 6 -> 7：影音书籍新增 TMDB 详情字段（原始名 / 简介 / 上映日期 / 评分）。 */
+        private val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE movie_books ADD COLUMN original_title TEXT")
+                db.execSQL("ALTER TABLE movie_books ADD COLUMN overview TEXT")
+                db.execSQL("ALTER TABLE movie_books ADD COLUMN release_date TEXT")
+                db.execSQL("ALTER TABLE movie_books ADD COLUMN vote_average REAL")
+            }
+        }
+
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
@@ -60,7 +70,7 @@ abstract class AppDatabase : RoomDatabase() {
                 )
                     // 阶段1 开发期：结构变更直接重建，避免手动 Migration
                     .fallbackToDestructiveMigration(dropAllTables = true)
-                    .addMigrations(MIGRATION_5_6)
+                    .addMigrations(MIGRATION_5_6, MIGRATION_6_7)
                     .build()
                 INSTANCE = instance
                 instance

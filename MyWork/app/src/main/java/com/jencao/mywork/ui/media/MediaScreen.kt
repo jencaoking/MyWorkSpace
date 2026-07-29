@@ -21,6 +21,7 @@ fun MediaScreen(rootNav: NavHostController, padding: PaddingValues) {
         modifier = Modifier.fillMaxSize().padding(padding)
     ) {
         composable(MediaRoutes.LIST) { MediaListScreen(nav = nav) }
+        composable(MediaRoutes.SEARCH) { MediaSearchScreen(navController = nav) }
         composable(MediaRoutes.EDIT) { MediaEditScreen(nav = nav) }
     }
 }

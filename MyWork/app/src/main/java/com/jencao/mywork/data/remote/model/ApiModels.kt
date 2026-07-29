@@ -230,3 +230,27 @@ data class WordLookupData(
 )
 typealias WordLookupResponse = ApiEnvelope<WordLookupData>
 
+/* ---------- TMDB 搜索（后端代理 /api/proxy/tmdb/search） ---------- */
+/** 单条 TMDB 搜索结果（字段与后端归一化输出一一对应，保持 snake_case 以便 Gson 直接映射）。 */
+data class TmdbItem(
+    val tmdb_id: Int = 0,
+    val media_type: String = "",
+    val title: String = "",
+    val original_title: String = "",
+    val overview: String = "",
+    val poster_url: String = "",
+    val release_date: String = "",
+    val vote_average: Float = 0f
+)
+
+/** TMDB 搜索返回的数据体。 */
+data class TmdbSearchData(
+    val query: String = "",
+    val page: Int = 1,
+    val total_results: Int = 0,
+    val total_pages: Int = 0,
+    val results: List<TmdbItem> = emptyList()
+)
+
+typealias TmdbSearchResponse = ApiEnvelope<TmdbSearchData>
+

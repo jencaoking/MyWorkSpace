@@ -72,6 +72,7 @@ object EnglishRoutes {
 /** 影音书籍模块内部嵌套路由（列表 / 编辑）。 */
 object MediaRoutes {
     const val LIST = "media_list"
+    const val SEARCH = "media_search"
     const val EDIT = "media_edit/{mediaId}"
     const val NEW_ID = "new"
     fun edit(mediaId: String) = "media_edit/$mediaId"

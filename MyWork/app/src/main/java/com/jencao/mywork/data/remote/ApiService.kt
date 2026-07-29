@@ -39,6 +39,7 @@ import com.jencao.mywork.data.remote.model.SettingsSaveResponse
 import com.jencao.mywork.data.remote.model.SportUploadRequest
 import com.jencao.mywork.data.remote.model.TranslateResponse
 import com.jencao.mywork.data.remote.model.WordLookupResponse
+import com.jencao.mywork.data.remote.model.TmdbSearchResponse
 import com.jencao.mywork.data.remote.model.SportUploadResponse
 import com.jencao.mywork.data.remote.model.SyncPullResponse
 import com.jencao.mywork.data.remote.model.SyncUploadRequest
@@ -189,4 +190,10 @@ interface ApiService {
 
     @GET("api/proxy/word")
     suspend fun lookupWord(@Query("text") text: String): WordLookupResponse
+
+    @GET("api/proxy/tmdb/search")
+    suspend fun searchTmdb(
+        @Query("query") query: String,
+        @Query("page") page: Int = 1
+    ): TmdbSearchResponse
 }

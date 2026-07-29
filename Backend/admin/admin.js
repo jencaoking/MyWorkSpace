@@ -150,19 +150,22 @@ async function showApiKeys() {
     wrap.className = 'form-wrap glass';
     wrap.innerHTML = `
       <h3>第三方 API 密钥</h3>
-      <p class="hint">密钥仅保存在服务端，App 通过后台代理（/api/proxy/*）调用，不会下发到客户端。当前支持有道智云开放翻译。</p>
+      <p class="hint">密钥仅保存在服务端，App 通过后台代理（/api/proxy/*）调用，不会下发到客户端。当前支持有道智云翻译与 TMDB 影视检索。</p>
       <div class="field"><label>有道 App Key</label><input id="yk" type="text" placeholder="youdao_app_key" /></div>
       <div class="field"><label>有道 App Secret</label><input id="ys" type="password" placeholder="youdao_app_secret" /></div>
+      <div class="field"><label>TMDB API Key（v3 auth）</label><input id="tk" type="text" placeholder="tmdb_key" /></div>
       <div class="row-actions">
         <button id="saveKeys" class="btn-primary">保存密钥</button>
-        <button id="testKeys" class="btn">测试连接</button>
+        <button id="testKeys" class="btn">测试有道</button>
+        <button id="testTmdb" class="btn">测试 TMDB</button>
         <span id="keyState" class="hint"></span>
       </div>`;
     contentEl.innerHTML = '';
     contentEl.appendChild(wrap);
-    if (keys.youdao_app_key) {
-      $('keyState').textContent = '已配置（' + keys.youdao_app_key + '）';
-    }
+    const states = [];
+    if (keys.youdao_app_key) states.push('有道 ' + keys.youdao_app_key);
+    if (keys.tmdb_key) states.push('TMDB ' + keys.tmdb_key);
+    if (states.length) $('keyState').textContent = '已配置：' + states.join(' ｜ ');
     $('saveKeys').onclick = async () => {
       const btn = $('saveKeys'); btn.disabled = true;
       try {
@@ -171,6 +174,7 @@ async function showApiKeys() {
           body: JSON.stringify({
             youdao_app_key: $('yk').value.trim(),
             youdao_app_secret: $('ys').value.trim(),
+            tmdb_key: $('tk').value.trim(),
           }),
         });
         toast('已保存');
@@ -186,6 +190,15 @@ async function showApiKeys() {
         toast('连接成功：' + (r.translation || ''));
       } catch (e) {
         toast('测试失败：' + e.message, true);
+      } finally { btn.disabled = false; }
+    };
+    $('testTmdb').onclick = async () => {
+      const btn = $('testTmdb'); btn.disabled = true;
+      try {
+        const r = await api('/api/proxy/tmdb/search?query=batman');
+        toast('连接成功：共 ' + (r.total_results || 0) + ' 条结果');
+      } catch (e) {
+        toast('TMDB 测试失败：' + e.message, true);
       } finally { btn.disabled = false; }
     };
   } catch (e) {

@@ -80,6 +80,7 @@ use App\Controller\ProxyController;
 $proxy = static fn() => new ProxyController($pdo);
 $router->add('GET', '/api/proxy/translate', static fn() => $proxy()->translate());
 $router->add('GET', '/api/proxy/word', static fn() => $proxy()->word());
+$router->add('GET', '/api/proxy/tmdb/search', static fn() => $proxy()->searchTmdb());
 
 // 后台管理：API 密钥（有道翻译等）配置读写
 $router->add('GET', '/admin/apikeys', static fn() => $admin()->apiKeys());

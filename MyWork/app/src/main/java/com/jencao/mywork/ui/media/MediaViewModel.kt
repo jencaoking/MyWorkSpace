@@ -1,10 +1,15 @@
 package com.jencao.mywork.ui.media
 
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jencao.mywork.data.local.entity.MovieBookEntity
+import com.jencao.mywork.data.remote.ApiService
+import com.jencao.mywork.data.remote.model.TmdbItem
 import com.jencao.mywork.data.repository.MovieBookRepository
+import com.jencao.mywork.data.repository.ProxyRepository
 import com.jencao.mywork.ui.navigation.MediaRoutes
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,7 +22,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /** 影音类型 */
-val MEDIA_TYPES = listOf("movie" to "电影", "book" to "书籍")
+val MEDIA_TYPES = listOf("movie" to "电影", "tv" to "剧集", "book" to "书籍")
 
 /** 观看状态：想看 / 在看 / 看过 */
 val MEDIA_STATUS = listOf("wish" to "想看", "watching" to "在看", "done" to "看过")
@@ -30,8 +35,12 @@ fun mediaTypeLabel(t: String?) = MEDIA_TYPES.firstOrNull { it.first == t }?.seco
 @HiltViewModel
 class MediaViewModel @Inject constructor(
     private val repo: MovieBookRepository,
+    private val api: ApiService,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+
+    /** 第三方 API 代理：密钥仅在服务端，App 经后端 /api/proxy/tmdb/search 检索。 */
+    private val proxy = ProxyRepository(api)
 
     private val _typeFilter = MutableStateFlow<String?>(null)
     val typeFilter: StateFlow<String?> = _typeFilter
@@ -141,4 +150,51 @@ class MediaViewModel @Inject constructor(
 
     /** 列表项删除（按 id 软删）。 */
     fun deleteItem(id: String) = viewModelScope.launch { repo.markDeleted(id) }
+
+    // —— TMDB 搜索（服务端代理，密钥不落客户端） ——
+    private val _tmdbQuery = mutableStateOf("")
+    val tmdbQuery: State<String> get() = _tmdbQuery
+
+    private val _tmdbResults = mutableStateOf<List<TmdbItem>>(emptyList())
+    val tmdbResults: State<List<TmdbItem>> get() = _tmdbResults
+
+    private val _tmdbSearching = mutableStateOf(false)
+    val tmdbSearching: State<Boolean> get() = _tmdbSearching
+
+    private val _tmdbError = mutableStateOf<String?>(null)
+    val tmdbError: State<String?> get() = _tmdbError
+
+    fun setTmdbQuery(v: String) { _tmdbQuery.value = v }
+
+    /** 调用后端代理搜索 TMDB（movie / tv）。 */
+    fun searchTmdb() {
+        val q = _tmdbQuery.value.trim()
+        if (q.isEmpty()) return
+        viewModelScope.launch {
+            _tmdbSearching.value = true
+            _tmdbError.value = null
+            proxy.searchTmdb(q)
+                .onSuccess { data -> _tmdbResults.value = data.results }
+                .onFailure { e -> _tmdbError.value = e.message ?: "搜索失败" }
+            _tmdbSearching.value = false
+        }
+    }
+
+    /**
+     * 由 TMDB 搜索结果直接入库（与 TMDB 数据 100% 吻合：标题、海报、原名、简介、上映日、评分）。
+     * 返回新建条目 id，便于跳转编辑页补全状态 / 评分 / 备注。
+     */
+    suspend fun addFromTmdb(item: TmdbItem): String {
+        val created = repo.createFromTmdb(
+            type = item.media_type.ifBlank { "movie" },
+            title = item.title.ifBlank { item.original_title },
+            tmdbId = item.tmdb_id.toString(),
+            posterUrl = item.poster_url,
+            originalTitle = item.original_title,
+            overview = item.overview,
+            releaseDate = item.release_date,
+            voteAverage = item.vote_average
+        )
+        return created.id
+    }
 }

@@ -30,7 +30,7 @@ PHP 后端：
 |---|---|---|
 | 任务统计（完成率/日历/月度图表） | 完成率（进度条）、真实日历网格视图 | 月度图表仅为 `LinearProgressIndicator`，未引入 MPAndroidChart，无柱状/折线图 |
 | 英语学习（翻译/单词/录音跟读） | 单词（音标/释义/例句/熟悉度）、SM-2 间隔重复复习流 | **已补全（2026-07-29）**：翻译页（中↔英互译，经后端 `/api/proxy/translate` 代理有道）；单词编辑页"查询释义"按钮自动拉取音标/释义/例句并播放原音（`/api/proxy/word`）；跟读练习页用 `MediaRecorder` 录音、可播放原音与我的录音对比；单词一键加入单词本。**密钥全部留在服务端后台管理，App 不持有任何 API Key**，经后端代理调用 |
-| 影音书籍（TMDB） | 书单/电影清单、状态标记、星级评分、海报链接字段 | **TMDB 未联网检索**，仅手动填 TMDB ID / 海报链接，无搜索与自动拉取 |
+| 影音书籍（TMDB） | 书单/电影清单、状态标记、星级评分、海报链接字段 | **已补全（2026-07-29）**：影音页新增"TMDB 搜索"入口，经后端 `/api/proxy/tmdb/search`（search/multi，仅 movie/tv）联机检索，结果展示海报/标题/原名/年份/评分；点击即自动拉取并入库（title、poster_url 取 TMDB 图片 CDN、original_title、overview、release_date、vote_average、tmdb_id 均与 TMDB 100% 吻合），随后跳转编辑页补全状态/评分/备注。新增 tv（剧集）类型。**密钥留在服务端后台管理，App 不持有任何 API Key**，经后端代理调用 |
 | 健康就诊（复诊提醒） | 就诊/用药/复诊/体征四类记录完整 | **复诊提醒未实现**，复诊仅作数据记录，无 AlarmManager/WorkManager 定时推送 |
 | 记账（月度图表） | 收支记录、分类、收/支/结余数字汇总 | 无可视化月度图表，未引入 MPAndroidChart |
 | 笔记系统（Markdown+图片） | Markdown 编辑+预览（自研轻量渲染器，标题/列表/引用/代码/粗斜体）、列表/搜索/收藏/置顶 | **图片上传未实现**（实体无图片字段，编辑页无选图/上传入口） |
@@ -54,7 +54,7 @@ PHP 后端：
 - 目录分层：方案为 `Core + Controllers + Models + Services + Utils`；实际为 `Model + Repository + ViewModel + Controller + Router + lib` 的 MVVM 分层，无 `Services/`、无 `Core/Utils`，也无独立的 Request/Database/Auth 类（以 `lib/Response.php`、`lib/ApiResponse.php`、`lib/ApiAuth.php`、`config/` 替代）。
 - 入口路径：方案 `public/index.php`；实际 `Backend/index.php`（无 public 目录）。
 - 同步接口范围：方案的 `/sync/upload`、`/sync/pull` 应为覆盖所有模块的通用端点；实际只绑到 Task 模块，其余模块走各自 `/api/{module}` 端点，且 `/sync/full` 未实现、无独立 SyncController（同步逻辑分散）。
-- 第三方代理：方案第七章要求 `Services/WeatherProxy/TmdbProxy/EnglishProxy` 及 `/proxy/weather|tmdb/search|translate|word`；实际完全缺失，无 `Services/` 目录、无 Proxy Controller、无 `/proxy/*` 路由、全仓库 0 处 `curl` 外部调用，`config/api_keys.php` 的 tmdb/qweather/youdao 为死配置。
+- 第三方代理：方案第七章要求 `Services/WeatherProxy/TmdbProxy/EnglishProxy` 及 `/proxy/weather|tmdb/search|translate|word`；实际已有 `ProxyController` 与 `/api/proxy/*` 路由（`translate`、`word`、`tmdb/search` 三个端点均经服务端密钥联机调用有道 / TMDB，无 `Services/` 目录），但天气代理仍缺失；`config/api_keys.php` 的 tmdb/qweather/youdao 已由后台管理 `app_config` 接管并可经管理页填写。
 - LWW 冲突解决：方案要求比较 `last_modified` 仅在更新值更新时覆盖；实际所有 `upsert` 均为无条件 `VALUES(...)` 覆盖，`last_modified` 仅用于增量拉取时间戳过滤，未做冲突比对。
 - 鉴权模型：方案要求 `X-Device-ID` 作为请求头鉴权维度；实际全局鉴权用 API Token（`app_api_token_required`），`X-Device-ID` 仅作数据归属 + 非空校验。
 - 表命名：方案的 `ledger_entries/fitness_records/media_items` 实际为 `account_records/sport_records/movie_books`；方案 `sync_meta` 表不存在（用 per-table `needs_sync` + `last_modified` 替代）。
@@ -64,7 +64,7 @@ PHP 后端：
 
 ## 四、结论
 
-工程已把"本地优先、可离线使用"的主干业务（任务体系、分类、运动含真实计步、健康/记账记录、笔记编辑、番茄钟、后端 CRUD 与基础同步）跑通，可作为可用 MVP。其中"联网与外部服务"一层已补齐英语学习相关项：翻译、录音跟读已接入（App 不直接持有密钥，统一经后端 `/api/proxy/*` 代理调用有道，密钥在后台管理填写）。但 TMDB、天气两类外接 API 仍未接入；通知/提醒、跨模块全局搜索、图表可视化、笔记图片、板块开关 UI 也未完成。同时整体技术栈与方案文档不一致（Compose 替代 ViewBinding/Fragment，自研 Markdown 替代 Markwon，无图表库），后端分层与表命名、鉴权、响应字段也与方案描述不符。若要让方案"名副其实"，下一步优先级建议为：① 通知提醒（任务/复诊闹钟）；② 全局 FTS 搜索与板块开关 UI；③ 影音 TMDB / 天气 的外接 API 接入；④ MPAndroidChart 图表与笔记图片上传；⑤ 后端补充 `/sync/full`、LWW 冲突解决，并统一响应字段与表命名。
+工程已把"本地优先、可离线使用"的主干业务（任务体系、分类、运动含真实计步、健康/记账记录、笔记编辑、番茄钟、后端 CRUD 与基础同步）跑通，可作为可用 MVP。其中"联网与外部服务"一层已补齐：翻译、录音跟读已接入（经 `/api/proxy/translate`、`/api/proxy/word` 代理有道）；影音 TMDB 已接入（经 `/api/proxy/tmdb/search` 联机检索并自动拉取入库，与 TMDB 100% 吻合）。以上均为 App 不直接持有密钥、统一经后端 `/api/proxy/*` 代理调用、密钥在后台管理填写。但天气外接 API 仍未接入；通知/提醒、跨模块全局搜索、图表可视化、笔记图片、板块开关 UI 也未完成。同时整体技术栈与方案文档不一致（Compose 替代 ViewBinding/Fragment，自研 Markdown 替代 Markwon，无图表库），后端分层与表命名、鉴权、响应字段也与方案描述不符。若要让方案"名副其实"，下一步优先级建议为：① 通知提醒（任务/复诊闹钟）；② 全局 FTS 搜索与板块开关 UI；③ 天气 的外接 API 接入；④ MPAndroidChart 图表与笔记图片上传；⑤ 后端补充 `/sync/full`、LWW 冲突解决，并统一响应字段与表命名。
 
 ## 参考
 
