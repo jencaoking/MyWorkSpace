@@ -21,7 +21,8 @@ import java.util.concurrent.TimeUnit
  * - 归档：WorkManager 周期任务（24h，对齐每天 00:05）+ 应用启动兜底一次；
  * - 早间提醒：AlarmManager 每天 08:00（有待处理作业才弹通知）；
  * - 周回顾提醒：AlarmManager 每周日 20:00。
- * 与健康提醒一致使用 setAlarmClock，规避 Android 12+ 精确闹钟权限问题。
+ * 与健康提醒一致优先使用 setAlarmClock；若系统未授予精确闹钟权限（SCHEDULE_EXACT_ALARM），
+ * 则降级为 setAndAllowWhileIdle 非精确闹钟，避免启动崩溃。
  */
 object DailyPendingScheduler {
     const val CHANNEL_ID = "daily_pending_reminder"
@@ -111,7 +112,11 @@ object DailyPendingScheduler {
             Intent(context, DailyPendingReminderReceiver::class.java).apply { this.action = action },
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-        am.setAlarmClock(AlarmManager.AlarmClockInfo(trigger, contentIntent(context)), pi)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !am.canScheduleExactAlarms()) {
+            am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, trigger, pi)
+        } else {
+            am.setAlarmClock(AlarmManager.AlarmClockInfo(trigger, contentIntent(context)), pi)
+        }
     }
 
     /** 距下一个 hour:minute 的毫秒数（若今天已过则取明天） */

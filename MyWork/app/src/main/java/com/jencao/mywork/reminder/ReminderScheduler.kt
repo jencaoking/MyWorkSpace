@@ -14,7 +14,7 @@ import com.jencao.mywork.data.local.entity.HealthRecordEntity
  * 复诊 / 用药提醒调度器（本地优先，不依赖云端）。
  *
  * 使用 AlarmManager.setAlarmClock 而非 setExactAndAllowWhileIdle：
- * - setAlarmClock 不受 Android 12+ SCHEDULE_EXACT_ALARM 权限限制，无需向用户申请"精确闹钟"权限；
+ * - setAlarmClock 在已授予 SCHEDULE_EXACT_ALARM 时不受限制；未授予时降级为 setAndAllowWhileIdle（见 schedule）；
  * - 在断电 / 低电模式下仍能可靠触发，适合健康提醒这种"到点必须提醒"的场景；
  * - 状态栏会显示闹钟指示，语义上即"复诊闹钟 / 用药闹钟"。
  *
@@ -81,10 +81,15 @@ object ReminderScheduler {
         if (trigger <= System.currentTimeMillis()) return
         ensureChannel(context)
         val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        am.setAlarmClock(
-            AlarmManager.AlarmClockInfo(trigger, contentIntent(context, rec.id)),
-            fireIntent(context, rec.id, title, content)
-        )
+        val pi = fireIntent(context, rec.id, title, content)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !am.canScheduleExactAlarms()) {
+            am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, trigger, pi)
+        } else {
+            am.setAlarmClock(
+                AlarmManager.AlarmClockInfo(trigger, contentIntent(context, rec.id)),
+                pi
+            )
+        }
     }
 
     /** 取消单条提醒（删除 / 修改时间时调用）。无对应闹钟时静默。 */
