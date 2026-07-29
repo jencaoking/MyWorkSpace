@@ -198,7 +198,7 @@ data class SettingsSaveRequest(
 )
 typealias SettingsSaveResponse = ApiEnvelope<Any>
 
-// —— 第三方 API 代理（密钥保存在服务端后台管理，App 不持有密钥，仅通过 /api/proxy/* 调用） ——
+// 第三方 API 代理（密钥保存在服务端后台管理，App 不持有密钥，仅通过 /api/proxy/* 调用）
 
 /** GET /api/proxy/translate 返回：文本翻译结果 */
 data class TranslateData(
@@ -231,7 +231,7 @@ data class WordLookupData(
 )
 typealias WordLookupResponse = ApiEnvelope<WordLookupData>
 
-/* ---------- TMDB 搜索（后端代理 /api/proxy/tmdb/search） ---------- */
+// TMDB 搜索（后端代理 /api/proxy/tmdb/search）
 /** 单条 TMDB 搜索结果（字段与后端归一化输出一一对应，保持 snake_case 以便 Gson 直接映射）。 */
 data class TmdbItem(
     val tmdb_id: Int = 0,
@@ -255,7 +255,7 @@ data class TmdbSearchData(
 
 typealias TmdbSearchResponse = ApiEnvelope<TmdbSearchData>
 
-/* ---------- 和风天气 QWeather（后端代理 /api/proxy/weather/*） ---------- */
+// 和风天气 QWeather（后端代理 /api/proxy/weather/*）
 // 注意：Gson 使用 LOWER_CASE_WITH_UNDERSCORES；QWeather 返回 camelCase 字段，故每个字段显式标注 @SerializedName。
 
 /** 实时天气 now 对象 */
@@ -315,4 +315,3 @@ data class QweatherCityData(
     @SerializedName("location") val location: List<QweatherCity> = emptyList()
 )
 typealias QweatherCityResponse = ApiEnvelope<QweatherCityData>
-

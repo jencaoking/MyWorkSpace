@@ -14,6 +14,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import java.text.SimpleDateFormat
@@ -63,6 +64,7 @@ fun HomeScreen(
     val weatherSearching by weatherVm.searching.collectAsStateWithLifecycle()
     val weatherResults by weatherVm.searchResults.collectAsStateWithLifecycle()
     var showCityPicker by remember { mutableStateOf(false) }
+    val ctx = LocalContext.current
 
     val locationPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -71,7 +73,6 @@ fun HomeScreen(
         weatherVm.setLocationGranted(granted)
     }
     LaunchedEffect(Unit) {
-        val ctx = LocalContext.current
         val fine = ContextCompat.checkSelfPermission(ctx, Manifest.permission.ACCESS_FINE_LOCATION)
         val coarse = ContextCompat.checkSelfPermission(ctx, Manifest.permission.ACCESS_COARSE_LOCATION)
         if (fine == PackageManager.PERMISSION_GRANTED || coarse == PackageManager.PERMISSION_GRANTED) {
