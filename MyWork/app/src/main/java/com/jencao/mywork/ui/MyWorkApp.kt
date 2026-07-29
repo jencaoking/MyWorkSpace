@@ -56,6 +56,14 @@ import com.jencao.mywork.ui.task.TaskScreen
 import com.jencao.mywork.ui.theme.MyWorkTheme
 import com.jencao.mywork.ui.theme.neumorphic
 import com.jencao.mywork.ui.tools.ToolsScreen
+import com.jencao.mywork.ui.toolbox.CalcScreen
+import com.jencao.mywork.ui.toolbox.ConverterScreen
+import com.jencao.mywork.ui.toolbox.QrScreen
+import com.jencao.mywork.ui.toolbox.CountdownScreen
+import com.jencao.mywork.ui.toolbox.FlashcardScreen
+import com.jencao.mywork.ui.toolbox.HabitScreen
+import com.jencao.mywork.ui.toolbox.InspirationScreen
+import com.jencao.mywork.ui.toolbox.ExpressScreen
 
 @Composable
 fun MyWorkApp(
@@ -116,6 +124,15 @@ fun MyWorkApp(
                 composable(Routes.ENGLISH_REVIEW) { EnglishReviewScreen(navController, padding) }
                 composable(Routes.GLOBAL_SEARCH) { GlobalSearchScreen(navController, padding) }
                 composable(Routes.DAILY_PENDING) { DailyPendingScreen(navController, padding) }
+                // 工具箱 8 个模块
+                composable(Routes.CALC) { CalcScreen(navController, padding) }
+                composable(Routes.CONVERTER) { ConverterScreen(navController, padding) }
+                composable(Routes.QRCODE) { QrScreen(navController, padding) }
+                composable(Routes.COUNTDOWN) { CountdownScreen(navController, padding) }
+                composable(Routes.FLASHCARD) { FlashcardScreen(navController, padding) }
+                composable(Routes.HABIT) { HabitScreen(navController, padding) }
+                composable(Routes.INSPIRATION) { InspirationScreen(navController, padding) }
+                composable(Routes.EXPRESS) { ExpressScreen(navController, padding) }
             }
         }
     }
