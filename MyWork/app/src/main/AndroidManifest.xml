@@ -8,6 +8,8 @@
     <!-- 阶段6 精确提醒使用，先声明避免后续改 Manifest -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <!-- 计步器读取步数 -->
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
 
     <application
         android:name=".MyWorkApplication"

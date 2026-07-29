@@ -78,8 +78,6 @@ class SportViewModel @Inject constructor(
     private val _steps = MutableStateFlow("")
     val steps: StateFlow<String> = _steps
 
-    fun setSteps(v: String) { _steps.value = v.filter { it.isDigit() } }
-
     private val _date = MutableStateFlow(System.currentTimeMillis())
     val date: StateFlow<Long> = _date
 

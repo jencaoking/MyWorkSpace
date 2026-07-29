@@ -75,6 +75,7 @@ fun SportListScreen(nav: NavHostController, vm: SportViewModel = hiltViewModel()
                             StatItem("${stat.count}", "次")
                             StatItem(String.format(Locale.getDefault(), "%.1f", stat.distanceKm), "公里")
                             StatItem("${stat.calories}", "千卡")
+                            StatItem("${stat.steps}", "步")
                         }
                     }
                 }
@@ -135,6 +136,7 @@ private fun SportItemCard(
                 if (rec.durationMin > 0) parts += "${rec.durationMin} 分钟"
                 rec.distanceKm?.takeIf { it > 0 }?.let { parts += String.format(Locale.getDefault(), "%.1f 公里", it) }
                 rec.calories?.takeIf { it > 0 }?.let { parts += "$it 千卡" }
+                rec.steps?.takeIf { it > 0 }?.let { parts += "$it 步" }
                 Text(parts.joinToString(" · ").ifEmpty { "无数据" }, style = MaterialTheme.typography.bodyMedium)
                 if (rec.note.isNotBlank()) {
                     Text(rec.note, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
