@@ -13,6 +13,18 @@ interface EnglishWordDao {
     @Query("SELECT * FROM english_words WHERE is_deleted = 0 ORDER BY next_review ASC")
     fun observeAll(): Flow<List<EnglishWordEntity>>
 
+    @Query("SELECT * FROM english_words WHERE is_deleted = 0 AND next_review <= :now ORDER BY next_review ASC")
+    fun observeDue(now: Long): Flow<List<EnglishWordEntity>>
+
+    @Query("SELECT * FROM english_words WHERE id = :id AND is_deleted = 0")
+    suspend fun getById(id: String): EnglishWordEntity?
+
+    @Query("SELECT * FROM english_words WHERE is_deleted = 0 AND next_review <= :now ORDER BY next_review ASC")
+    suspend fun getDueForReview(now: Long): List<EnglishWordEntity>
+
+    @Query("SELECT COUNT(*) FROM english_words WHERE is_deleted = 0 AND next_review <= :now")
+    suspend fun countDue(now: Long): Int
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(item: EnglishWordEntity)
 
@@ -30,4 +42,10 @@ interface EnglishWordDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertAll(items: List<EnglishWordEntity>)
+
+    @Query("UPDATE english_words SET needs_sync = 0 WHERE id IN (:ids)")
+    suspend fun clearUploadFlag(ids: List<String>)
+
+    @Query("UPDATE english_words SET needs_sync = 0 WHERE id IN (:ids)")
+    suspend fun clearDeleteFlag(ids: List<String>)
 }

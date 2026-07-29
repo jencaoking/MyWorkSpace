@@ -18,6 +18,10 @@ object Routes {
     const val ENGLISH = "english"
     const val MEDIA = "media"
     const val HEALTH = "health"
+    // 阶段5 新增模块
+    const val ACCOUNT = "account"
+    const val POMODORO = "pomodoro"
+    const val ENGLISH_REVIEW = "englishReview"
 }
 
 /** 任务模块内部嵌套路由（列表 / 详情 / 日历 / 统计 / 分类管理）。 */
@@ -54,6 +58,7 @@ object SportRoutes {
 /** 英语模块内部嵌套路由（列表 / 编辑）。 */
 object EnglishRoutes {
     const val LIST = "english_list"
+    const val REVIEW = "english_review"
     const val EDIT = "english_edit/{wordId}"
     const val NEW_ID = "new"
     fun edit(wordId: String) = "english_edit/$wordId"
@@ -73,6 +78,20 @@ object HealthRoutes {
     const val EDIT = "health_edit/{healthId}"
     const val NEW_ID = "new"
     fun edit(healthId: String) = "health_edit/$healthId"
+}
+
+/** 记账模块路由 */
+object AccountRoutes {
+    const val GRAPH = "accountGraph"
+    const val LIST = "account_list"
+    const val EDIT = "account_edit/{accountId}"
+    const val NEW_ID = "new"
+    fun edit(accountId: String) = "account_edit/$accountId"
+}
+
+/** 番茄钟模块路由 */
+object PomodoroRoutes {
+    const val LIST = "pomodoro"
 }
 
 data class BottomNavItem(

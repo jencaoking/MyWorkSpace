@@ -19,6 +19,9 @@ import androidx.navigation.compose.rememberNavController
 import com.jencao.mywork.data.settings.ThemeMode
 import com.jencao.mywork.ui.home.HomeScreen
 import com.jencao.mywork.ui.english.EnglishScreen
+import com.jencao.mywork.ui.english.EnglishReviewScreen
+import com.jencao.mywork.ui.account.AccountScreen
+import com.jencao.mywork.ui.pomodoro.PomodoroScreen
 import com.jencao.mywork.ui.health.HealthScreen
 import com.jencao.mywork.ui.media.MediaScreen
 import com.jencao.mywork.ui.navigation.Routes
@@ -80,6 +83,10 @@ fun MyWorkApp(appVm: AppViewModel) {
                 composable(Routes.ENGLISH) { EnglishScreen(navController) }
                 composable(Routes.MEDIA) { MediaScreen(navController) }
                 composable(Routes.HEALTH) { HealthScreen(navController) }
+                // 阶段5
+                composable(Routes.ACCOUNT) { AccountScreen(navController) }
+                composable(Routes.POMODORO) { PomodoroScreen(navController) }
+                composable(Routes.ENGLISH_REVIEW) { EnglishReviewScreen(navController) }
             }
         }
     }

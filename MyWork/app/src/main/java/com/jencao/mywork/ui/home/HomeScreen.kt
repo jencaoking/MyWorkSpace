@@ -35,6 +35,8 @@ private fun moduleRoute(key: ModuleKey): String = when (key) {
     ModuleKey.ENGLISH -> Routes.ENGLISH
     ModuleKey.MEDIA -> Routes.MEDIA
     ModuleKey.HEALTH -> Routes.HEALTH
+    ModuleKey.ACCOUNT -> Routes.ACCOUNT
+    ModuleKey.POMODORO -> Routes.POMODORO
     else -> Routes.HOME
 }
 

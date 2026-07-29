@@ -4,6 +4,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -15,6 +17,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -41,6 +44,7 @@ import androidx.navigation.NavHostController
 import com.jencao.mywork.data.local.entity.EnglishWordEntity
 import com.jencao.mywork.ui.components.EmptyHint
 import com.jencao.mywork.ui.navigation.EnglishRoutes
+import com.jencao.mywork.ui.navigation.Routes
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -59,10 +63,14 @@ fun EnglishListScreen(nav: NavHostController, vm: EnglishViewModel = hiltViewMod
         topBar = {
             TopAppBar(
                 title = { Text("英语单词") },
-                actions = {
-                    Text("待复习 $dueCount", style = MaterialTheme.typography.labelMedium)
-                    Switch(checked = dueOnly, onCheckedChange = vm::setDueOnly)
-                }
+        actions = {
+            Text("待复习 $dueCount", style = MaterialTheme.typography.labelMedium)
+            if (dueCount > 0) {
+                Spacer(Modifier.width(8.dp))
+                Button(onClick = { nav.navigate(Routes.ENGLISH_REVIEW) }) { Text("开始复习") }
+            }
+            Switch(checked = dueOnly, onCheckedChange = vm::setDueOnly)
+        }
             )
         },
         floatingActionButton = {

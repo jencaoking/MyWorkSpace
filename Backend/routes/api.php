@@ -11,6 +11,7 @@ use App\Controller\MovieBookController;
 use App\Controller\NoteController;
 use App\Controller\SportRecordController;
 use App\Controller\TaskController;
+use App\Controller\AccountRecordController;
 
 $health = static fn() => new HealthController($pdo);
 $task = static fn() => new TaskController($pdo);
@@ -19,6 +20,7 @@ $sport = static fn() => new SportRecordController($pdo);
 $english = static fn() => new EnglishWordController($pdo);
 $media = static fn() => new MovieBookController($pdo);
 $healthRecord = static fn() => new HealthRecordController($pdo);
+$account = static fn() => new AccountRecordController($pdo);
 
 // 健康检查
 $router->add('GET', '/api/health', static fn() => $health()->index());
@@ -41,6 +43,11 @@ $router->add('GET', '/api/notes/search', static fn() => $note()->search());
 $router->add('GET', '/api/notes/pull', static fn() => $note()->pull());
 
 // 阶段4 专项模块接口
+// 记账记录
+$router->add('GET', '/api/accounts', static fn() => $account()->list());
+$router->add('POST', '/api/accounts', static fn() => $account()->batchUpsert());
+$router->add('POST', '/api/accounts/delete', static fn() => $account()->delete());
+$router->add('GET', '/api/accounts/pull', static fn() => $account()->pull());
 // 运动记录
 $router->add('GET', '/api/sports', static fn() => $sport()->list());
 $router->add('POST', '/api/sports', static fn() => $sport()->batchUpsert());
@@ -61,3 +68,9 @@ $router->add('GET', '/api/health-records', static fn() => $healthRecord()->list(
 $router->add('POST', '/api/health-records', static fn() => $healthRecord()->batchUpsert());
 $router->add('POST', '/api/health-records/delete', static fn() => $healthRecord()->delete());
 $router->add('GET', '/api/health-records/pull', static fn() => $healthRecord()->pull());
+
+// 后台管理（只读）：概览 + 通用数据浏览
+use App\Controller\AdminController;
+$admin = static fn() => new AdminController($pdo);
+$router->add('GET', '/admin/overview', static fn() => $admin()->overview());
+$router->add('GET', '/admin/browse', static fn() => $admin()->browse());

@@ -22,7 +22,8 @@ enum class ModuleKey {
     MEDIA,      // 影音书籍
     HEALTH,     // 健康
     ACCOUNT,    // 记账
-    WEATHER;    // 天气
+    WEATHER,    // 天气
+    POMODORO;   // 番茄钟
 
     val displayName: String
         get() = when (this) {
@@ -34,6 +35,7 @@ enum class ModuleKey {
             HEALTH -> "健康"
             ACCOUNT -> "记账"
             WEATHER -> "天气"
+            POMODORO -> "番茄钟"
         }
 
     /** P0 板块固定开启、不允许用户关闭 */

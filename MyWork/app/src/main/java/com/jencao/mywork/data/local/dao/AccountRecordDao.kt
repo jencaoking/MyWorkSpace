@@ -13,6 +13,9 @@ interface AccountRecordDao {
     @Query("SELECT * FROM account_records WHERE is_deleted = 0 ORDER BY record_date DESC")
     fun observeAll(): Flow<List<AccountRecordEntity>>
 
+    @Query("SELECT * FROM account_records WHERE id = :id AND is_deleted = 0")
+    suspend fun getById(id: String): AccountRecordEntity?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(item: AccountRecordEntity)
 
@@ -30,4 +33,10 @@ interface AccountRecordDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertAll(items: List<AccountRecordEntity>)
+
+    @Query("UPDATE account_records SET needs_sync = 0 WHERE id IN (:ids)")
+    suspend fun clearUploadFlag(ids: List<String>)
+
+    @Query("UPDATE account_records SET needs_sync = 0 WHERE id IN (:ids)")
+    suspend fun clearDeleteFlag(ids: List<String>)
 }

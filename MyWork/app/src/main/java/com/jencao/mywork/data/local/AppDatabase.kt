@@ -18,9 +18,10 @@ import com.jencao.mywork.data.local.entity.*
         EnglishWordEntity::class,
         MovieBookEntity::class,
         HealthRecordEntity::class,
-        AccountRecordEntity::class
+        AccountRecordEntity::class,
+        PomodoroSessionEntity::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -33,6 +34,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun movieBookDao(): MovieBookDao
     abstract fun healthRecordDao(): HealthRecordDao
     abstract fun accountRecordDao(): AccountRecordDao
+    abstract fun pomodoroSessionDao(): PomodoroSessionDao
 
     companion object {
         const val DATABASE_NAME = "mywork.db"
