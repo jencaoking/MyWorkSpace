@@ -17,6 +17,7 @@ data class SportRecordEntity(
     @ColumnInfo(name = "duration_min") var durationMin: Int = 0,
     @ColumnInfo(name = "distance_km") var distanceKm: Float? = null,
     @ColumnInfo(name = "calories") var calories: Int? = null,
+    @ColumnInfo(name = "steps") var steps: Int? = null,
     @ColumnInfo(name = "record_date") var recordDate: Long = System.currentTimeMillis(),
     @ColumnInfo(name = "note") var note: String = ""
 ) : BaseEntity()

@@ -23,7 +23,8 @@ data class SportMonthStat(
     val totalMin: Int = 0,
     val count: Int = 0,
     val distanceKm: Float = 0f,
-    val calories: Int = 0
+    val calories: Int = 0,
+    val steps: Int = 0
 )
 
 /** 运动模块 ViewModel：列表（含本月统计）+ 编辑共用。 */
@@ -44,6 +45,7 @@ class SportViewModel @Inject constructor(
         var count = 0
         var distance = 0f
         var calo = 0
+        var stepSum = 0
         for (it in list) {
             val c = Calendar.getInstance().apply { timeInMillis = it.recordDate }
             if (c.get(Calendar.YEAR) == y && c.get(Calendar.MONTH) == m) {
@@ -51,9 +53,10 @@ class SportViewModel @Inject constructor(
                 count += 1
                 distance += it.distanceKm ?: 0f
                 calo += it.calories ?: 0
+                stepSum += it.steps ?: 0
             }
         }
-        SportMonthStat(totalMin, count, distance, calo)
+        SportMonthStat(totalMin, count, distance, calo, stepSum)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), SportMonthStat())
 
     // —— 编辑字段 ——
@@ -71,6 +74,11 @@ class SportViewModel @Inject constructor(
 
     private val _calories = MutableStateFlow("")
     val calories: StateFlow<String> = _calories
+
+    private val _steps = MutableStateFlow("")
+    val steps: StateFlow<String> = _steps
+
+    fun setSteps(v: String) { _steps.value = v.filter { it.isDigit() } }
 
     private val _date = MutableStateFlow(System.currentTimeMillis())
     val date: StateFlow<Long> = _date
@@ -92,6 +100,7 @@ class SportViewModel @Inject constructor(
                     _duration.value = if (it.durationMin > 0) it.durationMin.toString() else ""
                     _distance.value = it.distanceKm?.takeIf { d -> d > 0 }?.toString() ?: ""
                     _calories.value = it.calories?.takeIf { c -> c > 0 }?.toString() ?: ""
+                    _steps.value = it.steps?.takeIf { s -> s > 0 }?.toString() ?: ""
                     _date.value = it.recordDate
                     _note.value = it.note
                 }
@@ -103,6 +112,7 @@ class SportViewModel @Inject constructor(
     fun setDuration(v: String) { _duration.value = v.filter { it.isDigit() } }
     fun setDistance(v: String) { _distance.value = v }
     fun setCalories(v: String) { _calories.value = v.filter { it.isDigit() } }
+    fun setSteps(v: String) { _steps.value = v.filter { it.isDigit() } }
     fun setDate(v: Long) { _date.value = v }
     fun setNote(v: String) { _note.value = v }
 
@@ -110,12 +120,14 @@ class SportViewModel @Inject constructor(
         val dur = _duration.value.toIntOrNull() ?: 0
         val dis = _distance.value.toFloatOrNull()
         val cal = _calories.value.toIntOrNull()
+        val stepsVal = _steps.value.toIntOrNull()
         if (loaded == null) {
             repo.create(
                 type = _type.value,
                 durationMin = dur,
                 distanceKm = dis,
                 calories = cal,
+                steps = stepsVal,
                 recordDate = _date.value,
                 note = _note.value.trim()
             )
@@ -125,6 +137,7 @@ class SportViewModel @Inject constructor(
                 durationMin = dur
                 distanceKm = dis
                 calories = cal
+                steps = stepsVal
                 recordDate = _date.value
                 note = _note.value.trim()
             }

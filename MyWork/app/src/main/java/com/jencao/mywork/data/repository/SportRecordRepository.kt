@@ -21,6 +21,7 @@ class SportRecordRepository @Inject constructor(
         durationMin: Int = 0,
         distanceKm: Float? = null,
         calories: Int? = null,
+        steps: Int? = null,
         recordDate: Long = System.currentTimeMillis(),
         note: String = ""
     ): SportRecordEntity {
@@ -29,6 +30,7 @@ class SportRecordRepository @Inject constructor(
             durationMin = durationMin,
             distanceKm = distanceKm,
             calories = calories,
+            steps = steps,
             recordDate = recordDate,
             note = note
         ).apply { touch() }

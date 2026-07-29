@@ -12,4 +12,10 @@ object ApiConfig {
 
     const val HEADER_DEVICE_ID = "X-Device-ID"
     const val HEADER_ACCEPT = "Accept"
+
+    /** App 接口共享令牌头（与后端 SELFWORK_API_TOKEN 对应；后端优先读 Authorization，其次 X-Api-Token）。 */
+    const val HEADER_AUTHORIZATION = "Authorization"
+    const val HEADER_API_TOKEN = "X-Api-Token"
+    /** Authorization 头的值前缀，采用标准 Bearer 方案。 */
+    const val AUTH_SCHEME = "Bearer"
 }
