@@ -1,0 +1,33 @@
+package com.jencao.mywork.data.local.dao
+
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Update
+import com.jencao.mywork.data.local.entity.EnglishWordEntity
+import kotlinx.coroutines.flow.Flow
+
+@Dao
+interface EnglishWordDao {
+    @Query("SELECT * FROM english_words WHERE is_deleted = 0 ORDER BY next_review ASC")
+    fun observeAll(): Flow<List<EnglishWordEntity>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(item: EnglishWordEntity)
+
+    @Update
+    suspend fun update(item: EnglishWordEntity)
+
+    @Query("UPDATE english_words SET is_deleted = 1, last_modified = :ts, needs_sync = 1 WHERE id = :id")
+    suspend fun softDelete(id: String, ts: Long = System.currentTimeMillis())
+
+    @Query("SELECT * FROM english_words WHERE needs_sync = 1 AND is_deleted = 0")
+    suspend fun getPendingUploads(): List<EnglishWordEntity>
+
+    @Query("SELECT * FROM english_words WHERE needs_sync = 1 AND is_deleted = 1")
+    suspend fun getPendingDeletions(): List<EnglishWordEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertAll(items: List<EnglishWordEntity>)
+}
