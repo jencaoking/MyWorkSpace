@@ -118,6 +118,93 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /** 版本 10 -> 11：新增工具箱 8 模块共 10 张表（计算器/扫码/倒计时/习惯/闪卡/灵感/快递）。 */
+        private val MIGRATION_10_11 = object : Migration(10, 11) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """CREATE TABLE IF NOT EXISTS `calc_history` (
+                        `id` TEXT NOT NULL, `expr` TEXT NOT NULL, `result` TEXT NOT NULL,
+                        `created_at` INTEGER NOT NULL, `last_modified` INTEGER NOT NULL,
+                        `is_deleted` INTEGER NOT NULL, `device_id` TEXT NOT NULL, `needs_sync` INTEGER NOT NULL,
+                        PRIMARY KEY(`id`))"""
+                )
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_calc_history_created_at` ON `calc_history` (`created_at`)")
+                db.execSQL(
+                    """CREATE TABLE IF NOT EXISTS `qr_scan_history` (
+                        `id` TEXT NOT NULL, `content` TEXT NOT NULL, `format` TEXT NOT NULL, `note` TEXT,
+                        `created_at` INTEGER NOT NULL, `last_modified` INTEGER NOT NULL,
+                        `is_deleted` INTEGER NOT NULL, `device_id` TEXT NOT NULL, `needs_sync` INTEGER NOT NULL,
+                        PRIMARY KEY(`id`))"""
+                )
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_qr_scan_history_created_at` ON `qr_scan_history` (`created_at`)")
+                db.execSQL(
+                    """CREATE TABLE IF NOT EXISTS `countdown_events` (
+                        `id` TEXT NOT NULL, `title` TEXT NOT NULL, `target_time` INTEGER NOT NULL, `remark` TEXT,
+                        `created_at` INTEGER NOT NULL, `last_modified` INTEGER NOT NULL,
+                        `is_deleted` INTEGER NOT NULL, `device_id` TEXT NOT NULL, `needs_sync` INTEGER NOT NULL,
+                        PRIMARY KEY(`id`))"""
+                )
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_countdown_events_target_time` ON `countdown_events` (`target_time`)")
+                db.execSQL(
+                    """CREATE TABLE IF NOT EXISTS `habit_plans` (
+                        `id` TEXT NOT NULL, `title` TEXT NOT NULL, `description` TEXT, `period` INTEGER NOT NULL,
+                        `start_date` INTEGER NOT NULL, `created_at` INTEGER NOT NULL, `last_modified` INTEGER NOT NULL,
+                        `is_deleted` INTEGER NOT NULL, `device_id` TEXT NOT NULL, `needs_sync` INTEGER NOT NULL,
+                        PRIMARY KEY(`id`))"""
+                )
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_habit_plans_start_date` ON `habit_plans` (`start_date`)")
+                db.execSQL(
+                    """CREATE TABLE IF NOT EXISTS `habits` (
+                        `id` TEXT NOT NULL, `plan_id` TEXT NOT NULL, `title` TEXT NOT NULL, `frequency` INTEGER NOT NULL,
+                        `days` TEXT, `time_min` INTEGER NOT NULL, `created_at` INTEGER NOT NULL, `last_modified` INTEGER NOT NULL,
+                        `is_deleted` INTEGER NOT NULL, `device_id` TEXT NOT NULL, `needs_sync` INTEGER NOT NULL,
+                        PRIMARY KEY(`id`))"""
+                )
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_habits_plan_id` ON `habits` (`plan_id`)")
+                db.execSQL(
+                    """CREATE TABLE IF NOT EXISTS `habit_checkins` (
+                        `id` TEXT NOT NULL, `habit_id` TEXT NOT NULL, `date` TEXT NOT NULL, `created_at` INTEGER NOT NULL,
+                        `last_modified` INTEGER NOT NULL, `is_deleted` INTEGER NOT NULL, `device_id` TEXT NOT NULL, `needs_sync` INTEGER NOT NULL,
+                        PRIMARY KEY(`id`))"""
+                )
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_habit_checkins_habit_id` ON `habit_checkins` (`habit_id`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_habit_checkins_date` ON `habit_checkins` (`date`)")
+                db.execSQL(
+                    """CREATE TABLE IF NOT EXISTS `flashcard_decks` (
+                        `id` TEXT NOT NULL, `name` TEXT NOT NULL, `description` TEXT, `created_at` INTEGER NOT NULL,
+                        `last_modified` INTEGER NOT NULL, `is_deleted` INTEGER NOT NULL, `device_id` TEXT NOT NULL, `needs_sync` INTEGER NOT NULL,
+                        PRIMARY KEY(`id`))"""
+                )
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_flashcard_decks_created_at` ON `flashcard_decks` (`created_at`)")
+                db.execSQL(
+                    """CREATE TABLE IF NOT EXISTS `flashcards` (
+                        `id` TEXT NOT NULL, `deck_id` TEXT NOT NULL, `front` TEXT NOT NULL, `back` TEXT NOT NULL,
+                        `next_review` INTEGER NOT NULL, `interval_days` INTEGER NOT NULL, `ease` REAL NOT NULL,
+                        `created_at` INTEGER NOT NULL, `last_modified` INTEGER NOT NULL,
+                        `is_deleted` INTEGER NOT NULL, `device_id` TEXT NOT NULL, `needs_sync` INTEGER NOT NULL,
+                        PRIMARY KEY(`id`))"""
+                )
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_flashcards_deck_id` ON `flashcards` (`deck_id`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_flashcards_next_review` ON `flashcards` (`next_review`)")
+                db.execSQL(
+                    """CREATE TABLE IF NOT EXISTS `inspiration_items` (
+                        `id` TEXT NOT NULL, `content` TEXT NOT NULL, `author` TEXT, `source` TEXT, `tags` TEXT,
+                        `favorite` INTEGER NOT NULL, `created_at` INTEGER NOT NULL, `last_modified` INTEGER NOT NULL,
+                        `is_deleted` INTEGER NOT NULL, `device_id` TEXT NOT NULL, `needs_sync` INTEGER NOT NULL,
+                        PRIMARY KEY(`id`))"""
+                )
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_inspiration_items_created_at` ON `inspiration_items` (`created_at`)")
+                db.execSQL(
+                    """CREATE TABLE IF NOT EXISTS `express_packages` (
+                        `id` TEXT NOT NULL, `company` TEXT NOT NULL, `company_name` TEXT NOT NULL, `tracking_no` TEXT NOT NULL,
+                        `goods` TEXT, `current_status` TEXT, `last_update` INTEGER, `created_at` INTEGER NOT NULL,
+                        `last_modified` INTEGER NOT NULL, `is_deleted` INTEGER NOT NULL, `device_id` TEXT NOT NULL, `needs_sync` INTEGER NOT NULL,
+                        PRIMARY KEY(`id`))"""
+                )
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_express_packages_tracking_no` ON `express_packages` (`tracking_no`)")
+            }
+        }
+
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
@@ -130,7 +217,7 @@ abstract class AppDatabase : RoomDatabase() {
                 )
                     // 阶段1 开发期：结构变更直接重建，避免手动 Migration
                     .fallbackToDestructiveMigration(dropAllTables = true)
-                    .addMigrations(MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_9_10)
+                    .addMigrations(MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_9_10, MIGRATION_10_11)
                     .build()
                 INSTANCE = instance
                 instance

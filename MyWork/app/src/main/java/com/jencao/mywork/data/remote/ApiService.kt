@@ -199,6 +199,63 @@ interface ApiService {
     @GET("api/daily-pending/pull")
     suspend fun pullDailyPending(@Query("since") since: Long): DailyPendingPullResponse
 
+    // —— 工具箱 8 模块（通用 list / batchUpsert / delete / pull） ——
+    @POST("api/calc") suspend fun uploadCalc(@Body req: SyncPushRequest<CalcHistoryEntity>): SyncPushResponse
+    @POST("api/calc/delete") suspend fun deleteCalc(@Body req: TaskDeleteRequest): TaskDeleteResponse
+    @GET("api/calc/pull") suspend fun pullCalc(@Query("since") since: Long): ToolPullResponse<CalcHistoryEntity>
+
+    @POST("api/qr") suspend fun uploadQr(@Body req: SyncPushRequest<QrScanEntity>): SyncPushResponse
+    @POST("api/qr/delete") suspend fun deleteQr(@Body req: TaskDeleteRequest): TaskDeleteResponse
+    @GET("api/qr/pull") suspend fun pullQr(@Query("since") since: Long): ToolPullResponse<QrScanEntity>
+
+    @POST("api/countdown") suspend fun uploadCountdown(@Body req: SyncPushRequest<CountdownEntity>): SyncPushResponse
+    @POST("api/countdown/delete") suspend fun deleteCountdown(@Body req: TaskDeleteRequest): TaskDeleteResponse
+    @GET("api/countdown/pull") suspend fun pullCountdown(@Query("since") since: Long): ToolPullResponse<CountdownEntity>
+
+    @POST("api/habit-plan") suspend fun uploadHabitPlan(@Body req: SyncPushRequest<HabitPlanEntity>): SyncPushResponse
+    @POST("api/habit-plan/delete") suspend fun deleteHabitPlan(@Body req: TaskDeleteRequest): TaskDeleteResponse
+    @GET("api/habit-plan/pull") suspend fun pullHabitPlan(@Query("since") since: Long): ToolPullResponse<HabitPlanEntity>
+
+    @POST("api/habit") suspend fun uploadHabit(@Body req: SyncPushRequest<HabitEntity>): SyncPushResponse
+    @POST("api/habit/delete") suspend fun deleteHabit(@Body req: TaskDeleteRequest): TaskDeleteResponse
+    @GET("api/habit/pull") suspend fun pullHabit(@Query("since") since: Long): ToolPullResponse<HabitEntity>
+
+    @POST("api/habit-checkin") suspend fun uploadHabitCheckin(@Body req: SyncPushRequest<HabitCheckinEntity>): SyncPushResponse
+    @POST("api/habit-checkin/delete") suspend fun deleteHabitCheckin(@Body req: TaskDeleteRequest): TaskDeleteResponse
+    @GET("api/habit-checkin/pull") suspend fun pullHabitCheckin(@Query("since") since: Long): ToolPullResponse<HabitCheckinEntity>
+
+    @POST("api/flashcard-deck") suspend fun uploadFlashcardDeck(@Body req: SyncPushRequest<FlashcardDeckEntity>): SyncPushResponse
+    @POST("api/flashcard-deck/delete") suspend fun deleteFlashcardDeck(@Body req: TaskDeleteRequest): TaskDeleteResponse
+    @GET("api/flashcard-deck/pull") suspend fun pullFlashcardDeck(@Query("since") since: Long): ToolPullResponse<FlashcardDeckEntity>
+
+    @POST("api/flashcard") suspend fun uploadFlashcard(@Body req: SyncPushRequest<FlashcardEntity>): SyncPushResponse
+    @POST("api/flashcard/delete") suspend fun deleteFlashcard(@Body req: TaskDeleteRequest): TaskDeleteResponse
+    @GET("api/flashcard/pull") suspend fun pullFlashcard(@Query("since") since: Long): ToolPullResponse<FlashcardEntity>
+
+    @POST("api/inspiration") suspend fun uploadInspiration(@Body req: SyncPushRequest<InspirationEntity>): SyncPushResponse
+    @POST("api/inspiration/delete") suspend fun deleteInspiration(@Body req: TaskDeleteRequest): TaskDeleteResponse
+    @GET("api/inspiration/pull") suspend fun pullInspiration(@Query("since") since: Long): ToolPullResponse<InspirationEntity>
+
+    @POST("api/express") suspend fun uploadExpress(@Body req: SyncPushRequest<ExpressPackageEntity>): SyncPushResponse
+    @POST("api/express/delete") suspend fun deleteExpress(@Body req: TaskDeleteRequest): TaskDeleteResponse
+    @GET("api/express/pull") suspend fun pullExpress(@Query("since") since: Long): ToolPullResponse<ExpressPackageEntity>
+
+    // AI 统一代理（密钥在服务端后台管理）
+    @POST("api/ai") suspend fun ai(@Body req: AiRequest): AiResponse
+    @GET("api/ai/quota") suspend fun aiQuota(): AiQuotaResponse
+
+    // 实时汇率（密钥在服务端后台管理）
+    @GET("api/currency/rate")
+    suspend fun currencyRate(
+        @Query("from") from: String,
+        @Query("to") to: String,
+        @Query("amount") amount: Double = 1.0
+    ): CurrencyRateResponse
+
+    // 快递实时查询（密钥在服务端后台管理）
+    @POST("api/express/track")
+    suspend fun expressTrack(@Body req: ExpressTrackRequest): ExpressTrackResponse
+
     // —— 设置（settings，单行镜像） ——
     @GET("api/settings")
     suspend fun getSettings(): SettingsResponse

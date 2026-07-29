@@ -2,8 +2,18 @@ package com.jencao.mywork.data.remote.model
 
 import com.google.gson.annotations.SerializedName
 import com.jencao.mywork.data.local.entity.AccountRecordEntity
+import com.jencao.mywork.data.local.entity.CalcHistoryEntity
 import com.jencao.mywork.data.local.entity.CategoryEntity
+import com.jencao.mywork.data.local.entity.CountdownEntity
 import com.jencao.mywork.data.local.entity.DailyPendingLogEntity
+import com.jencao.mywork.data.local.entity.ExpressPackageEntity
+import com.jencao.mywork.data.local.entity.FlashcardDeckEntity
+import com.jencao.mywork.data.local.entity.FlashcardEntity
+import com.jencao.mywork.data.local.entity.HabitCheckinEntity
+import com.jencao.mywork.data.local.entity.HabitEntity
+import com.jencao.mywork.data.local.entity.HabitPlanEntity
+import com.jencao.mywork.data.local.entity.InspirationEntity
+import com.jencao.mywork.data.local.entity.QrScanEntity
 import com.jencao.mywork.data.local.entity.EnglishWordEntity
 import com.jencao.mywork.data.local.entity.HealthRecordEntity
 import com.jencao.mywork.data.local.entity.MovieBookEntity
@@ -192,6 +202,35 @@ data class DailyPendingPullData(
     val deleted_ids: List<String> = emptyList()
 )
 typealias DailyPendingPullResponse = ApiEnvelope<DailyPendingPullData>
+
+// 工具箱 8 模块通用同步信封（list/batchUpsert/delete/pull 四接口复用）
+data class SyncPushRequest<T>(val logs: List<T> = emptyList())
+data class SyncPullData<T>(
+    val server_time: Long = 0L,
+    val logs: List<T> = emptyList(),
+    val deleted_ids: List<String> = emptyList()
+)
+typealias SyncPushResponse = ApiEnvelope<SyncUploadResult>
+typealias ToolPullResponse<T> = ApiEnvelope<SyncPullData<T>>
+
+// AI / 汇率 / 快递代理请求响应模型（密钥均在服务端后台管理，App 不持有）
+data class AiRequest(val action: String = "chat", val content: String = "", val target: String = "en", val tone: String = "")
+data class AiResponse(val code: Int = 0, val message: String = "", val data: AiResultData? = null)
+data class AiResultData(val result: String = "")
+data class AiQuotaResponse(val code: Int = 0, val message: String = "", val data: AiQuotaData? = null)
+data class AiQuotaData(val limit: Int = 0, val used: Int = 0, val remaining: Int = 0)
+data class CurrencyRateResponse(val code: Int = 0, val message: String = "", val data: CurrencyRateData? = null)
+data class CurrencyRateData(
+    val from: String = "", val to: String = "", val amount: Double = 0.0,
+    val rate: Double = 0.0, val result: Double = 0.0, val cached: Boolean = false
+)
+data class ExpressTrackRequest(val company: String = "", val tracking_no: String = "")
+data class ExpressTrackResponse(val code: Int = 0, val message: String = "", val data: ExpressTrackData? = null)
+data class ExpressTrackData(
+    val company: String = "", val tracking_no: String = "", val status: String = "",
+    val state: String = "", val traces: List<ExpressTrace> = emptyList()
+)
+data class ExpressTrace(val time: String = "", val context: String = "", val status: String = "")
 
 // 设置（settings）：单行镜像，theme + module_toggles
 data class UserSettingsDto(
