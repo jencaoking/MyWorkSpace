@@ -2,6 +2,7 @@ package com.jencao.mywork.data.repository
 
 import com.jencao.mywork.data.local.dao.EnglishWordDao
 import com.jencao.mywork.data.local.entity.EnglishWordEntity
+import com.jencao.mywork.data.util.touch
 import javax.inject.Inject
 import javax.inject.Singleton
 
