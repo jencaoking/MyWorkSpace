@@ -3,6 +3,7 @@ namespace App\Controller;
 
 use App\Exception\ApiException;
 use App\Repository\AdminRepository;
+use App\Repository\ConfigRepository;
 use PDO;
 
 /** 后台管理 Controller：只读的概览与数据浏览端点（MVVM 的绑定层） */
@@ -182,5 +183,38 @@ final class AdminController
             'message' => 'ok',
             'data' => ['rows' => $rows, 'total' => count($rows)],
         ]);
+    }
+
+    /** GET /admin/apikeys —— 读取已配置的密钥（脱敏展示末 4 位） */
+    public function apiKeys(): void
+    {
+        $this->requireAuth();
+        $repo = new ConfigRepository($this->pdo);
+        $keys = ['youdao_app_key', 'youdao_app_secret'];
+        $out  = [];
+        foreach ($keys as $k) {
+            $v       = $repo->get($k, '');
+            $out[$k] = $v !== '' ? '******' . mb_substr($v, -4) : '';
+        }
+        \Response::json([
+            'code'    => 0,
+            'message' => 'ok',
+            'data'    => ['keys' => $out],
+        ]);
+    }
+
+    /** POST /admin/apikeys —— 保存 API 密钥（仅写入非空字段，避免误清空） */
+    public function saveApiKeys(): void
+    {
+        $this->requireAuth();
+        $body = $this->jsonBody();
+        $repo = new ConfigRepository($this->pdo);
+        foreach (['youdao_app_key', 'youdao_app_secret'] as $k) {
+            if (array_key_exists($k, $body) && is_string($body[$k]) && $body[$k] !== '') {
+                $repo->set($k, trim($body[$k]));
+            }
+        }
+        (new AdminRepository($this->pdo))->audit('update', 'app_config', 'apikeys', ['youdao' => true]);
+        \Response::json(['code' => 0, 'message' => 'saved', 'data' => null]);
     }
 }

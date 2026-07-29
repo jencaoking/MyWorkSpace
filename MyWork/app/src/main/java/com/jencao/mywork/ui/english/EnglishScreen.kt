@@ -12,7 +12,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.jencao.mywork.ui.navigation.EnglishRoutes
 
-/** 英语模块嵌套导航宿主：列表 <-> 编辑。 */
+/** 英语模块嵌套导航宿主：列表 / 编辑 / 翻译 / 跟读。 */
 @Composable
 fun EnglishScreen(rootNav: NavHostController, padding: PaddingValues) {
     val nav = rememberNavController()
@@ -23,5 +23,7 @@ fun EnglishScreen(rootNav: NavHostController, padding: PaddingValues) {
     ) {
         composable(EnglishRoutes.LIST) { EnglishListScreen(nav = nav) }
         composable(EnglishRoutes.EDIT) { EnglishEditScreen(nav = nav) }
+        composable(EnglishRoutes.TRANSLATE) { TranslateScreen(nav = nav) }
+        composable(EnglishRoutes.SHADOW) { EnglishShadowScreen(nav = nav) }
     }
 }

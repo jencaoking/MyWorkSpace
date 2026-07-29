@@ -57,13 +57,16 @@ object SportRoutes {
     fun edit(sportId: String) = "sport_edit/$sportId"
 }
 
-/** 英语模块内部嵌套路由（列表 / 编辑）。 */
+/** 英语模块内部嵌套路由（列表 / 编辑 / 翻译 / 跟读）。 */
 object EnglishRoutes {
     const val LIST = "english_list"
     const val REVIEW = "english_review"
     const val EDIT = "english_edit/{wordId}"
+    const val TRANSLATE = "english_translate"
+    const val SHADOW = "english_shadow/{wordId}"
     const val NEW_ID = "new"
     fun edit(wordId: String) = "english_edit/$wordId"
+    fun shadow(wordId: String) = "english_shadow/$wordId"
 }
 
 /** 影音书籍模块内部嵌套路由（列表 / 编辑）。 */

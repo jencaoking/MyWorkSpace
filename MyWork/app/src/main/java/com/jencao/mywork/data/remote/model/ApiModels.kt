@@ -197,3 +197,36 @@ data class SettingsSaveRequest(
 )
 typealias SettingsSaveResponse = ApiEnvelope<Any>
 
+// —— 第三方 API 代理（密钥保存在服务端后台管理，App 不持有密钥，仅通过 /api/proxy/* 调用） ——
+
+/** GET /api/proxy/translate 返回：文本翻译结果 */
+data class TranslateData(
+    val query: String = "",
+    val from: String = "",
+    val to: String = "",
+    val translation: String = "",
+    val speak_url: String = "",
+    val t_speak_url: String = ""
+)
+typealias TranslateResponse = ApiEnvelope<TranslateData>
+
+/** 例句/释义条目（有道 web 释义） */
+data class WordExample(
+    val source: String = "",
+    val target: String = ""
+)
+
+/** GET /api/proxy/word 返回：单词音标、释义、发音地址、例句 */
+data class WordLookupData(
+    val word: String = "",
+    val phonetic: String = "",
+    val phonetic_us: String = "",
+    val phonetic_uk: String = "",
+    val explains: List<String> = emptyList(),
+    val translation: List<String> = emptyList(),
+    val speak_url: String = "",
+    val t_speak_url: String = "",
+    val examples: List<WordExample> = emptyList()
+)
+typealias WordLookupResponse = ApiEnvelope<WordLookupData>
+

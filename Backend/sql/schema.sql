@@ -99,6 +99,7 @@ CREATE TABLE IF NOT EXISTS english_words (
     phonetic     VARCHAR(128) DEFAULT '',
     meaning      TEXT,
     example      TEXT,
+    audio_path   TEXT,
     familiarity  TINYINT      NOT NULL DEFAULT 0,
     next_review  BIGINT       NOT NULL DEFAULT 0,
     last_modified BIGINT      NOT NULL,
@@ -180,4 +181,11 @@ CREATE TABLE IF NOT EXISTS admin_audit_log (
     PRIMARY KEY (id),
     KEY idx_table_row (table_name, row_id),
     KEY idx_created (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 通用键值配置（后台管理中填写的第三方 API 密钥等；仅服务端可读，不下发客户端）
+CREATE TABLE IF NOT EXISTS app_config (
+    cfg_key   VARCHAR(64) NOT NULL,
+    cfg_value TEXT,
+    PRIMARY KEY (cfg_key)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

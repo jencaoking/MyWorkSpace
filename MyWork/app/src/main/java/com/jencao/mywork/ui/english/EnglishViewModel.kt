@@ -4,7 +4,10 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jencao.mywork.data.local.entity.EnglishWordEntity
+import com.jencao.mywork.data.remote.model.WordLookupData
+import com.jencao.mywork.data.remote.model.TranslateData
 import com.jencao.mywork.data.repository.EnglishWordRepository
+import com.jencao.mywork.data.repository.ProxyRepository
 import com.jencao.mywork.ui.navigation.EnglishRoutes
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,6 +21,7 @@ import javax.inject.Inject
 @HiltViewModel
 class EnglishViewModel @Inject constructor(
     private val repo: EnglishWordRepository,
+    private val proxy: ProxyRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -106,4 +110,33 @@ class EnglishViewModel @Inject constructor(
 
     /** 列表项删除（按 id 软删）。 */
     fun deleteItem(id: String) = viewModelScope.launch { repo.markDeleted(id) }
+
+    // —— 外部 API 代理（密钥在服务端后台管理，App 不持有密钥） ——
+
+    /** 查询单词音标 / 释义 / 发音（有道），供编辑页自动填充。 */
+    suspend fun lookupWord(text: String) = proxy.lookupWord(text)
+
+    /** 文本翻译。 */
+    suspend fun translate(
+        text: String,
+        from: String = "auto",
+        to: String = "zh-CHS"
+    ) = proxy.translate(text, from, to)
+
+    /** 从翻译结果快速新建单词（返回新 id，用于跳转编辑补全释义）。 */
+    suspend fun createWord(word: String, meaning: String = ""): String {
+        val id = UUID.randomUUID().toString()
+        val now = System.currentTimeMillis()
+        repo.upsert(
+            EnglishWordEntity(
+                id = id,
+                word = word,
+                meaning = meaning,
+                createdAt = now,
+                updatedAt = now,
+                lastModified = now
+            )
+        )
+        return id
+    }
 }

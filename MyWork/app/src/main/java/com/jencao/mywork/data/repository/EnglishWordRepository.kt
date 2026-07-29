@@ -48,6 +48,14 @@ class EnglishWordRepository @Inject constructor(
 
     suspend fun markDeleted(id: String) = dao.softDelete(id)
 
+    /** 保存跟读录音的本地文件路径（仅本地，不同步到服务端）。 */
+    suspend fun updateAudioPath(id: String, path: String?) {
+        val item = dao.getById(id) ?: return
+        item.audioPath = path
+        item.touch()
+        dao.update(item)
+    }
+
     override suspend fun getPendingUploads(): List<EnglishWordEntity> = dao.getPendingUploads()
     override suspend fun getPendingDeletions(): List<String> = dao.getPendingDeletions().map { it.id }
 

@@ -18,6 +18,7 @@ data class EnglishWordEntity(
     @ColumnInfo(name = "phonetic") var phonetic: String = "",
     @ColumnInfo(name = "meaning") var meaning: String = "",
     @ColumnInfo(name = "example") var example: String = "",
+    @ColumnInfo(name = "audio_path") var audioPath: String? = null,
     @ColumnInfo(name = "familiarity") var familiarity: Int = 0,
     @ColumnInfo(name = "next_review") var nextReview: Long = 0L,
     @ColumnInfo(name = "interval_days") var intervalDays: Int = 0,

@@ -137,7 +137,60 @@ function navigate(key) {
   $('viewTitle').textContent = LABEL[key] || '概览';
   if (key === 'overview') showOverview();
   else if (key === 'audit') showAudit();
+  else if (key === 'apikeys') showApiKeys();
   else showTable(key);
+}
+
+async function showApiKeys() {
+  contentEl.innerHTML = '<div class="empty">加载中…</div>';
+  try {
+    const d = await api('/admin/apikeys');
+    const keys = (d.keys) || {};
+    const wrap = document.createElement('div');
+    wrap.className = 'form-wrap glass';
+    wrap.innerHTML = `
+      <h3>第三方 API 密钥</h3>
+      <p class="hint">密钥仅保存在服务端，App 通过后台代理（/api/proxy/*）调用，不会下发到客户端。当前支持有道智云开放翻译。</p>
+      <div class="field"><label>有道 App Key</label><input id="yk" type="text" placeholder="youdao_app_key" /></div>
+      <div class="field"><label>有道 App Secret</label><input id="ys" type="password" placeholder="youdao_app_secret" /></div>
+      <div class="row-actions">
+        <button id="saveKeys" class="btn-primary">保存密钥</button>
+        <button id="testKeys" class="btn">测试连接</button>
+        <span id="keyState" class="hint"></span>
+      </div>`;
+    contentEl.innerHTML = '';
+    contentEl.appendChild(wrap);
+    if (keys.youdao_app_key) {
+      $('keyState').textContent = '已配置（' + keys.youdao_app_key + '）';
+    }
+    $('saveKeys').onclick = async () => {
+      const btn = $('saveKeys'); btn.disabled = true;
+      try {
+        await api('/admin/apikeys', {
+          method: 'POST',
+          body: JSON.stringify({
+            youdao_app_key: $('yk').value.trim(),
+            youdao_app_secret: $('ys').value.trim(),
+          }),
+        });
+        toast('已保存');
+        showApiKeys();
+      } catch (e) {
+        toast('保存失败：' + e.message, true);
+      } finally { btn.disabled = false; }
+    };
+    $('testKeys').onclick = async () => {
+      const btn = $('testKeys'); btn.disabled = true;
+      try {
+        const r = await api('/api/proxy/translate?text=hello&to=en');
+        toast('连接成功：' + (r.translation || ''));
+      } catch (e) {
+        toast('测试失败：' + e.message, true);
+      } finally { btn.disabled = false; }
+    };
+  } catch (e) {
+    contentEl.innerHTML = `<div class="empty">加载失败：${esc(e.message)}</div>`;
+  }
 }
 
 function setConn(ok, ver) {

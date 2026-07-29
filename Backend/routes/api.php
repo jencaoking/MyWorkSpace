@@ -75,6 +75,16 @@ $admin = static fn() => new AdminController($pdo);
 $router->add('GET', '/admin/overview', static fn() => $admin()->overview());
 $router->add('GET', '/admin/browse', static fn() => $admin()->browse());
 
+// 第三方 API 代理：密钥保留在服务端后台管理，App 只调用 /api/proxy/*
+use App\Controller\ProxyController;
+$proxy = static fn() => new ProxyController($pdo);
+$router->add('GET', '/api/proxy/translate', static fn() => $proxy()->translate());
+$router->add('GET', '/api/proxy/word', static fn() => $proxy()->word());
+
+// 后台管理：API 密钥（有道翻译等）配置读写
+$router->add('GET', '/admin/apikeys', static fn() => $admin()->apiKeys());
+$router->add('POST', '/admin/apikeys', static fn() => $admin()->saveApiKeys());
+
 // 分类（categories）：列表 / 批量 upsert / 删除 / 增量拉取
 use App\Controller\CategoryController;
 $category = static fn() => new CategoryController($pdo);

@@ -37,6 +37,8 @@ import com.jencao.mywork.data.remote.model.SettingsResponse
 import com.jencao.mywork.data.remote.model.SettingsSaveRequest
 import com.jencao.mywork.data.remote.model.SettingsSaveResponse
 import com.jencao.mywork.data.remote.model.SportUploadRequest
+import com.jencao.mywork.data.remote.model.TranslateResponse
+import com.jencao.mywork.data.remote.model.WordLookupResponse
 import com.jencao.mywork.data.remote.model.SportUploadResponse
 import com.jencao.mywork.data.remote.model.SyncPullResponse
 import com.jencao.mywork.data.remote.model.SyncUploadRequest
@@ -176,4 +178,15 @@ interface ApiService {
 
     @POST("api/settings")
     suspend fun saveSettings(@Body req: SettingsSaveRequest): SettingsSaveResponse
+
+    // —— 第三方 API 代理（密钥在服务端后台管理，App 不持有密钥） ——
+    @GET("api/proxy/translate")
+    suspend fun translate(
+        @Query("text") text: String,
+        @Query("from") from: String = "auto",
+        @Query("to") to: String = "zh-CHS"
+    ): TranslateResponse
+
+    @GET("api/proxy/word")
+    suspend fun lookupWord(@Query("text") text: String): WordLookupResponse
 }
