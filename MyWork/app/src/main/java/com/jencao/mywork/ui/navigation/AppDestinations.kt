@@ -1,9 +1,10 @@
 package com.jencao.mywork.ui.navigation
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.jencao.mywork.data.settings.ModuleKey
@@ -13,6 +14,7 @@ object Routes {
     const val TASKS = "tasks"
     const val NOTES = "notes"
     const val SETTINGS = "settings"
+    const val TOOLS = "tools"
     // 阶段4 专项模块（首页卡片进入，不占底部导航）
     const val SPORT = "sport"
     const val ENGLISH = "english"
@@ -98,14 +100,14 @@ data class BottomNavItem(
     val route: String,
     val label: String,
     val icon: ImageVector,
-    /** 对应功能板块；为 null 表示常驻（首页/设置） */
+    /** 对应功能板块；为 null 表示常驻（首页/笔记/我的） */
     val module: ModuleKey? = null
 )
 
-/** 底部导航项。P0 板块（任务/笔记）恒显示；其余随板块开关出现。 */
+/** 底部导航项（固定四项 + 中心 FAB 专注入口），不再随板块开关增减，确保入口稳定可发现。 */
 val bottomNavItems = listOf(
     BottomNavItem(Routes.HOME, "首页", Icons.Filled.Home),
-    BottomNavItem(Routes.TASKS, "任务", Icons.Filled.CheckCircle, ModuleKey.TASK),
-    BottomNavItem(Routes.NOTES, "笔记", Icons.Filled.Book, ModuleKey.NOTE),
-    BottomNavItem(Routes.SETTINGS, "设置", Icons.Filled.Settings)
+    BottomNavItem(Routes.TASKS, "任务", Icons.Filled.CheckCircle),
+    BottomNavItem(Routes.NOTES, "笔记", Icons.Filled.Book),
+    BottomNavItem(Routes.SETTINGS, "我的", Icons.Filled.Person)
 )

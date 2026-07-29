@@ -74,3 +74,9 @@ use App\Controller\AdminController;
 $admin = static fn() => new AdminController($pdo);
 $router->add('GET', '/admin/overview', static fn() => $admin()->overview());
 $router->add('GET', '/admin/browse', static fn() => $admin()->browse());
+
+// 后台鉴权与数据写操作（编辑/删除行）
+$router->add('POST', '/admin/login', static fn() => $admin()->login());
+$router->add('POST', '/admin/logout', static fn() => $admin()->logout());
+$router->add('POST', '/admin/update', static fn() => $admin()->update());
+$router->add('POST', '/admin/delete', static fn() => $admin()->delete());

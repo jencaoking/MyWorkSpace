@@ -4,33 +4,21 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jencao.mywork.data.local.entity.TaskEntity
-import com.jencao.mywork.data.remote.model.HealthData
 import com.jencao.mywork.data.repository.TaskRepository
 import com.jencao.mywork.data.settings.UserPreferencesRepository
-import com.jencao.mywork.data.sync.SyncManager
 import com.jencao.mywork.data.sync.SyncScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-sealed interface ServerStatus {
-    data object Idle : ServerStatus
-    data object Loading : ServerStatus
-    data class Success(val data: HealthData) : ServerStatus
-    data class Error(val message: String) : ServerStatus
-}
-
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val taskRepo: TaskRepository,
-    private val sync: SyncManager,
     private val prefs: UserPreferencesRepository,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
@@ -42,9 +30,6 @@ class HomeViewModel @Inject constructor(
     val activeCount: StateFlow<Int> = taskRepo.observeActiveCount().stateIn(
         viewModelScope, SharingStarted.WhileSubscribed(5000), 0
     )
-
-    private val _serverStatus = MutableStateFlow<ServerStatus>(ServerStatus.Idle)
-    val serverStatus: StateFlow<ServerStatus> = _serverStatus.asStateFlow()
 
     /** 上次成功同步的服务器时间戳（毫秒），随自动同步推进 */
     val lastSyncAt: StateFlow<Long> = prefs.lastSyncAtFlow
@@ -62,13 +47,6 @@ class HomeViewModel @Inject constructor(
     val lastSyncFailed: StateFlow<Boolean> = SyncScheduler.observeState(context)
         .map { it.failed }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
-
-    fun testConnection() = viewModelScope.launch {
-        _serverStatus.value = ServerStatus.Loading
-        sync.testConnection()
-            .onSuccess { _serverStatus.value = ServerStatus.Success(it) }
-            .onFailure { _serverStatus.value = ServerStatus.Error(it.message ?: "连接失败") }
-    }
 
     /** 手动触发一次即时同步（仍走 WorkManager，受网络约束） */
     fun syncNow() = SyncScheduler.syncNow(context)

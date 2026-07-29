@@ -34,6 +34,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     \Response::json(['code' => 0, 'message' => 'ok']);
 }
 
+// 后台管理会话（基于 PHP 原生 Session，cookie 为同站，仅供管理员登录鉴权）
+session_name('selfwork_admin');
+session_start();
+
 $method = $_SERVER['REQUEST_METHOD'];
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?: '/';
 
