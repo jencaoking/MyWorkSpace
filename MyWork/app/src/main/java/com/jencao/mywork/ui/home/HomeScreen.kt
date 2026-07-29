@@ -4,8 +4,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.FlowRow
@@ -16,6 +19,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -24,6 +28,7 @@ import androidx.navigation.NavHostController
 import com.jencao.mywork.data.settings.ModuleKey
 import com.jencao.mywork.ui.AppViewModel
 import com.jencao.mywork.ui.navigation.Routes
+import java.text.SimpleDateFormat
 import java.util.Locale
 
 /** 将功能板块映射到对应路由（未实现的板块回退首页）。 */
@@ -47,7 +52,10 @@ fun HomeScreen(
     val toggles by appVm.moduleToggles.collectAsStateWithLifecycle()
     val activeCount by homeVm.activeCount.collectAsStateWithLifecycle()
     val serverStatus by homeVm.serverStatus.collectAsStateWithLifecycle()
-    val syncStatus by homeVm.syncStatus.collectAsStateWithLifecycle()
+    val isSyncing by homeVm.isSyncing.collectAsStateWithLifecycle()
+    val lastSyncFailed by homeVm.lastSyncFailed.collectAsStateWithLifecycle()
+    val lastSyncAt by homeVm.lastSyncAt.collectAsStateWithLifecycle()
+    val autoSyncEnabled by homeVm.autoSyncEnabled.collectAsStateWithLifecycle()
 
     Column(
         modifier = Modifier
@@ -142,41 +150,67 @@ fun HomeScreen(
             }
         }
 
-        // 数据同步
+        // 数据同步（自动）
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text("云端同步", style = MaterialTheme.typography.titleMedium)
-                when (val s = syncStatus) {
-                    SyncStatus.Idle -> Text(
-                        "点击同步，将本地待上传与待删除任务推送到云端，并拉取远端变更",
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("自动同步", style = MaterialTheme.typography.bodyMedium)
+                        Text(
+                            "后台每 15 分钟及启动时自动同步",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Switch(
+                        checked = autoSyncEnabled,
+                        onCheckedChange = { homeVm.setAutoSync(it) }
+                    )
+                }
+
+                Spacer(Modifier.height(8.dp))
+
+                when {
+                    isSyncing -> Text(
+                        "同步中…", style = MaterialTheme.typography.bodySmall
+                    )
+
+                    lastSyncFailed -> Text(
+                        "上次同步失败，稍后将自动重试",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
+
+                    lastSyncAt > 0 -> Text(
+                        "上次同步：${formatSyncTime(lastSyncAt)}",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
 
-                    SyncStatus.Syncing -> Text(
-                        "同步中…", style = MaterialTheme.typography.bodySmall
-                    )
-
-                    is SyncStatus.Success -> Text(
-                        "同步完成 ✓ 上行 $uploaded · 下行 $downloaded · 删除 $deleted",
+                    else -> Text(
+                        "尚未同步，点击「立即同步」或等待自动同步",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-
-                    is SyncStatus.Error -> Text(
-                        "同步失败：$message",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.error
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
+
                 OutlinedButton(
                     onClick = { homeVm.syncNow() },
-                    enabled = syncStatus != SyncStatus.Syncing,
+                    enabled = !isSyncing,
                     modifier = Modifier.padding(top = 8.dp)
                 ) {
-                    Text("同步数据")
+                    Text("立即同步")
                 }
             }
         }
     }
 }
+
+/** 将服务器时间戳格式化为可读的“上次同步”时间 */
+private fun formatSyncTime(ts: Long): String =
+    if (ts <= 0) "从未" else SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault()).format(ts)

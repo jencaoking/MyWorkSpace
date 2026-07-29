@@ -79,4 +79,13 @@ class UserPreferencesRepository @Inject constructor(
     private val LAST_SYNC_AT = longPreferencesKey("last_sync_at")
     suspend fun lastSyncAt(): Long = dataStore.data.first()[LAST_SYNC_AT] ?: 0L
     suspend fun setLastSyncAt(ts: Long) = dataStore.edit { it[LAST_SYNC_AT] = ts }
+
+    /** 上次同步时间戳的响应式流，供首页展示“上次同步时间” */
+    val lastSyncAtFlow: Flow<Long> = dataStore.data.map { it[LAST_SYNC_AT] ?: 0L }
+
+    /** 自动同步开关（默认开启），控制后台周期同步是否生效 */
+    private val AUTO_SYNC_ENABLED = booleanPreferencesKey("auto_sync_enabled")
+    val autoSyncEnabled: Flow<Boolean> = dataStore.data.map { it[AUTO_SYNC_ENABLED] ?: true }
+    suspend fun setAutoSyncEnabled(enabled: Boolean) =
+        dataStore.edit { it[AUTO_SYNC_ENABLED] = enabled }
 }
