@@ -64,11 +64,8 @@ fun HabitScreen(navController: NavHostController, padding: PaddingValues, vm: Ha
                         }
                     }
                 }
-                NeuFab(onClick = { showPlan = true }, modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)) {
-                    Icon(Icons.Filled.Add, "加计划")
-                }
             } else {
-                val habits by vm.observeHabits(selectedPlanId!!).collectAsStateWithLifecycle()
+                val habits by vm.observeHabits(selectedPlanId!!).collectAsStateWithLifecycle(emptyList())
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     TextButton(onClick = { selectedPlanId = null }) { Text("← 返回") }
                     Text("习惯项", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
@@ -81,6 +78,11 @@ fun HabitScreen(navController: NavHostController, padding: PaddingValues, vm: Ha
                 }
             }
         }
+        if (selectedPlanId == null) {
+            NeuFab(onClick = { showPlan = true }, modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)) {
+                Icon(Icons.Filled.Add, "加计划")
+            }
+        }
     }
 
     if (showPlan) AddPlanDialog(onDismiss = { showPlan = false }, onConfirm = { t, d, p -> vm.addPlan(t, d, p); showPlan = false })
@@ -89,7 +91,7 @@ fun HabitScreen(navController: NavHostController, padding: PaddingValues, vm: Ha
 
 @Composable
 private fun HabitRow(habit: com.jencao.mywork.data.local.entity.HabitEntity, vm: HabitViewModel) {
-    val checkins by vm.observeCheckins(habit.id).collectAsStateWithLifecycle()
+    val checkins by vm.observeCheckins(habit.id).collectAsStateWithLifecycle(emptyList())
     val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
     val checked = checkins.any { it.date == today }
     val streak = run {

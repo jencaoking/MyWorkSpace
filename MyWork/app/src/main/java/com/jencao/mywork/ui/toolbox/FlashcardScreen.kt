@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -45,7 +46,7 @@ fun FlashcardScreen(navController: NavHostController, padding: PaddingValues, vm
     var studying by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
-    val cards by vm.observeCards(selectedDeckId ?: "").collectAsStateWithLifecycle()
+    val cards by vm.observeCards(selectedDeckId ?: "").collectAsStateWithLifecycle(emptyList())
 
     Box(Modifier.fillMaxSize().padding(padding)) {
         Column(Modifier.fillMaxSize().padding(16.dp)) {
@@ -84,14 +85,15 @@ fun FlashcardScreen(navController: NavHostController, padding: PaddingValues, vm
                         }
                     }
                 }
-                NeuFab(onClick = { showCard = true }, modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)) {
-                    Icon(Icons.Filled.Add, "加卡")
-                }
             }
         }
         if (selectedDeckId == null) {
             NeuFab(onClick = { showDeck = true }, modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)) {
                 Icon(Icons.Filled.Add, "加组")
+            }
+        } else {
+            NeuFab(onClick = { showCard = true }, modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp)) {
+                Icon(Icons.Filled.Add, "加卡")
             }
         }
     }

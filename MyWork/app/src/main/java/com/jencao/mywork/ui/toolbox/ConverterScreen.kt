@@ -69,9 +69,9 @@ fun ConverterScreen(navController: NavHostController, padding: PaddingValues, vm
 
         // 从 -> 到
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            UnitSpinner(cat.units.map { it.name }, fromIdx, "从") { vm.setFrom(it) }
+            UnitSpinner(cat.units.map { it.name }, fromIdx, "从", Modifier.weight(1f)) { vm.setFrom(it) }
             IconButton(onClick = { vm.setFrom(toIdx); vm.setTo(fromIdx) }) { Icon(Icons.Filled.SwapVert, "交换") }
-            UnitSpinner(cat.units.map { it.name }, toIdx, "到") { vm.setTo(it) }
+            UnitSpinner(cat.units.map { it.name }, toIdx, "到", Modifier.weight(1f)) { vm.setTo(it) }
         }
 
         Card(Modifier.fillMaxWidth()) {
@@ -92,9 +92,9 @@ fun ConverterScreen(navController: NavHostController, padding: PaddingValues, vm
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun UnitSpinner(options: List<String>, selected: Int, label: String, onSelect: (Int) -> Unit) {
+private fun UnitSpinner(options: List<String>, selected: Int, label: String, modifier: Modifier = Modifier, onSelect: (Int) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
-    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }, modifier = Modifier.weight(1f)) {
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }, modifier = modifier) {
         OutlinedTextField(
             value = options.getOrNull(selected) ?: "", onValueChange = {}, readOnly = true, label = { Text(label) },
             modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable, true).fillMaxWidth()

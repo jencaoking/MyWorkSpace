@@ -78,12 +78,11 @@ class CalcViewModel @Inject constructor(private val repo: CalcHistoryRepository)
             var v = factor()
             while (pos < s.length && (s[pos] == '*' || s[pos] == '/' || s[pos] == '%')) {
                 val op = s[pos++]; val r = factor()
-                v = when (op) {
-                    '*' -> v * r
-                    '/' -> if (r == 0.0) throw RuntimeException("div0") else v / r
-                    else -> v % r
-                    else -> v
-                }
+            v = when (op) {
+                '*' -> v * r
+                '/' -> if (r == 0.0) throw RuntimeException("div0") else v / r
+                else -> v % r
+            }
             }
             return v
         }
