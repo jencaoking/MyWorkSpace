@@ -4,11 +4,21 @@ import android.util.Log
 import com.jencao.mywork.data.local.BaseEntity
 import com.jencao.mywork.data.local.entity.AccountRecordEntity
 import com.jencao.mywork.data.local.entity.CategoryEntity
+import com.jencao.mywork.data.local.entity.CalcHistoryEntity
+import com.jencao.mywork.data.local.entity.CountdownEntity
 import com.jencao.mywork.data.local.entity.DailyPendingLogEntity
 import com.jencao.mywork.data.local.entity.EnglishWordEntity
+import com.jencao.mywork.data.local.entity.ExpressPackageEntity
+import com.jencao.mywork.data.local.entity.FlashcardDeckEntity
+import com.jencao.mywork.data.local.entity.FlashcardEntity
+import com.jencao.mywork.data.local.entity.HabitCheckinEntity
+import com.jencao.mywork.data.local.entity.HabitEntity
+import com.jencao.mywork.data.local.entity.HabitPlanEntity
 import com.jencao.mywork.data.local.entity.HealthRecordEntity
+import com.jencao.mywork.data.local.entity.InspirationEntity
 import com.jencao.mywork.data.local.entity.MovieBookEntity
 import com.jencao.mywork.data.local.entity.NoteEntity
+import com.jencao.mywork.data.local.entity.QrScanEntity
 import com.jencao.mywork.data.local.entity.SportRecordEntity
 import com.jencao.mywork.data.local.entity.TaskEntity
 import com.jencao.mywork.data.remote.ApiService
@@ -31,17 +41,29 @@ import com.jencao.mywork.data.remote.model.SettingsSaveRequest
 import com.jencao.mywork.data.remote.model.SportPullResponse
 import com.jencao.mywork.data.remote.model.SportUploadRequest
 import com.jencao.mywork.data.remote.model.SyncPullResult
+import com.jencao.mywork.data.remote.model.SyncPushRequest
 import com.jencao.mywork.data.remote.model.SyncUploadRequest
 import com.jencao.mywork.data.remote.model.TaskDeleteRequest
+import com.jencao.mywork.data.remote.model.ToolPullResponse
 import com.jencao.mywork.data.repository.AccountRecordRepository
 import com.jencao.mywork.data.repository.CategoryRepository
+import com.jencao.mywork.data.repository.CalcHistoryRepository
 import com.jencao.mywork.data.repository.DailyPendingRepository
 import com.jencao.mywork.data.repository.EnglishWordRepository
+import com.jencao.mywork.data.repository.ExpressPackageRepository
+import com.jencao.mywork.data.repository.FlashcardDeckRepository
+import com.jencao.mywork.data.repository.FlashcardRepository
+import com.jencao.mywork.data.repository.HabitCheckinRepository
+import com.jencao.mywork.data.repository.HabitPlanRepository
+import com.jencao.mywork.data.repository.HabitRepository
 import com.jencao.mywork.data.repository.HealthRecordRepository
+import com.jencao.mywork.data.repository.InspirationRepository
 import com.jencao.mywork.data.repository.MovieBookRepository
 import com.jencao.mywork.data.repository.NoteRepository
+import com.jencao.mywork.data.repository.QrScanRepository
 import com.jencao.mywork.data.repository.SportRecordRepository
 import com.jencao.mywork.data.repository.TaskRepository
+import com.jencao.mywork.data.repository.CountdownRepository
 import com.jencao.mywork.data.settings.ModuleKey
 import com.jencao.mywork.data.settings.ThemeMode
 import com.jencao.mywork.data.settings.UserPreferencesRepository
@@ -74,7 +96,17 @@ class SyncManager @Inject constructor(
     private val healthRepo: HealthRecordRepository,
     private val categoryRepo: CategoryRepository,
     private val accountRepo: AccountRecordRepository,
-    private val dailyPendingRepo: DailyPendingRepository
+    private val dailyPendingRepo: DailyPendingRepository,
+    private val calcRepo: CalcHistoryRepository,
+    private val qrRepo: QrScanRepository,
+    private val countdownRepo: CountdownRepository,
+    private val habitPlanRepo: HabitPlanRepository,
+    private val habitRepo: HabitRepository,
+    private val habitCheckinRepo: HabitCheckinRepository,
+    private val flashcardDeckRepo: FlashcardDeckRepository,
+    private val flashcardRepo: FlashcardRepository,
+    private val inspirationRepo: InspirationRepository,
+    private val expressRepo: ExpressPackageRepository
 ) {
     private val TAG = "SyncManager"
 
@@ -250,6 +282,166 @@ class SyncManager @Inject constructor(
                 PullBundle(data?.server_time ?: t, data?.logs ?: emptyList(), data?.deleted_ids ?: emptyList())
             },
             lastSync, results
+        ))
+
+        // —— 工具箱：计算器 ——
+        advance(syncModule("calc", calcRepo,
+            upload = { u, d ->
+                var ok = true
+                if (u.isNotEmpty()) ok = ok && api.uploadCalc(SyncPushRequest(logs = u)).code == 0
+                if (d.isNotEmpty()) ok = ok && api.deleteCalc(TaskDeleteRequest(ids = d)).code == 0
+                uploaded += u.size; deletedRemote += d.size
+                ok
+            },
+            pull = { t ->
+                val data = api.pullCalc(t).data
+                downloaded += data?.logs?.size ?: 0
+                PullBundle(data?.server_time ?: t, data?.logs ?: emptyList(), data?.deleted_ids ?: emptyList())
+            }, lastSync, results
+        ))
+
+        // —— 工具箱：扫码 ——
+        advance(syncModule("qr", qrRepo,
+            upload = { u, d ->
+                var ok = true
+                if (u.isNotEmpty()) ok = ok && api.uploadQr(SyncPushRequest(logs = u)).code == 0
+                if (d.isNotEmpty()) ok = ok && api.deleteQr(TaskDeleteRequest(ids = d)).code == 0
+                uploaded += u.size; deletedRemote += d.size
+                ok
+            },
+            pull = { t ->
+                val data = api.pullQr(t).data
+                downloaded += data?.logs?.size ?: 0
+                PullBundle(data?.server_time ?: t, data?.logs ?: emptyList(), data?.deleted_ids ?: emptyList())
+            }, lastSync, results
+        ))
+
+        // —— 工具箱：倒计时 ——
+        advance(syncModule("countdown", countdownRepo,
+            upload = { u, d ->
+                var ok = true
+                if (u.isNotEmpty()) ok = ok && api.uploadCountdown(SyncPushRequest(logs = u)).code == 0
+                if (d.isNotEmpty()) ok = ok && api.deleteCountdown(TaskDeleteRequest(ids = d)).code == 0
+                uploaded += u.size; deletedRemote += d.size
+                ok
+            },
+            pull = { t ->
+                val data = api.pullCountdown(t).data
+                downloaded += data?.logs?.size ?: 0
+                PullBundle(data?.server_time ?: t, data?.logs ?: emptyList(), data?.deleted_ids ?: emptyList())
+            }, lastSync, results
+        ))
+
+        // —— 工具箱：习惯计划 ——
+        advance(syncModule("habit_plan", habitPlanRepo,
+            upload = { u, d ->
+                var ok = true
+                if (u.isNotEmpty()) ok = ok && api.uploadHabitPlan(SyncPushRequest(logs = u)).code == 0
+                if (d.isNotEmpty()) ok = ok && api.deleteHabitPlan(TaskDeleteRequest(ids = d)).code == 0
+                uploaded += u.size; deletedRemote += d.size
+                ok
+            },
+            pull = { t ->
+                val data = api.pullHabitPlan(t).data
+                downloaded += data?.logs?.size ?: 0
+                PullBundle(data?.server_time ?: t, data?.logs ?: emptyList(), data?.deleted_ids ?: emptyList())
+            }, lastSync, results
+        ))
+
+        // —— 工具箱：习惯项 ——
+        advance(syncModule("habit", habitRepo,
+            upload = { u, d ->
+                var ok = true
+                if (u.isNotEmpty()) ok = ok && api.uploadHabit(SyncPushRequest(logs = u)).code == 0
+                if (d.isNotEmpty()) ok = ok && api.deleteHabit(TaskDeleteRequest(ids = d)).code == 0
+                uploaded += u.size; deletedRemote += d.size
+                ok
+            },
+            pull = { t ->
+                val data = api.pullHabit(t).data
+                downloaded += data?.logs?.size ?: 0
+                PullBundle(data?.server_time ?: t, data?.logs ?: emptyList(), data?.deleted_ids ?: emptyList())
+            }, lastSync, results
+        ))
+
+        // —— 工具箱：习惯打卡 ——
+        advance(syncModule("habit_checkin", habitCheckinRepo,
+            upload = { u, d ->
+                var ok = true
+                if (u.isNotEmpty()) ok = ok && api.uploadHabitCheckin(SyncPushRequest(logs = u)).code == 0
+                if (d.isNotEmpty()) ok = ok && api.deleteHabitCheckin(TaskDeleteRequest(ids = d)).code == 0
+                uploaded += u.size; deletedRemote += d.size
+                ok
+            },
+            pull = { t ->
+                val data = api.pullHabitCheckin(t).data
+                downloaded += data?.logs?.size ?: 0
+                PullBundle(data?.server_time ?: t, data?.logs ?: emptyList(), data?.deleted_ids ?: emptyList())
+            }, lastSync, results
+        ))
+
+        // —— 工具箱：闪卡牌组 ——
+        advance(syncModule("flashcard_deck", flashcardDeckRepo,
+            upload = { u, d ->
+                var ok = true
+                if (u.isNotEmpty()) ok = ok && api.uploadFlashcardDeck(SyncPushRequest(logs = u)).code == 0
+                if (d.isNotEmpty()) ok = ok && api.deleteFlashcardDeck(TaskDeleteRequest(ids = d)).code == 0
+                uploaded += u.size; deletedRemote += d.size
+                ok
+            },
+            pull = { t ->
+                val data = api.pullFlashcardDeck(t).data
+                downloaded += data?.logs?.size ?: 0
+                PullBundle(data?.server_time ?: t, data?.logs ?: emptyList(), data?.deleted_ids ?: emptyList())
+            }, lastSync, results
+        ))
+
+        // —— 工具箱：闪卡 ——
+        advance(syncModule("flashcard", flashcardRepo,
+            upload = { u, d ->
+                var ok = true
+                if (u.isNotEmpty()) ok = ok && api.uploadFlashcard(SyncPushRequest(logs = u)).code == 0
+                if (d.isNotEmpty()) ok = ok && api.deleteFlashcard(TaskDeleteRequest(ids = d)).code == 0
+                uploaded += u.size; deletedRemote += d.size
+                ok
+            },
+            pull = { t ->
+                val data = api.pullFlashcard(t).data
+                downloaded += data?.logs?.size ?: 0
+                PullBundle(data?.server_time ?: t, data?.logs ?: emptyList(), data?.deleted_ids ?: emptyList())
+            }, lastSync, results
+        ))
+
+        // —— 工具箱：灵感语录 ——
+        advance(syncModule("inspiration", inspirationRepo,
+            upload = { u, d ->
+                var ok = true
+                if (u.isNotEmpty()) ok = ok && api.uploadInspiration(SyncPushRequest(logs = u)).code == 0
+                if (d.isNotEmpty()) ok = ok && api.deleteInspiration(TaskDeleteRequest(ids = d)).code == 0
+                uploaded += u.size; deletedRemote += d.size
+                ok
+            },
+            pull = { t ->
+                val data = api.pullInspiration(t).data
+                downloaded += data?.logs?.size ?: 0
+                PullBundle(data?.server_time ?: t, data?.logs ?: emptyList(), data?.deleted_ids ?: emptyList())
+            }, lastSync, results
+        ))
+
+        // —— 工具箱：快递 ——
+        advance(syncModule("express", expressRepo,
+            upload = { u, d ->
+                var ok = true
+                if (u.isNotEmpty()) ok = ok && api.uploadExpress(SyncPushRequest(logs = u)).code == 0
+                if (d.isNotEmpty()) ok = ok && api.deleteExpress(TaskDeleteRequest(ids = d)).code == 0
+                uploaded += u.size; deletedRemote += d.size
+                ok
+            },
+            pull = { t ->
+                val data = api.pullExpress(t).data
+                downloaded += data?.logs?.size ?: 0
+                PullBundle(data?.server_time ?: t, data?.logs ?: emptyList(), data?.deleted_ids ?: emptyList())
+            }, lastSync, results
         ))
 
         // —— 设置（theme + 模块开关）：拉取服务端并应用，再回推本地，保证多端一致 ——

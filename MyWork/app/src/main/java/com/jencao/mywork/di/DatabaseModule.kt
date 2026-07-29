@@ -30,4 +30,15 @@ object DatabaseModule {
     @Provides fun provideAccountRecordDao(db: AppDatabase) = db.accountRecordDao()
     @Provides fun providePomodoroSessionDao(db: AppDatabase) = db.pomodoroSessionDao()
     @Provides fun provideDailyPendingLogDao(db: AppDatabase) = db.dailyPendingLogDao()
+    @Provides fun provideCalcHistoryDao(db: AppDatabase) = db.calcHistoryDao()
+    @Provides fun provideQrScanDao(db: AppDatabase) = db.qrScanDao()
+    @Provides fun provideCountdownDao(db: AppDatabase) = db.countdownDao()
+    @Provides fun provideHabitPlanDao(db: AppDatabase) = db.habitPlanDao()
+    @Provides fun provideHabitDao(db: AppDatabase) = db.habitDao()
+    @Provides fun provideHabitCheckinDao(db: AppDatabase) = db.habitCheckinDao()
+    @Provides fun provideFlashcardDeckDao(db: AppDatabase) = db.flashcardDeckDao()
+    @Provides fun provideFlashcardDao(db: AppDatabase) = db.flashcardDao()
+    @Provides fun provideInspirationDao(db: AppDatabase) = db.inspirationDao()
+    @Provides fun provideExpressPackageDao(db: AppDatabase) = db.expressPackageDao()
 }
+

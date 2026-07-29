@@ -117,6 +117,16 @@ class UserPreferencesRepository @Inject constructor(
         }
     }
 
+    /** 首页板块排列顺序（可被设置页调整） */
+    private val MODULE_ORDER = stringPreferencesKey("module_order")
+    val moduleOrder: Flow<List<ModuleKey>> = dataStore.data.map { p ->
+        val raw = p[MODULE_ORDER]
+        if (raw.isNullOrBlank()) ModuleKey.entries.sortedBy { it.sortOrder }
+        else raw.split(",").mapNotNull { runCatching { ModuleKey.valueOf(it) }.getOrNull() }
+    }
+    suspend fun setModuleOrder(order: List<ModuleKey>) =
+        dataStore.edit { it[MODULE_ORDER] = order.joinToString(",") { k -> k.name } }
+
     /** 上一次成功增量拉取的服务器时间戳（毫秒），用于 /sync/pull?since= 游标 */
     private val LAST_SYNC_AT = longPreferencesKey("last_sync_at")
     suspend fun lastSyncAt(): Long = dataStore.data.first()[LAST_SYNC_AT] ?: 0L

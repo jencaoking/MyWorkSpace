@@ -29,6 +29,10 @@ class AppViewModel @Inject constructor(
         viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap()
     )
 
+    val moduleOrder: StateFlow<List<ModuleKey>> = prefs.moduleOrder.stateIn(
+        viewModelScope, SharingStarted.WhileSubscribed(5000), ModuleKey.entries.sortedBy { it.sortOrder }
+    )
+
     val deviceId: StateFlow<String> = prefs.deviceId.stateIn(
         viewModelScope, SharingStarted.WhileSubscribed(5000), ""
     )
@@ -37,4 +41,7 @@ class AppViewModel @Inject constructor(
 
     fun toggleModule(key: ModuleKey, enabled: Boolean) =
         viewModelScope.launch { prefs.setModuleEnabled(key, enabled) }
+
+    fun setModuleOrder(order: List<ModuleKey>) =
+        viewModelScope.launch { prefs.setModuleOrder(order) }
 }

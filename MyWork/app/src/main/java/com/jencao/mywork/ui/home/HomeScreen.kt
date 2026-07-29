@@ -64,6 +64,8 @@ fun HomeScreen(
     val isSyncing by homeVm.isSyncing.collectAsStateWithLifecycle()
     val lastSyncFailed by homeVm.lastSyncFailed.collectAsStateWithLifecycle()
     val lastSyncAt by homeVm.lastSyncAt.collectAsStateWithLifecycle()
+    val moduleToggles by appVm.moduleToggles.collectAsStateWithLifecycle()
+    val moduleOrder by appVm.moduleOrder.collectAsStateWithLifecycle()
 
     val weatherVm: WeatherViewModel = hiltViewModel()
     val weatherState by weatherVm.state.collectAsStateWithLifecycle()
@@ -195,9 +197,9 @@ fun HomeScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
-        // 功能板块磁贴网格（首页直达，不再藏开关里）
+        // 功能板块磁贴网格（按设置页顺序、仅显示已开启的板块）
         Text("功能板块", style = MaterialTheme.typography.titleMedium)
-        val modules = moduleMeta.keys.toList()
+        val modules = moduleOrder.filter { moduleToggles[it] != false && moduleMeta.containsKey(it) }
         Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             modules.chunked(2).forEach { rowKeys ->
                 Row(
