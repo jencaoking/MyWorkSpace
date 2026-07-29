@@ -5,6 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>自律工作台 · 后台管理</title>
   <link rel="stylesheet" href="admin.css" />
+  <script>
+    // 在渲染前应用主题，避免明暗闪烁
+    (function () {
+      try {
+        var t = localStorage.getItem('selfwork_theme');
+        if (t !== 'light' && t !== 'dark') {
+          t = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+        }
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) { /* 忽略：使用默认浅色 */ }
+    })();
+  </script>
 </head>
 <body>
   <!-- 登录遮罩：未鉴权时显示 -->
@@ -44,6 +56,7 @@
         <div class="topbar-right">
           <span id="connStatus" class="status-dot" title="连接状态"></span>
           <span id="connText" class="conn-text">检测中…</span>
+          <button id="themeBtn" class="icon-btn" aria-label="切换明暗模式" title="切换明暗模式">◐</button>
           <button id="refreshBtn" class="icon-btn" aria-label="刷新">⟳</button>
           <button id="logoutBtn" class="btn-ghost">退出</button>
         </div>

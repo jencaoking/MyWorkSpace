@@ -119,6 +119,23 @@ $('logoutBtn').addEventListener('click', async () => {
   showLogin();
 });
 
+/* ---------- 明暗模式切换 ---------- */
+function applyThemeIcon() {
+  const btn = $('themeBtn');
+  if (!btn) return;
+  const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+  btn.textContent = dark ? '☀' : '☾'; // 太阳=当前暗色(点击转亮) / 月亮=当前浅色(点击转暗)
+  btn.title = dark ? '切换到浅色模式' : '切换到深色模式';
+}
+$('themeBtn').addEventListener('click', () => {
+  const cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+  const next = cur === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  try { localStorage.setItem('selfwork_theme', next); } catch (e) { /* 忽略存储失败 */ }
+  applyThemeIcon();
+});
+applyThemeIcon();
+
 /* ---------- 导航与渲染 ---------- */
 function renderSidebar() {
   navEl.innerHTML = '';

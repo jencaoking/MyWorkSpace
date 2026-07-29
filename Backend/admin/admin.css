@@ -307,3 +307,73 @@ table.data td.num { text-align: right; font-variant-numeric: tabular-nums; color
   .menu-btn-wrap { display: inline-flex; }
 }
 @media (min-width: 761px) { #menuBtn { display: none; } }
+
+/* ---------- 深色模式 ---------- */
+:root[data-theme="dark"] {
+  --glass-bg: rgba(22, 25, 48, 0.62);
+  --glass-brd: rgba(255, 255, 255, 0.12);
+  --ink: #e8eaf6;
+  --ink-soft: #aab0d6;
+  --ink-faint: #7178a0;
+  --accent: #8b7bff;
+  --danger: #ff6b7a;
+  --ok: #28c79a;
+  --shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+}
+html[data-theme="dark"] body {
+  background:
+    radial-gradient(900px 600px at 8% -8%, rgba(91, 108, 255, 0.22), transparent 60%),
+    radial-gradient(800px 600px at 105% 10%, rgba(168, 107, 255, 0.20), transparent 55%),
+    radial-gradient(900px 700px at 50% 120%, rgba(67, 198, 172, 0.16), transparent 60%),
+    linear-gradient(135deg, #0e1124, #151a33);
+  background-attachment: fixed;
+}
+/* 输入控件与浅色表面在深色下改用低透白底 */
+html[data-theme="dark"] .login-card input,
+html[data-theme="dark"] .table-toolbar input,
+html[data-theme="dark"] .field input,
+html[data-theme="dark"] .field textarea,
+html[data-theme="dark"] .field select {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--ink);
+  border-color: var(--glass-brd);
+}
+html[data-theme="dark"] .nav-item:hover,
+html[data-theme="dark"] .btn-ghost,
+html[data-theme="dark"] .icon-btn {
+  background: rgba(255, 255, 255, 0.08);
+}
+html[data-theme="dark"] .btn-ghost:hover,
+html[data-theme="dark"] .icon-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+html[data-theme="dark"] .sys-chip {
+  background: rgba(255, 255, 255, 0.08);
+}
+html[data-theme="dark"] table.data th {
+  background: rgba(28, 32, 58, 0.82);
+}
+html[data-theme="dark"] .modal-overlay {
+  background: rgba(0, 0, 0, 0.55);
+}
+html[data-theme="dark"] .stat-card .bar {
+  background: rgba(255, 255, 255, 0.12);
+}
+html[data-theme="dark"] table.data th,
+html[data-theme="dark"] table.data td {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+html[data-theme="dark"] .table-toolbar,
+html[data-theme="dark"] .modal-head,
+html[data-theme="dark"] .modal-foot {
+  border-color: var(--glass-brd);
+}
+html[data-theme="dark"] .login-card input:focus,
+html[data-theme="dark"] .table-toolbar input:focus,
+html[data-theme="dark"] .field input:focus,
+html[data-theme="dark"] .field textarea:focus,
+html[data-theme="dark"] .field select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(139, 123, 255, 0.22);
+}
+
