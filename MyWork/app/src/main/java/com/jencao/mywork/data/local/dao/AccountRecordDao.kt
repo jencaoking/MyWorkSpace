@@ -54,4 +54,7 @@ interface AccountRecordDao {
 
     @Query("DELETE FROM account_records WHERE id IN (:ids)")
     suspend fun deleteByIds(ids: List<String>)
+
+    @Query("SELECT * FROM account_records WHERE is_deleted = 0 AND (category LIKE '%' || :kw || '%' OR note LIKE '%' || :kw || '%') ORDER BY record_date DESC LIMIT 50")
+    suspend fun search(kw: String): List<AccountRecordEntity>
 }

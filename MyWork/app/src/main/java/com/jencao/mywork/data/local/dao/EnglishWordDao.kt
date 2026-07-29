@@ -54,4 +54,7 @@ interface EnglishWordDao {
 
     @Query("DELETE FROM english_words WHERE id IN (:ids)")
     suspend fun deleteByIds(ids: List<String>)
+
+    @Query("SELECT * FROM english_words WHERE is_deleted = 0 AND (word LIKE '%' || :kw || '%' OR phonetic LIKE '%' || :kw || '%' OR meaning LIKE '%' || :kw || '%' OR example LIKE '%' || :kw || '%') ORDER BY word ASC LIMIT 50")
+    suspend fun search(kw: String): List<EnglishWordEntity>
 }

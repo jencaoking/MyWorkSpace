@@ -14,6 +14,7 @@ object Routes {
     const val TASKS = "tasks"
     const val NOTES = "notes"
     const val SETTINGS = "settings"
+    const val GLOBAL_SEARCH = "global_search"
     const val TOOLS = "tools"
     // 阶段4 专项模块（首页卡片进入，不占底部导航）
     const val SPORT = "sport"

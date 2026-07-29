@@ -51,4 +51,7 @@ interface TaskDao {
 
     @Query("DELETE FROM tasks WHERE id IN (:ids)")
     suspend fun deleteByIds(ids: List<String>)
+
+    @Query("SELECT * FROM tasks WHERE is_deleted = 0 AND (title LIKE '%' || :kw || '%' OR content LIKE '%' || :kw || '%') ORDER BY updated_at DESC LIMIT 50")
+    suspend fun search(kw: String): List<TaskEntity>
 }

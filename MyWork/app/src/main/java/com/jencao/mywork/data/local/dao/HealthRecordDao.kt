@@ -51,4 +51,7 @@ interface HealthRecordDao {
 
     @Query("DELETE FROM health_records WHERE id IN (:ids)")
     suspend fun deleteByIds(ids: List<String>)
+
+    @Query("SELECT * FROM health_records WHERE is_deleted = 0 AND (type LIKE '%' || :kw || '%' OR note LIKE '%' || :kw || '%') ORDER BY record_time DESC LIMIT 50")
+    suspend fun search(kw: String): List<HealthRecordEntity>
 }

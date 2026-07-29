@@ -17,4 +17,7 @@ interface PomodoroSessionDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(item: PomodoroSessionEntity)
+
+    @Query("SELECT * FROM pomodoro_sessions WHERE is_deleted = 0 AND (mode LIKE '%' || :kw || '%' OR note LIKE '%' || :kw || '%') ORDER BY completed_at DESC LIMIT 50")
+    suspend fun search(kw: String): List<PomodoroSessionEntity>
 }

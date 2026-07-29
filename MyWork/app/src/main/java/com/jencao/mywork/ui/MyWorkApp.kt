@@ -50,6 +50,7 @@ import com.jencao.mywork.ui.notes.NotesScreen
 import com.jencao.mywork.ui.pomodoro.PomodoroScreen
 import com.jencao.mywork.ui.settings.SettingsScreen
 import com.jencao.mywork.ui.sport.SportScreen
+import com.jencao.mywork.ui.search.GlobalSearchScreen
 import com.jencao.mywork.ui.task.TaskScreen
 import com.jencao.mywork.ui.theme.MyWorkTheme
 import com.jencao.mywork.ui.theme.neumorphic
@@ -99,6 +100,7 @@ fun MyWorkApp(appVm: AppViewModel, deepLinkHealthId: String? = null, onDeepLinkC
                 composable(Routes.ACCOUNT) { AccountScreen(navController, padding) }
                 composable(Routes.POMODORO) { PomodoroScreen(navController, padding) }
                 composable(Routes.ENGLISH_REVIEW) { EnglishReviewScreen(navController, padding) }
+                composable(Routes.GLOBAL_SEARCH) { GlobalSearchScreen(navController, padding) }
             }
         }
     }
