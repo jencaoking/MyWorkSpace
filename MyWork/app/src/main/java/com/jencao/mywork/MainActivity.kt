@@ -18,21 +18,36 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     // 复诊 / 用药提醒通知点击后带入的记录 id，用于直达编辑页（覆盖 onCreate 与 onNewIntent 两种启动方式）
     private var deepLinkHealthId by mutableStateOf<String?>(null)
+    // 每日作业提醒通知点击 → 直达每日作业页
+    private var deepLinkDailyPending by mutableStateOf(false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        deepLinkHealthId = intent.getStringExtra("open_health_id")
-        intent.removeExtra("open_health_id")
+        consumeDeepLinks(intent)
         setContent {
             val appVm: AppViewModel = hiltViewModel()
-            MyWorkApp(appVm, deepLinkHealthId = deepLinkHealthId) { deepLinkHealthId = null }
+            MyWorkApp(
+                appVm,
+                deepLinkHealthId = deepLinkHealthId,
+                deepLinkDailyPending = deepLinkDailyPending,
+                onDeepLinkConsumed = { deepLinkHealthId = null },
+                onDailyPendingConsumed = { deepLinkDailyPending = false }
+            )
         }
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        consumeDeepLinks(intent)
+    }
+
+    private fun consumeDeepLinks(intent: Intent) {
         deepLinkHealthId = intent.getStringExtra("open_health_id")
         intent.removeExtra("open_health_id")
+        if (intent.getBooleanExtra("open_daily_pending", false)) {
+            deepLinkDailyPending = true
+            intent.removeExtra("open_daily_pending")
+        }
     }
 }

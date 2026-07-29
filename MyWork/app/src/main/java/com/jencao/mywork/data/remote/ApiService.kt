@@ -31,6 +31,10 @@ import com.jencao.mywork.data.remote.model.AccountPullResponse
 import com.jencao.mywork.data.remote.model.AccountUploadRequest
 import com.jencao.mywork.data.remote.model.AccountUploadResponse
 import com.jencao.mywork.data.remote.model.CategoryDeleteResponse
+import com.jencao.mywork.data.remote.model.DailyPendingDeleteResponse
+import com.jencao.mywork.data.remote.model.DailyPendingPullResponse
+import com.jencao.mywork.data.remote.model.DailyPendingUploadRequest
+import com.jencao.mywork.data.remote.model.DailyPendingUploadResponse
 import com.jencao.mywork.data.remote.model.CategoryPullResponse
 import com.jencao.mywork.data.remote.model.CategoryUploadRequest
 import com.jencao.mywork.data.remote.model.CategoryUploadResponse
@@ -184,6 +188,16 @@ interface ApiService {
 
     @GET("api/accounts/pull")
     suspend fun pullAccounts(@Query("since") since: Long): AccountPullResponse
+
+    // —— 每日未完成作业归档（daily-pending） ——
+    @POST("api/daily-pending")
+    suspend fun uploadDailyPending(@Body req: DailyPendingUploadRequest): DailyPendingUploadResponse
+
+    @POST("api/daily-pending/delete")
+    suspend fun deleteDailyPending(@Body req: TaskDeleteRequest): DailyPendingDeleteResponse
+
+    @GET("api/daily-pending/pull")
+    suspend fun pullDailyPending(@Query("since") since: Long): DailyPendingPullResponse
 
     // —— 设置（settings，单行镜像） ——
     @GET("api/settings")

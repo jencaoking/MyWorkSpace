@@ -4,6 +4,7 @@ import android.util.Log
 import com.jencao.mywork.data.local.BaseEntity
 import com.jencao.mywork.data.local.entity.AccountRecordEntity
 import com.jencao.mywork.data.local.entity.CategoryEntity
+import com.jencao.mywork.data.local.entity.DailyPendingLogEntity
 import com.jencao.mywork.data.local.entity.EnglishWordEntity
 import com.jencao.mywork.data.local.entity.HealthRecordEntity
 import com.jencao.mywork.data.local.entity.MovieBookEntity
@@ -15,6 +16,7 @@ import com.jencao.mywork.data.remote.model.AccountPullResponse
 import com.jencao.mywork.data.remote.model.AccountUploadRequest
 import com.jencao.mywork.data.remote.model.CategoryPullResponse
 import com.jencao.mywork.data.remote.model.CategoryUploadRequest
+import com.jencao.mywork.data.remote.model.DailyPendingUploadRequest
 import com.jencao.mywork.data.remote.model.EnglishPullResponse
 import com.jencao.mywork.data.remote.model.EnglishUploadRequest
 import com.jencao.mywork.data.remote.model.HealthData
@@ -33,6 +35,7 @@ import com.jencao.mywork.data.remote.model.SyncUploadRequest
 import com.jencao.mywork.data.remote.model.TaskDeleteRequest
 import com.jencao.mywork.data.repository.AccountRecordRepository
 import com.jencao.mywork.data.repository.CategoryRepository
+import com.jencao.mywork.data.repository.DailyPendingRepository
 import com.jencao.mywork.data.repository.EnglishWordRepository
 import com.jencao.mywork.data.repository.HealthRecordRepository
 import com.jencao.mywork.data.repository.MovieBookRepository
@@ -70,7 +73,8 @@ class SyncManager @Inject constructor(
     private val movieRepo: MovieBookRepository,
     private val healthRepo: HealthRecordRepository,
     private val categoryRepo: CategoryRepository,
-    private val accountRepo: AccountRecordRepository
+    private val accountRepo: AccountRecordRepository,
+    private val dailyPendingRepo: DailyPendingRepository
 ) {
     private val TAG = "SyncManager"
 
@@ -227,6 +231,23 @@ class SyncManager @Inject constructor(
                 val data = api.pullAccounts(t).data
                 downloaded += data?.accounts?.size ?: 0
                 PullBundle(data?.server_time ?: t, data?.accounts ?: emptyList(), data?.deleted_ids ?: emptyList())
+            },
+            lastSync, results
+        ))
+
+        // —— 每日未完成作业归档 ——
+        advance(syncModule("daily_pending", dailyPendingRepo,
+            upload = { u, d ->
+                var ok = true
+                if (u.isNotEmpty()) ok = ok && api.uploadDailyPending(DailyPendingUploadRequest(logs = u)).code == 0
+                if (d.isNotEmpty()) ok = ok && api.deleteDailyPending(TaskDeleteRequest(ids = d)).code == 0
+                uploaded += u.size; deletedRemote += d.size
+                ok
+            },
+            pull = { t ->
+                val data = api.pullDailyPending(t).data
+                downloaded += data?.logs?.size ?: 0
+                PullBundle(data?.server_time ?: t, data?.logs ?: emptyList(), data?.deleted_ids ?: emptyList())
             },
             lastSync, results
         ))

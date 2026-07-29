@@ -25,6 +25,8 @@ object Routes {
     const val ACCOUNT = "account"
     const val POMODORO = "pomodoro"
     const val ENGLISH_REVIEW = "englishReview"
+    // 每日未完成作业
+    const val DAILY_PENDING = "daily_pending"
 }
 
 /** 任务模块内部嵌套路由（列表 / 详情 / 日历 / 统计 / 分类管理）。 */

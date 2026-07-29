@@ -21,9 +21,10 @@ import com.jencao.mywork.data.local.entity.*
         MovieBookEntity::class,
         HealthRecordEntity::class,
         AccountRecordEntity::class,
-        PomodoroSessionEntity::class
+        PomodoroSessionEntity::class,
+        DailyPendingLogEntity::class
     ],
-    version = 9,
+    version = 10,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -37,6 +38,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun healthRecordDao(): HealthRecordDao
     abstract fun accountRecordDao(): AccountRecordDao
     abstract fun pomodoroSessionDao(): PomodoroSessionDao
+    abstract fun dailyPendingLogDao(): DailyPendingLogDao
 
     companion object {
         const val DATABASE_NAME = "mywork.db"
@@ -65,6 +67,37 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /** 版本 9 -> 10：新增每日未完成作业归档表。 */
+        private val MIGRATION_9_10 = object : Migration(9, 10) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `daily_pending_log` (
+                        `task_id` TEXT NOT NULL,
+                        `task_title` TEXT NOT NULL,
+                        `category_name` TEXT NOT NULL,
+                        `priority` INTEGER NOT NULL,
+                        `original_due_date` INTEGER NOT NULL,
+                        `log_date` TEXT NOT NULL,
+                        `disposition` TEXT NOT NULL,
+                        `disposed_at` INTEGER,
+                        `new_due_date` INTEGER,
+                        `created_at` INTEGER NOT NULL,
+                        `id` TEXT NOT NULL,
+                        `last_modified` INTEGER NOT NULL,
+                        `is_deleted` INTEGER NOT NULL,
+                        `device_id` TEXT NOT NULL,
+                        `needs_sync` INTEGER NOT NULL,
+                        PRIMARY KEY(`id`)
+                    )
+                    """.trimIndent()
+                )
+                db.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_daily_pending_log_task_id_log_date` ON `daily_pending_log` (`task_id`, `log_date`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_daily_pending_log_log_date` ON `daily_pending_log` (`log_date`)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_daily_pending_log_disposition` ON `daily_pending_log` (`disposition`)")
+            }
+        }
+
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
@@ -77,7 +110,7 @@ abstract class AppDatabase : RoomDatabase() {
                 )
                     // 阶段1 开发期：结构变更直接重建，避免手动 Migration
                     .fallbackToDestructiveMigration(dropAllTables = true)
-                    .addMigrations(MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
+                    .addMigrations(MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_9_10)
                     .build()
                 INSTANCE = instance
                 instance

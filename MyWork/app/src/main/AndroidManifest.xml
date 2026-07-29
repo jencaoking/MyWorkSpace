@@ -48,6 +48,10 @@
         <receiver
             android:name=".reminder.ReminderReceiver"
             android:exported="false" />
+        <!-- 每日作业早间提醒 / 周回顾提醒 -->
+        <receiver
+            android:name=".dailypending.DailyPendingReminderReceiver"
+            android:exported="false" />
         <!-- 开机 / 重装后恢复未来提醒 -->
         <receiver
             android:name=".reminder.BootReceiver"

@@ -7,6 +7,7 @@ import androidx.work.Configuration
 import com.jencao.mywork.data.repository.HealthRecordRepository
 import com.jencao.mywork.data.settings.UserPreferencesRepository
 import com.jencao.mywork.data.sync.SyncScheduler
+import com.jencao.mywork.dailypending.DailyPendingScheduler
 import com.jencao.mywork.reminder.ReminderScheduler
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
@@ -42,6 +43,8 @@ class MyWorkApplication : Application(), Configuration.Provider {
                 SyncScheduler.syncNow(this@MyWorkApplication)
             }
         }
+        // 每日未完成作业：注册 00:05 归档 Worker（含启动兜底归档）+ 08:00 早间提醒 + 周日 20:00 周回顾
+        DailyPendingScheduler.scheduleAll(this)
         // 健康提醒：确保通知渠道存在，并恢复所有未来提醒（首次安装也会创建渠道）
         ReminderScheduler.ensureChannel(this)
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {

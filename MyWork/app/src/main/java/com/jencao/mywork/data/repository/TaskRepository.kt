@@ -77,6 +77,33 @@ class TaskRepository @Inject constructor(
 
     suspend fun deleteTask(task: TaskEntity) = dao.softDelete(task.id)
 
+    /** 直接置为已完成（每日作业「补做」联动） */
+    suspend fun completeTask(taskId: String): Boolean {
+        val task = dao.getById(taskId) ?: return false
+        val now = System.currentTimeMillis()
+        task.status = 1
+        task.updatedAt = now
+        task.lastModified = now
+        task.needsSync = true
+        dao.update(task)
+        return true
+    }
+
+    /** 修改截止时间（每日作业「改期」联动） */
+    suspend fun updateDueDate(taskId: String, newDueDate: Long): Boolean {
+        val task = dao.getById(taskId) ?: return false
+        val now = System.currentTimeMillis()
+        task.dueDate = newDueDate
+        task.updatedAt = now
+        task.lastModified = now
+        task.needsSync = true
+        dao.update(task)
+        return true
+    }
+
+    /** 每日归档数据源：已过期未完成的普通任务 */
+    suspend fun getOverdueOpenTasks(before: Long): List<TaskEntity> = dao.getOverdueOpen(before)
+
     // —— 打卡 ——
     fun observeCheckins(taskId: String): Flow<List<TaskCheckinEntity>> = checkinDao.observeByTask(taskId)
 

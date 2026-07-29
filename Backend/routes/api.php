@@ -73,6 +73,17 @@ $router->add('POST', '/api/health-records', static fn() => $healthRecord()->batc
 $router->add('POST', '/api/health-records/delete', static fn() => $healthRecord()->delete());
 $router->add('GET', '/api/health-records/pull', static fn() => $healthRecord()->pull());
 
+// 每日未完成作业：list / batchUpsert / delete / pull / dispose / weekly / archive
+use App\Controller\DailyPendingController;
+$dailyPending = static fn() => new DailyPendingController($pdo);
+$router->add('GET', '/api/daily-pending', static fn() => $dailyPending()->list());
+$router->add('POST', '/api/daily-pending', static fn() => $dailyPending()->batchUpsert());
+$router->add('POST', '/api/daily-pending/delete', static fn() => $dailyPending()->delete());
+$router->add('GET', '/api/daily-pending/pull', static fn() => $dailyPending()->pull());
+$router->add('POST', '/api/daily-pending/dispose', static fn() => $dailyPending()->dispose());
+$router->add('GET', '/api/daily-pending/weekly', static fn() => $dailyPending()->weekly());
+$router->add('POST', '/api/daily-pending/archive', static fn() => $dailyPending()->archive());
+
 // 后台管理（只读）：概览 + 通用数据浏览
 use App\Controller\AdminController;
 use App\Controller\DeviceUserController;

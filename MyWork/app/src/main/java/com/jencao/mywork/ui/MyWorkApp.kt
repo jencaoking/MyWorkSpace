@@ -36,6 +36,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.jencao.mywork.data.settings.ThemeMode
 import com.jencao.mywork.ui.account.AccountScreen
+import com.jencao.mywork.ui.dailypending.DailyPendingScreen
 import com.jencao.mywork.ui.components.NeuFab
 import com.jencao.mywork.ui.theme.NeuRadiusLarge
 import com.jencao.mywork.ui.english.EnglishScreen
@@ -57,7 +58,13 @@ import com.jencao.mywork.ui.theme.neumorphic
 import com.jencao.mywork.ui.tools.ToolsScreen
 
 @Composable
-fun MyWorkApp(appVm: AppViewModel, deepLinkHealthId: String? = null, onDeepLinkConsumed: () -> Unit = {}) {
+fun MyWorkApp(
+    appVm: AppViewModel,
+    deepLinkHealthId: String? = null,
+    deepLinkDailyPending: Boolean = false,
+    onDeepLinkConsumed: () -> Unit = {},
+    onDailyPendingConsumed: () -> Unit = {}
+) {
     val themeMode by appVm.themeMode.collectAsStateWithLifecycle()
 
     val darkTheme = when (themeMode) {
@@ -73,6 +80,13 @@ fun MyWorkApp(appVm: AppViewModel, deepLinkHealthId: String? = null, onDeepLinkC
             var pendingHealthId by remember { mutableStateOf<String?>(null) }
             LaunchedEffect(deepLinkHealthId) {
                 if (!deepLinkHealthId.isNullOrBlank()) pendingHealthId = deepLinkHealthId
+            }
+            // 每日作业通知点击 → 直达每日作业页
+            LaunchedEffect(deepLinkDailyPending) {
+                if (deepLinkDailyPending) {
+                    navController.navigate(Routes.DAILY_PENDING) { launchSingleTop = true }
+                    onDailyPendingConsumed()
+                }
             }
 
         Scaffold(
@@ -101,6 +115,7 @@ fun MyWorkApp(appVm: AppViewModel, deepLinkHealthId: String? = null, onDeepLinkC
                 composable(Routes.POMODORO) { PomodoroScreen(navController, padding) }
                 composable(Routes.ENGLISH_REVIEW) { EnglishReviewScreen(navController, padding) }
                 composable(Routes.GLOBAL_SEARCH) { GlobalSearchScreen(navController, padding) }
+                composable(Routes.DAILY_PENDING) { DailyPendingScreen(navController, padding) }
             }
         }
     }

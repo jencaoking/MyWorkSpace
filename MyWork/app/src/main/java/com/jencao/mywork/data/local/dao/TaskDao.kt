@@ -54,4 +54,8 @@ interface TaskDao {
 
     @Query("SELECT * FROM tasks WHERE is_deleted = 0 AND (title LIKE '%' || :kw || '%' OR content LIKE '%' || :kw || '%') ORDER BY updated_at DESC LIMIT 50")
     suspend fun search(kw: String): List<TaskEntity>
+
+    /** 截止时间早于 before、仍待办的普通任务（排除长期目标），供每日归档使用 */
+    @Query("SELECT * FROM tasks WHERE is_deleted = 0 AND status = 0 AND task_type != 2 AND due_date IS NOT NULL AND due_date < :before")
+    suspend fun getOverdueOpen(before: Long): List<TaskEntity>
 }

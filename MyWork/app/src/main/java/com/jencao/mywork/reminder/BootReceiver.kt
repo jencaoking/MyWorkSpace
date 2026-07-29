@@ -35,6 +35,8 @@ class BootReceiver : BroadcastReceiver() {
                 ).healthRepo()
                 val records = repo.getUpcomingReminders(System.currentTimeMillis())
                 ReminderScheduler.rescheduleAll(context.applicationContext, records)
+                // 恢复每日作业归档与提醒调度
+                com.jencao.mywork.dailypending.DailyPendingScheduler.scheduleAll(context.applicationContext)
             } finally {
                 pending.finish()
             }

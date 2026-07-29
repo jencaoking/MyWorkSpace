@@ -13,6 +13,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -59,6 +60,7 @@ fun HomeScreen(
     homeVm: HomeViewModel = hiltViewModel()
 ) {
     val activeCount by homeVm.activeCount.collectAsStateWithLifecycle()
+    val dailyPendingCount by homeVm.dailyPendingCount.collectAsStateWithLifecycle()
     val isSyncing by homeVm.isSyncing.collectAsStateWithLifecycle()
     val lastSyncFailed by homeVm.lastSyncFailed.collectAsStateWithLifecycle()
     val lastSyncAt by homeVm.lastSyncAt.collectAsStateWithLifecycle()
@@ -111,6 +113,39 @@ fun HomeScreen(
             }
             Spacer(Modifier.width(12.dp))
             WeatherCard(state = weatherState, onOpenPicker = { showCityPicker = true })
+        }
+
+        // 每日作业提醒横条（有未处理的过期任务时显示）
+        if (dailyPendingCount > 0) {
+            NeuCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { nav.navigate(Routes.DAILY_PENDING) }
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        Icons.Filled.Warning,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                    Spacer(Modifier.width(12.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text(
+                            "你有 $dailyPendingCount 项作业未完成",
+                            style = MaterialTheme.typography.titleSmall,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                        Text(
+                            "点击去处理：补做 / 改期 / 放弃",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
         }
 
         // 全局搜索入口

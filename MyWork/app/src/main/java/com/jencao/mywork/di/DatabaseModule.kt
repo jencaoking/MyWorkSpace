@@ -29,4 +29,5 @@ object DatabaseModule {
     @Provides fun provideHealthRecordDao(db: AppDatabase) = db.healthRecordDao()
     @Provides fun provideAccountRecordDao(db: AppDatabase) = db.accountRecordDao()
     @Provides fun providePomodoroSessionDao(db: AppDatabase) = db.pomodoroSessionDao()
+    @Provides fun provideDailyPendingLogDao(db: AppDatabase) = db.dailyPendingLogDao()
 }

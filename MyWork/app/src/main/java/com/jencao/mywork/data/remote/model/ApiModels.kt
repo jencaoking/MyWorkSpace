@@ -3,6 +3,7 @@ package com.jencao.mywork.data.remote.model
 import com.google.gson.annotations.SerializedName
 import com.jencao.mywork.data.local.entity.AccountRecordEntity
 import com.jencao.mywork.data.local.entity.CategoryEntity
+import com.jencao.mywork.data.local.entity.DailyPendingLogEntity
 import com.jencao.mywork.data.local.entity.EnglishWordEntity
 import com.jencao.mywork.data.local.entity.HealthRecordEntity
 import com.jencao.mywork.data.local.entity.MovieBookEntity
@@ -180,6 +181,17 @@ data class AccountPullData(
     val deleted_ids: List<String> = emptyList()
 )
 typealias AccountPullResponse = ApiEnvelope<AccountPullData>
+
+// 每日未完成作业归档（daily-pending）
+data class DailyPendingUploadRequest(val logs: List<DailyPendingLogEntity> = emptyList())
+typealias DailyPendingUploadResponse = ApiEnvelope<SyncUploadResult>
+typealias DailyPendingDeleteResponse = ApiEnvelope<TaskDeleteResult>
+data class DailyPendingPullData(
+    val server_time: Long = 0L,
+    val logs: List<DailyPendingLogEntity> = emptyList(),
+    val deleted_ids: List<String> = emptyList()
+)
+typealias DailyPendingPullResponse = ApiEnvelope<DailyPendingPullData>
 
 // 设置（settings）：单行镜像，theme + module_toggles
 data class UserSettingsDto(

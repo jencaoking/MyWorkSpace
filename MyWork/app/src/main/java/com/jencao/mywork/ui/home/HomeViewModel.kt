@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jencao.mywork.data.local.entity.TaskEntity
+import com.jencao.mywork.data.repository.DailyPendingRepository
 import com.jencao.mywork.data.repository.TaskRepository
 import com.jencao.mywork.data.settings.UserPreferencesRepository
 import com.jencao.mywork.data.sync.SyncScheduler
@@ -19,9 +20,15 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val taskRepo: TaskRepository,
+    private val dailyPendingRepo: DailyPendingRepository,
     private val prefs: UserPreferencesRepository,
     @ApplicationContext private val context: Context
 ) : ViewModel() {
+
+    /** 待处理的每日作业数量（>0 时首页显示提醒横条） */
+    val dailyPendingCount: StateFlow<Int> = dailyPendingRepo.observePendingCount().stateIn(
+        viewModelScope, SharingStarted.WhileSubscribed(5000), 0
+    )
 
     val activeTasks: StateFlow<List<TaskEntity>> = taskRepo.observeActive().stateIn(
         viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList()

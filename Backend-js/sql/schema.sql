@@ -75,9 +75,6 @@ CREATE TABLE IF NOT EXISTS notes (
     FULLTEXT INDEX ft_title_content (title, content) WITH PARSER ngram
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 已建库升级用（表已存在时执行）：
--- ALTER TABLE notes ADD FULLTEXT INDEX ft_title_content (title, content) WITH PARSER ngram;
-
 CREATE TABLE IF NOT EXISTS sport_records (
     id           CHAR(36) PRIMARY KEY,
     type         VARCHAR(64) DEFAULT '',
@@ -102,8 +99,8 @@ CREATE TABLE IF NOT EXISTS english_words (
     audio_path   TEXT,
     familiarity  TINYINT      NOT NULL DEFAULT 0,
     next_review  BIGINT       NOT NULL DEFAULT 0,
-    last_modified BIGINT      NOT NULL,
-    is_deleted    TINYINT(1)  NOT NULL DEFAULT 0,
+    last_modified BIGINT     NOT NULL,
+    is_deleted    TINYINT(1) NOT NULL DEFAULT 0,
     device_id     VARCHAR(64) NOT NULL DEFAULT '',
     needs_sync    TINYINT(1)  NOT NULL DEFAULT 1,
     INDEX idx_review (next_review)
@@ -151,7 +148,7 @@ CREATE TABLE IF NOT EXISTS account_records (
     last_modified BIGINT    NOT NULL,
     is_deleted    TINYINT(1) NOT NULL DEFAULT 0,
     device_id     VARCHAR(64) NOT NULL DEFAULT '',
-    needs_sync    TINYINT(1)  NOT NULL DEFAULT 1,
+    needs_sync    TINYINT(1) NOT NULL DEFAULT 1,
     INDEX idx_date (record_date),
     INDEX idx_type (type)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
