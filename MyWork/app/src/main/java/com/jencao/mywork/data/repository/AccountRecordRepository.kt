@@ -2,6 +2,7 @@ package com.jencao.mywork.data.repository
 
 import com.jencao.mywork.data.local.dao.AccountRecordDao
 import com.jencao.mywork.data.local.entity.AccountRecordEntity
+import com.jencao.mywork.data.util.touch
 import javax.inject.Inject
 import javax.inject.Singleton
 
