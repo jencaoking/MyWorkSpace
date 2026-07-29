@@ -10,6 +10,7 @@ import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
 
 private val Context.dataStore by preferencesDataStore(name = "user_prefs")
 

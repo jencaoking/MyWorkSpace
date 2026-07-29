@@ -19,5 +19,6 @@ data class MovieBookEntity(
     @ColumnInfo(name = "status") var status: String = "want",
     @ColumnInfo(name = "rating") var rating: Float = 0f,
     @ColumnInfo(name = "poster_url") var posterUrl: String = "",
-    @ColumnInfo(name = "note") var note: String = ""
+    @ColumnInfo(name = "note") var note: String = "",
+    @ColumnInfo(name = "updated_at") var updatedAt: Long = System.currentTimeMillis()
 ) : BaseEntity()
