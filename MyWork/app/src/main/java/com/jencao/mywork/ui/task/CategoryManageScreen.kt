@@ -9,6 +9,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -41,14 +48,14 @@ fun CategoryManageScreen(
                 title = { Text("分类管理") },
                 navigationIcon = {
                     IconButton(onClick = { nav.popBackStack() }) {
-                        Icon(androidx.compose.material.icons.AutoMirrored.Filled.ArrowBack, "返回")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "返回")
                     }
                 }
             )
         },
         floatingActionButton = {
             FloatingActionButton(onClick = { vm.openNew() }) {
-                Icon(androidx.compose.material.icons.Icons.Filled.Add, "新增分类")
+                Icon(Icons.Filled.Add, "新增分类")
             }
         }
     ) { inner ->
@@ -75,18 +82,18 @@ fun CategoryManageScreen(
                             onClick = { prev?.let { vm.moveUp(cat, prev) } },
                             enabled = prev != null,
                             modifier = Modifier.size(32.dp)
-                        ) { Icon(androidx.compose.material.icons.Icons.Filled.ArrowUpward, "上移") }
+                        ) { Icon(Icons.Filled.ArrowUpward, "上移") }
                         IconButton(
                             onClick = { next?.let { vm.moveDown(cat, next) } },
                             enabled = next != null,
                             modifier = Modifier.size(32.dp)
-                        ) { Icon(androidx.compose.material.icons.Icons.Filled.ArrowDownward, "下移") }
+                        ) { Icon(Icons.Filled.ArrowDownward, "下移") }
                         IconButton(onClick = { vm.openEdit(cat) }) {
-                            Icon(androidx.compose.material.icons.Icons.Filled.Edit, "编辑")
+                            Icon(Icons.Filled.Edit, "编辑")
                         }
                         if (!cat.isSystem) {
                             IconButton(onClick = { vm.delete(cat) }) {
-                                Icon(androidx.compose.material.icons.Icons.Filled.Delete, "删除")
+                                Icon(Icons.Filled.Delete, "删除")
                             }
                         }
                     }

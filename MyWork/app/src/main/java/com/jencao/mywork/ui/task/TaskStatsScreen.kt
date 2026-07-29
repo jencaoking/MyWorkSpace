@@ -5,6 +5,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ChevronLeft
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -31,12 +35,12 @@ fun TaskStatsScreen(
                 title = { Text("统计") },
                 navigationIcon = {
                     IconButton(onClick = { nav.popBackStack() }) {
-                        Icon(androidx.compose.material.icons.AutoMirrored.Filled.ArrowBack, "返回")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "返回")
                     }
                 },
                 actions = {
-                    IconButton(onClick = { vm.prevMonth() }) { Icon(androidx.compose.material.icons.Icons.Filled.ChevronLeft, "上月") }
-                    IconButton(onClick = { vm.nextMonth() }) { Icon(androidx.compose.material.icons.Icons.Filled.ChevronRight, "下月") }
+                    IconButton(onClick = { vm.prevMonth() }) { Icon(Icons.Filled.ChevronLeft, "上月") }
+                    IconButton(onClick = { vm.nextMonth() }) { Icon(Icons.Filled.ChevronRight, "下月") }
                 }
             )
         }

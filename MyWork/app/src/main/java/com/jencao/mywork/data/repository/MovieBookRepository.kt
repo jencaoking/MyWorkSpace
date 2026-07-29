@@ -33,7 +33,7 @@ class MovieBookRepository @Inject constructor(
             tmdbId = tmdbId ?: "",
             status = status,
             rating = rating ?: 0f,
-            posterUrl = posterUrl,
+            posterUrl = posterUrl ?: "",
             note = note
         ).apply { touch() }
         dao.insert(item)

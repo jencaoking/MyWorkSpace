@@ -5,6 +5,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -40,15 +46,15 @@ fun TaskDetailScreen(
                 title = { Text(task?.title ?: "任务详情") },
                 navigationIcon = {
                     IconButton(onClick = { nav.popBackStack() }) {
-                        Icon(androidx.compose.material.icons.AutoMirrored.Filled.ArrowBack, "返回")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, "返回")
                     }
                 },
                 actions = {
                     IconButton(onClick = { showEdit = true }) {
-                        Icon(androidx.compose.material.icons.Icons.Filled.Edit, "编辑")
+                        Icon(Icons.Filled.Edit, "编辑")
                     }
                     IconButton(onClick = { vm.delete { nav.popBackStack() } }) {
-                        Icon(androidx.compose.material.icons.Icons.Filled.Delete, "删除")
+                        Icon(Icons.Filled.Delete, "删除")
                     }
                 }
             )
@@ -74,8 +80,8 @@ fun TaskDetailScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(
-                    if (checkedToday) androidx.compose.material.icons.Icons.Filled.CheckCircle
-                    else androidx.compose.material.icons.Icons.Filled.Add,
+                    if (checkedToday) Icons.Filled.CheckCircle
+                    else Icons.Filled.Add,
                     null
                 )
                 Spacer(Modifier.width(8.dp))

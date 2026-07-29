@@ -126,7 +126,7 @@ class MediaViewModel @Inject constructor(
                 this.tmdbId = tmdb ?: ""
                 status = _status.value
                 rating = ratingVal ?: 0f
-                posterUrl = _posterUrl.value
+                posterUrl = _posterUrl.value ?: ""
                 note = _note.value.trim()
             }
             repo.upsert(loaded!!)

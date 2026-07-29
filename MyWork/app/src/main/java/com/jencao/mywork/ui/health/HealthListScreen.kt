@@ -111,7 +111,7 @@ private fun HealthItemCard(
             androidx.compose.foundation.layout.Row(Modifier.fillMaxWidth()) {
                 Column(Modifier.weight(1f)) {
                     Text(
-                        if (h.value.isNotBlank()) "${h.value}${if (h.unit.isNotBlank()) " ${h.unit}" else ""}" else healthTypeLabel(h.type),
+                        if (h.value != 0f) "${h.value}${if (h.unit.isNotBlank()) " ${h.unit}" else ""}" else healthTypeLabel(h.type),
                         style = MaterialTheme.typography.titleMedium
                     )
                 }
