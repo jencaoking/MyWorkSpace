@@ -93,6 +93,11 @@ $router->add('GET', '/api/proxy/translate', static fn() => $proxy()->translate()
 $router->add('GET', '/api/proxy/word', static fn() => $proxy()->word());
 $router->add('GET', '/api/proxy/tmdb/search', static fn() => $proxy()->searchTmdb());
 
+// 和风天气代理（密钥在后台管理：qweather_key / qweather_token / qweather_host）
+$router->add('GET', '/api/proxy/weather/now', static fn() => $proxy()->weatherNow());
+$router->add('GET', '/api/proxy/weather/7d', static fn() => $proxy()->weather7d());
+$router->add('GET', '/api/proxy/weather/city/lookup', static fn() => $proxy()->cityLookup());
+
 // 后台管理：API 密钥（有道翻译等）配置读写
 $router->add('GET', '/admin/apikeys', static fn() => $admin()->apiKeys());
 $router->add('POST', '/admin/apikeys', static fn() => $admin()->saveApiKeys());

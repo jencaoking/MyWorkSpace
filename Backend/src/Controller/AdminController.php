@@ -190,7 +190,7 @@ final class AdminController
     {
         $this->requireAuth();
         $repo = new ConfigRepository($this->pdo);
-        $keys = ['youdao_app_key', 'youdao_app_secret', 'tmdb_key'];
+        $keys = ['youdao_app_key', 'youdao_app_secret', 'tmdb_key', 'qweather_key', 'qweather_token', 'qweather_host'];
         $out  = [];
         foreach ($keys as $k) {
             $v       = $repo->get($k, '');
@@ -209,7 +209,7 @@ final class AdminController
         $this->requireAuth();
         $body = $this->jsonBody();
         $repo = new ConfigRepository($this->pdo);
-        foreach (['youdao_app_key', 'youdao_app_secret', 'tmdb_key'] as $k) {
+        foreach (['youdao_app_key', 'youdao_app_secret', 'tmdb_key', 'qweather_key', 'qweather_token', 'qweather_host'] as $k) {
             if (array_key_exists($k, $body) && is_string($body[$k]) && $body[$k] !== '') {
                 $repo->set($k, trim($body[$k]));
             }

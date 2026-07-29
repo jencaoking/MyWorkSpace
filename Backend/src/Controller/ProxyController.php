@@ -240,4 +240,111 @@ class ProxyController
         ]);
         return @file_get_contents($url, false, $ctx);
     }
+
+    // ===== 和风天气 QWeather 代理：密钥在后台管理配置（qweather_key / qweather_token / qweather_host） =====
+
+    /** GET /api/proxy/weather/now?location=116.41,39.92 —— 实时天气 */
+    public function weatherNow(): void
+    {
+        $location = trim($_GET['location'] ?? '');
+        if ($location === '') {
+            ApiResponse::json(['code' => 1, 'message' => '缺少 location 参数', 'data' => null], 400);
+            return;
+        }
+        [$key, $token, $host] = $this->qweatherConfig();
+        if ($key === '' && $token === '') {
+            ApiResponse::json(['code' => 1, 'message' => '服务端未配置和风天气密钥（请在后台管理填写 qweather_key 或 qweather_token）', 'data' => null], 412);
+            return;
+        }
+        $data = $this->callQweather($host, '/v7/weather/now', ['location' => $location, 'lang' => 'zh'], $key, $token);
+        $this->respondQweather($data);
+    }
+
+    /** GET /api/proxy/weather/7d?location=... —— 7 天预报 */
+    public function weather7d(): void
+    {
+        $location = trim($_GET['location'] ?? '');
+        if ($location === '') {
+            ApiResponse::json(['code' => 1, 'message' => '缺少 location 参数', 'data' => null], 400);
+            return;
+        }
+        [$key, $token, $host] = $this->qweatherConfig();
+        if ($key === '' && $token === '') {
+            ApiResponse::json(['code' => 1, 'message' => '服务端未配置和风天气密钥', 'data' => null], 412);
+            return;
+        }
+        $data = $this->callQweather($host, '/v7/weather/7d', ['location' => $location, 'lang' => 'zh'], $key, $token);
+        $this->respondQweather($data);
+    }
+
+    /** GET /api/proxy/weather/city/lookup?keyword=北京 —— 城市搜索（GeoAPI） */
+    public function cityLookup(): void
+    {
+        $keyword = trim($_GET['keyword'] ?? '');
+        if ($keyword === '') {
+            ApiResponse::json(['code' => 1, 'message' => '缺少 keyword 参数', 'data' => null], 400);
+            return;
+        }
+        [$key, $token, $host] = $this->qweatherConfig();
+        if ($key === '' && $token === '') {
+            ApiResponse::json(['code' => 1, 'message' => '服务端未配置和风天气密钥', 'data' => null], 412);
+            return;
+        }
+        $data = $this->callQweather('geoapi.qweather.com', '/geo/v2/city/lookup', [
+            'location' => $keyword, 'range' => 'cn', 'number' => '20', 'lang' => 'zh',
+        ], $key, $token);
+        $this->respondQweather($data);
+    }
+
+    /** @return array{0:string,1:string,2:string} [key, token, host] */
+    private function qweatherConfig(): array
+    {
+        $key   = $this->config->get('qweather_key', '');
+        $token = $this->config->get('qweather_token', '');
+        $host  = $this->config->get('qweather_host', 'devapi.qweather.com');
+        return [$key, $token, $host];
+    }
+
+    private function callQweather(string $host, string $path, array $params, string $key, string $token)
+    {
+        $url = 'https://' . $host . $path . '?' . http_build_query($params);
+        if ($token === '' && $key !== '') {
+            $url .= '&key=' . urlencode($key);
+        }
+        $raw = $this->qweatherGet($url, $token);
+        if ($raw === false || $raw === '') {
+            return null;
+        }
+        $json = json_decode($raw, true);
+        return is_array($json) ? $json : null;
+    }
+
+    private function qweatherGet(string $url, string $token)
+    {
+        $header = "User-Agent: MyWorkProxy/1.0\r\nAccept: application/json\r\n";
+        if ($token !== '') {
+            $header .= 'Authorization: Bearer ' . $token . "\r\n";
+        }
+        $ctx = stream_context_create([
+            'http' => [
+                'method'  => 'GET',
+                'timeout' => 8,
+                'header'  => $header,
+            ],
+        ]);
+        return @file_get_contents($url, false, $ctx);
+    }
+
+    private function respondQweather($data): void
+    {
+        if ($data === null) {
+            ApiResponse::json(['code' => 1, 'message' => '和风天气请求失败（网络或密钥无效）', 'data' => null], 502);
+            return;
+        }
+        if (($data['code'] ?? '') !== '200') {
+            ApiResponse::json(['code' => 1, 'message' => '和风天气返回错误：' . ($data['code'] ?? 'unknown'), 'data' => $data], 502);
+            return;
+        }
+        ApiResponse::json(['code' => 0, 'message' => 'ok', 'data' => $data]);
+    }
 }

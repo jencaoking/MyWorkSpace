@@ -72,6 +72,25 @@ class UserPreferencesRepository @Inject constructor(
     suspend fun setCloudConnected(connected: Boolean) =
         dataStore.edit { it[CLOUD_CONNECTED] = connected }
 
+    // ===== 天气模块本地偏好 =====
+    private val WEATHER_AUTO = booleanPreferencesKey("weather_auto")
+    private val WEATHER_LOC_ID = stringPreferencesKey("weather_loc_id")
+    private val WEATHER_LOC_NAME = stringPreferencesKey("weather_loc_name")
+
+    /** 是否使用自动定位（true：用 GPS；false：使用下方固定城市） */
+    val weatherAuto: Flow<Boolean> = dataStore.data.map { it[WEATHER_AUTO] ?: true }
+    /** 固定城市（自动定位关闭时生效） */
+    val weatherLocation: Flow<WeatherLocation?> = dataStore.data.map { prefs ->
+        val id = prefs[WEATHER_LOC_ID]
+        val name = prefs[WEATHER_LOC_NAME]
+        if (!id.isNullOrBlank()) WeatherLocation(id, name ?: "") else null
+    }
+    suspend fun setWeatherAuto(auto: Boolean) = dataStore.edit { it[WEATHER_AUTO] = auto }
+    suspend fun setWeatherLocation(id: String, name: String) = dataStore.edit {
+        it[WEATHER_LOC_ID] = id
+        it[WEATHER_LOC_NAME] = name
+    }
+
     suspend fun setThemeMode(mode: ThemeMode) {
         dataStore.edit { it[THEME_MODE] = mode.ordinal }
     }
@@ -104,3 +123,6 @@ class UserPreferencesRepository @Inject constructor(
     suspend fun setAutoSyncEnabled(enabled: Boolean) =
         dataStore.edit { it[AUTO_SYNC_ENABLED] = enabled }
 }
+
+/** 天气固定城市（Location ID + 名称） */
+data class WeatherLocation(val id: String, val name: String)

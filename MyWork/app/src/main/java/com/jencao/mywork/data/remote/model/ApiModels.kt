@@ -1,5 +1,6 @@
 package com.jencao.mywork.data.remote.model
 
+import com.google.gson.annotations.SerializedName
 import com.jencao.mywork.data.local.entity.AccountRecordEntity
 import com.jencao.mywork.data.local.entity.CategoryEntity
 import com.jencao.mywork.data.local.entity.EnglishWordEntity
@@ -253,4 +254,65 @@ data class TmdbSearchData(
 )
 
 typealias TmdbSearchResponse = ApiEnvelope<TmdbSearchData>
+
+/* ---------- 和风天气 QWeather（后端代理 /api/proxy/weather/*） ---------- */
+// 注意：Gson 使用 LOWER_CASE_WITH_UNDERSCORES；QWeather 返回 camelCase 字段，故每个字段显式标注 @SerializedName。
+
+/** 实时天气 now 对象 */
+data class QweatherNow(
+    @SerializedName("obsTime") val obsTime: String = "",
+    @SerializedName("temp") val temp: String = "",
+    @SerializedName("feelsLike") val feelsLike: String = "",
+    @SerializedName("icon") val icon: String = "",
+    @SerializedName("text") val text: String = "",
+    @SerializedName("windDir") val windDir: String = "",
+    @SerializedName("windScale") val windScale: String = "",
+    @SerializedName("windSpeed") val windSpeed: String = "",
+    @SerializedName("humidity") val humidity: String = "",
+    @SerializedName("precip") val precip: String = "",
+    @SerializedName("pressure") val pressure: String = "",
+    @SerializedName("vis") val vis: String = ""
+)
+
+/** GET /api/proxy/weather/now 数据体 */
+data class QweatherNowData(
+    @SerializedName("updateTime") val updateTime: String = "",
+    @SerializedName("fxLink") val fxLink: String = "",
+    @SerializedName("now") val now: QweatherNow = QweatherNow()
+)
+typealias QweatherNowResponse = ApiEnvelope<QweatherNowData>
+
+/** 7 天预报单日 */
+data class QweatherDaily(
+    @SerializedName("fxDate") val fxDate: String = "",
+    @SerializedName("tempMax") val tempMax: String = "",
+    @SerializedName("tempMin") val tempMin: String = "",
+    @SerializedName("textDay") val textDay: String = "",
+    @SerializedName("iconDay") val iconDay: String = "",
+    @SerializedName("textNight") val textNight: String = "",
+    @SerializedName("iconNight") val iconNight: String = ""
+)
+
+/** GET /api/proxy/weather/7d 数据体 */
+data class QweatherDailyData(
+    @SerializedName("updateTime") val updateTime: String = "",
+    @SerializedName("daily") val daily: List<QweatherDaily> = emptyList()
+)
+typealias QweatherDailyResponse = ApiEnvelope<QweatherDailyData>
+
+/** 城市搜索单条 */
+data class QweatherCity(
+    @SerializedName("name") val name: String = "",
+    @SerializedName("id") val id: String = "",
+    @SerializedName("lat") val lat: String = "",
+    @SerializedName("lon") val lon: String = "",
+    @SerializedName("adm1") val adm1: String = "",
+    @SerializedName("adm2") val adm2: String = ""
+)
+
+/** GET /api/proxy/weather/city/lookup 数据体 */
+data class QweatherCityData(
+    @SerializedName("location") val location: List<QweatherCity> = emptyList()
+)
+typealias QweatherCityResponse = ApiEnvelope<QweatherCityData>
 

@@ -17,6 +17,9 @@
     <!-- 笔记图片：从相册选择 / 拍照上传 -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <!-- 天气模块：自动定位所在城市 -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <application
         android:name=".MyWorkApplication"

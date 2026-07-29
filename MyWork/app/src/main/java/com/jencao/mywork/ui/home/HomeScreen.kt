@@ -29,6 +29,20 @@ import com.jencao.mywork.ui.navigation.ModuleTile
 import com.jencao.mywork.ui.navigation.Routes
 import com.jencao.mywork.ui.navigation.moduleMeta
 import com.jencao.mywork.ui.navigation.moduleRoute
+import com.jencao.mywork.ui.weather.WeatherViewModel
+import com.jencao.mywork.ui.weather.WeatherCard
+import com.jencao.mywork.ui.weather.CityPickerSheet
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
+import android.Manifest
+import android.content.pm.PackageManager
 
 private val syncFmt = SimpleDateFormat("MM-dd HH:mm", Locale.CHINA)
 
@@ -44,6 +58,31 @@ fun HomeScreen(
     val lastSyncFailed by homeVm.lastSyncFailed.collectAsStateWithLifecycle()
     val lastSyncAt by homeVm.lastSyncAt.collectAsStateWithLifecycle()
 
+    val weatherVm: WeatherViewModel = hiltViewModel()
+    val weatherState by weatherVm.state.collectAsStateWithLifecycle()
+    val weatherSearching by weatherVm.searching.collectAsStateWithLifecycle()
+    val weatherResults by weatherVm.searchResults.collectAsStateWithLifecycle()
+    var showCityPicker by remember { mutableStateOf(false) }
+
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { results ->
+        val granted = results.values.any { it }
+        weatherVm.setLocationGranted(granted)
+    }
+    LaunchedEffect(Unit) {
+        val ctx = LocalContext.current
+        val fine = ContextCompat.checkSelfPermission(ctx, Manifest.permission.ACCESS_FINE_LOCATION)
+        val coarse = ContextCompat.checkSelfPermission(ctx, Manifest.permission.ACCESS_COARSE_LOCATION)
+        if (fine == PackageManager.PERMISSION_GRANTED || coarse == PackageManager.PERMISSION_GRANTED) {
+            weatherVm.setLocationGranted(true)
+        } else {
+            locationPermissionLauncher.launch(
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+            )
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -52,12 +91,22 @@ fun HomeScreen(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text("嗨，今天也要好好生活", style = MaterialTheme.typography.headlineMedium)
-        Text(
-            "自律工作台 · 当前待办 $activeCount 项",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.Top
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text("嗨，今天也要好好生活", style = MaterialTheme.typography.headlineMedium)
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    "自律工作台 · 当前待办 $activeCount 项",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Spacer(Modifier.width(12.dp))
+            WeatherCard(state = weatherState, onOpenPicker = { showCityPicker = true })
+        }
 
         // 概览统计
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -140,6 +189,18 @@ fun HomeScreen(
                 onClick = { homeVm.syncNow() },
                 enabled = !isSyncing,
                 modifier = Modifier.padding(top = 8.dp)
+            )
+        }
+
+        if (showCityPicker) {
+            CityPickerSheet(
+                state = weatherState,
+                searchResults = weatherResults,
+                searching = weatherSearching,
+                onDismiss = { showCityPicker = false },
+                onToggleAuto = { weatherVm.enableAutoLocation() },
+                onSearch = { weatherVm.searchCity(it) },
+                onSelect = { weatherVm.selectCity(it); showCityPicker = false }
             )
         }
     }

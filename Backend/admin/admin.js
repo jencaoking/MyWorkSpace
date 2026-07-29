@@ -169,32 +169,52 @@ async function showApiKeys() {
     wrap.className = 'form-wrap glass';
     wrap.innerHTML = `
       <h3>第三方 API 密钥</h3>
-      <p class="hint">密钥仅保存在服务端，App 通过后台代理（/api/proxy/*）调用，不会下发到客户端。当前支持有道智云翻译与 TMDB 影视检索。</p>
+      <p class="hint">密钥仅保存在服务端，App 通过后台代理（/api/proxy/*）调用，不会下发到客户端。当前支持有道智云翻译、TMDB 影视检索与和风天气 QWeather。</p>
       <div class="field"><label>有道 App Key</label><input id="yk" type="text" placeholder="youdao_app_key" /></div>
       <div class="field"><label>有道 App Secret</label><input id="ys" type="password" placeholder="youdao_app_secret" /></div>
       <div class="field"><label>TMDB API Key（v3 auth）</label><input id="tk" type="text" placeholder="tmdb_key" /></div>
+      <div class="field"><label>和风天气 Key（旧版 key，与下方 JWT 二选一）</label><input id="qk" type="text" placeholder="qweather_key" /></div>
+      <div class="field"><label>和风天气 JWT（新版 Bearer Token）</label><input id="qt" type="password" placeholder="qweather_token" /></div>
+      <div class="field"><label>和风天气 API Host（默认 devapi.qweather.com，商业版填 api.qweather.com）</label><input id="qh" type="text" placeholder="devapi.qweather.com" /></div>
       <div class="row-actions">
         <button id="saveKeys" class="btn-primary">保存密钥</button>
         <button id="testKeys" class="btn">测试有道</button>
         <button id="testTmdb" class="btn">测试 TMDB</button>
+        <button id="testQweather" class="btn">测试和风</button>
         <span id="keyState" class="hint"></span>
       </div>`;
     contentEl.innerHTML = '';
     contentEl.appendChild(wrap);
+    // 回填已配置值（脱敏，仅展示末 4 位），便于核对但不覆盖
+    if (keys.youdao_app_key) $('yk').value = keys.youdao_app_key;
+    if (keys.youdao_app_secret) $('ys').value = keys.youdao_app_secret;
+    if (keys.tmdb_key) $('tk').value = keys.tmdb_key;
+    if (keys.qweather_key) $('qk').value = keys.qweather_key;
+    if (keys.qweather_token) $('qt').value = keys.qweather_token;
+    if (keys.qweather_host) $('qh').value = keys.qweather_host;
     const states = [];
     if (keys.youdao_app_key) states.push('有道 ' + keys.youdao_app_key);
     if (keys.tmdb_key) states.push('TMDB ' + keys.tmdb_key);
+    if (keys.qweather_key || keys.qweather_token) states.push('和风 ' + (keys.qweather_key || 'JWT'));
     if (states.length) $('keyState').textContent = '已配置：' + states.join(' ｜ ');
+    const collect = (id, key) => {
+      const v = $(id).value.trim();
+      if (v && v.startsWith('******')) return; // 未修改，保留后端原值
+      body[key] = v; // v 可为新值或空字符串（清空）
+    };
     $('saveKeys').onclick = async () => {
       const btn = $('saveKeys'); btn.disabled = true;
       try {
+        const body = {};
+        collect('#yk', 'youdao_app_key');
+        collect('#ys', 'youdao_app_secret');
+        collect('#tk', 'tmdb_key');
+        collect('#qk', 'qweather_key');
+        collect('#qt', 'qweather_token');
+        collect('#qh', 'qweather_host');
         await api('/admin/apikeys', {
           method: 'POST',
-          body: JSON.stringify({
-            youdao_app_key: $('yk').value.trim(),
-            youdao_app_secret: $('ys').value.trim(),
-            tmdb_key: $('tk').value.trim(),
-          }),
+          body: JSON.stringify(body),
         });
         toast('已保存');
         showApiKeys();
@@ -218,6 +238,15 @@ async function showApiKeys() {
         toast('连接成功：共 ' + (r.total_results || 0) + ' 条结果');
       } catch (e) {
         toast('TMDB 测试失败：' + e.message, true);
+      } finally { btn.disabled = false; }
+    };
+    $('testQweather').onclick = async () => {
+      const btn = $('testQweather'); btn.disabled = true;
+      try {
+        const r = await api('/api/proxy/weather/now?location=101010100');
+        toast('连接成功：' + (r.data && r.data.now ? r.data.now.text + ' ' + r.data.now.temp + '℃' : 'ok'));
+      } catch (e) {
+        toast('和风测试失败：' + e.message, true);
       } finally { btn.disabled = false; }
     };
   } catch (e) {

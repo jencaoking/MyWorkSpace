@@ -41,6 +41,9 @@ import com.jencao.mywork.data.remote.model.SportUploadRequest
 import com.jencao.mywork.data.remote.model.TranslateResponse
 import com.jencao.mywork.data.remote.model.WordLookupResponse
 import com.jencao.mywork.data.remote.model.TmdbSearchResponse
+import com.jencao.mywork.data.remote.model.QweatherNowResponse
+import com.jencao.mywork.data.remote.model.QweatherDailyResponse
+import com.jencao.mywork.data.remote.model.QweatherCityResponse
 import com.jencao.mywork.data.remote.model.SportUploadResponse
 import com.jencao.mywork.data.remote.model.SyncPullResponse
 import com.jencao.mywork.data.remote.model.SyncUploadRequest
@@ -205,4 +208,14 @@ interface ApiService {
         @Query("query") query: String,
         @Query("page") page: Int = 1
     ): TmdbSearchResponse
+
+    // —— 和风天气代理（密钥在服务端后台管理，App 不持有密钥） ——
+    @GET("api/proxy/weather/now")
+    suspend fun getWeatherNow(@Query("location") location: String): QweatherNowResponse
+
+    @GET("api/proxy/weather/7d")
+    suspend fun getWeather7d(@Query("location") location: String): QweatherDailyResponse
+
+    @GET("api/proxy/weather/city/lookup")
+    suspend fun lookupCity(@Query("keyword") keyword: String): QweatherCityResponse
 }
