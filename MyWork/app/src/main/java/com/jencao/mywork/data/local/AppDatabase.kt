@@ -50,7 +50,7 @@ abstract class AppDatabase : RoomDatabase() {
                     DATABASE_NAME
                 )
                     // 阶段1 开发期：结构变更直接重建，避免手动 Migration
-                    .fallbackToDestructiveMigration(dropAllTablesOnMigration = true)
+                    .fallbackToDestructiveMigration(dropAllTables = true)
                     .build()
                 INSTANCE = instance
                 instance
