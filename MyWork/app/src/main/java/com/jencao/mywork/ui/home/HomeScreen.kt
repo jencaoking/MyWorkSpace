@@ -8,9 +8,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.weight
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -68,18 +67,17 @@ fun HomeScreen(
 
         // 功能板块开关
         Text("功能板块", style = MaterialTheme.typography.titleMedium)
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
+        FlowRow(
+            maxItemsInEachRow = 2,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
-            userScrollEnabled = false,
             modifier = Modifier.fillMaxWidth()
         ) {
-            items(ModuleKey.entries) { key ->
+            ModuleKey.entries.forEach { key ->
                 val enabled = toggles[key] ?: false
                 Card(
                     modifier = Modifier
-                        .fillMaxWidth()
+                        .weight(1f)
                         .clickable(enabled = enabled) { nav.navigate(moduleRoute(key)) }
                 ) {
                     Column(
