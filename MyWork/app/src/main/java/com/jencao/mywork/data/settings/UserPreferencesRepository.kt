@@ -74,4 +74,9 @@ class UserPreferencesRepository @Inject constructor(
         if (key.locked) return
         dataStore.edit { it[moduleKey(key)] = enabled }
     }
+
+    /** 上一次成功增量拉取的服务器时间戳（毫秒），用于 /sync/pull?since= 游标 */
+    private val LAST_SYNC_AT = longPreferencesKey("last_sync_at")
+    suspend fun lastSyncAt(): Long = dataStore.data.first()[LAST_SYNC_AT] ?: 0L
+    suspend fun setLastSyncAt(ts: Long) = dataStore.edit { it[LAST_SYNC_AT] = ts }
 }

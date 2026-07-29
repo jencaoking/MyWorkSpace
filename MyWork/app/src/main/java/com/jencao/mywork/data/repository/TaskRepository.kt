@@ -187,4 +187,30 @@ class TaskRepository @Inject constructor(
     suspend fun getCheckinPendingUploads() = checkinDao.getPendingUploads()
     suspend fun getCheckinPendingDeletions() = checkinDao.getPendingDeletions()
     suspend fun upsertRemoteCheckins(items: List<TaskCheckinEntity>) = checkinDao.upsertAll(items)
+
+    /** 上传成功后清除本地 needs_sync 标记，避免重复上传 */
+    suspend fun markSynced(ids: List<String>) {
+        if (ids.isNotEmpty()) dao.markSynced(ids)
+    }
+
+    /** 服务器确认删除后，本地硬删这些记录（墓碑回收） */
+    suspend fun purgeDeleted(ids: List<String>) {
+        if (ids.isNotEmpty()) dao.deleteByIds(ids)
+    }
+
+    /**
+     * LWW 合并云端拉取的任务：本地更晚修改则保留本地，否则以云端覆盖。
+     * 合并结果 needs_sync 置 0，避免被当成待上传项无限回传。
+     */
+    suspend fun mergeRemote(remote: List<TaskEntity>) {
+        val toUpsert = mutableListOf<TaskEntity>()
+        for (r in remote) {
+            val local = dao.getById(r.id)
+            if (local == null || local.lastModified <= r.lastModified) {
+                r.needsSync = false
+                toUpsert.add(r)
+            }
+        }
+        if (toUpsert.isNotEmpty()) dao.upsertAll(toUpsert)
+    }
 }

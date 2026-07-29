@@ -47,6 +47,7 @@ fun HomeScreen(
     val toggles by appVm.moduleToggles.collectAsStateWithLifecycle()
     val activeCount by homeVm.activeCount.collectAsStateWithLifecycle()
     val serverStatus by homeVm.serverStatus.collectAsStateWithLifecycle()
+    val syncStatus by homeVm.syncStatus.collectAsStateWithLifecycle()
 
     Column(
         modifier = Modifier
@@ -137,6 +138,43 @@ fun HomeScreen(
                     modifier = Modifier.padding(top = 8.dp)
                 ) {
                     Text("测试服务器连接")
+                }
+            }
+        }
+
+        // 数据同步
+        Card(modifier = Modifier.fillMaxWidth()) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text("云端同步", style = MaterialTheme.typography.titleMedium)
+                when (val s = syncStatus) {
+                    SyncStatus.Idle -> Text(
+                        "点击同步，将本地待上传与待删除任务推送到云端，并拉取远端变更",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    SyncStatus.Syncing -> Text(
+                        "同步中…", style = MaterialTheme.typography.bodySmall
+                    )
+
+                    is SyncStatus.Success -> Text(
+                        "同步完成 ✓ 上行 $uploaded · 下行 $downloaded · 删除 $deleted",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+
+                    is SyncStatus.Error -> Text(
+                        "同步失败：$message",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+                OutlinedButton(
+                    onClick = { homeVm.syncNow() },
+                    enabled = syncStatus != SyncStatus.Syncing,
+                    modifier = Modifier.padding(top = 8.dp)
+                ) {
+                    Text("同步数据")
                 }
             }
         }

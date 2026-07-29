@@ -45,4 +45,10 @@ interface TaskDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertAll(items: List<TaskEntity>)
+
+    @Query("UPDATE tasks SET needs_sync = 0 WHERE id IN (:ids)")
+    suspend fun markSynced(ids: List<String>)
+
+    @Query("DELETE FROM tasks WHERE id IN (:ids)")
+    suspend fun deleteByIds(ids: List<String>)
 }

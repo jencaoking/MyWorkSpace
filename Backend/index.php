@@ -37,7 +37,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 $method = $_SERVER['REQUEST_METHOD'];
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?: '/';
 
-$pdo = require __DIR__ . '/config/database.php';
+$pdo = null;
+try {
+    $pdo = require __DIR__ . '/config/database.php';
+} catch (\Throwable $e) {
+    // 数据库不可用时降级：保留 $pdo = null，由各 Controller 优雅处理
+    // （例如 HealthController 会返回 db_connected=false 的合法信封，而非白屏 500）
+    $pdo = null;
+}
 
 $router = new \App\Router\Router();
 require __DIR__ . '/routes/api.php';
