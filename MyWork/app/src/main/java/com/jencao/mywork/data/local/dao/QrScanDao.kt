@@ -38,7 +38,7 @@ interface QrScanDao {
         val local = observeAllOnce()
         val merged = items.map { remote ->
             local.firstOrNull { it.id == remote.id }?.let { old ->
-                if (remote.last_modified > old.last_modified) remote else old
+                if (remote.lastModified > old.lastModified) remote else old
             } ?: remote
         }
         upsertAll(merged)

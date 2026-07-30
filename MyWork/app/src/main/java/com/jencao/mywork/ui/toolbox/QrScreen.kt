@@ -21,14 +21,16 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
-import androidx.camera.core.PreviewView
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -38,7 +40,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.weight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -89,6 +90,7 @@ import com.jencao.mywork.ui.components.NeuIconButton
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.Executors
 import android.content.ContentValues
 
 @Composable
@@ -201,6 +203,7 @@ private fun ScanPanel(vm: QrViewModel, lastResult: QrScanEntity?, history: List<
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun GeneratePanel(vm: QrViewModel) {
     val genType by vm.genType.collectAsStateWithLifecycle()
@@ -275,6 +278,7 @@ private fun QrScanner(analyzer: QrAnalyzer, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val previewView = remember { PreviewView(context) }
+    val analysisExecutor = remember { Executors.newSingleThreadExecutor() }
 
     Box(modifier) {
         AndroidView(factory = { previewView }, modifier = Modifier.fillMaxSize())
@@ -295,7 +299,7 @@ private fun QrScanner(analyzer: QrAnalyzer, modifier: Modifier = Modifier) {
                 val analysis = ImageAnalysis.Builder()
                     .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                     .build()
-                    .also { it.setAnalyzer(ContextCompat.getMainExecutor(context), analyzer) }
+                    .also { it.setAnalyzer(analysisExecutor, analyzer) }
                 provider.unbindAll()
                 provider.bindToLifecycle(lifecycleOwner, CameraSelector.DEFAULT_BACK_CAMERA, preview, analysis)
             } catch (_: Exception) {
@@ -304,13 +308,9 @@ private fun QrScanner(analyzer: QrAnalyzer, modifier: Modifier = Modifier) {
         future.addListener(listener, ContextCompat.getMainExecutor(context))
         onDispose {
             try { future.get().unbindAll() } catch (_: Exception) { }
+            analysisExecutor.shutdown()
         }
     }
-}
-
-private fun QrType.label(): String = when (this) {
-    QrType.TEXT -> "文本"; QrType.URL -> "网址"; QrType.WIFI -> "WiFi"
-    QrType.VCARD -> "名片"; QrType.SMS -> "短信"; QrType.PHONE -> "电话"
 }
 
 private fun typeIcon(type: Int) = when (type) {

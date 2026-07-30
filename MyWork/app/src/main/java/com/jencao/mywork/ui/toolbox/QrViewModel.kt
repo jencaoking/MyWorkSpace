@@ -54,7 +54,7 @@ class QrViewModel @Inject constructor(private val repo: QrScanRepository) : View
     fun onScanned(content: String) {
         val c = content.trim()
         if (c.isBlank()) return
-        val entity = QrScanEntity(content = c, type = inferType(c), scanned_at = System.currentTimeMillis())
+        val entity = QrScanEntity(content = c, type = inferType(c), scannedAt = System.currentTimeMillis())
         viewModelScope.launch {
             repo.insert(entity)
             _lastResult.value = entity

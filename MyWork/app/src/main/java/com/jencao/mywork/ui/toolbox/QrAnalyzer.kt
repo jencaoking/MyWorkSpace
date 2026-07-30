@@ -2,15 +2,15 @@ package com.jencao.mywork.ui.toolbox
 
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
-import androidx.camera.core.toBitmap
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.BinaryBitmap
 import com.google.zxing.DecodeHintType
+import com.google.zxing.LuminanceSource
 import com.google.zxing.MultiFormatReader
-import com.google.zxing.RGBLuminanceSource
+import com.google.zxing.PlanarYUVLuminanceSource
 import com.google.zxing.common.HybridBinarizer
 
-/** CameraX 图像分析器：每帧用 ZXing 解码条码/二维码。 */
+/** CameraX 图像分析器：直接取 YUV 的 Y 平面用 ZXing 解码条码/二维码。 */
 class QrAnalyzer : ImageAnalysis.Analyzer {
     var onResult: ((String) -> Unit)? = null
     var active = true
@@ -46,19 +46,56 @@ class QrAnalyzer : ImageAnalysis.Analyzer {
             return
         }
         try {
-            val bmp = imageProxy.toBitmap()
-            val w = bmp.width
-            val h = bmp.height
-            val pixels = IntArray(w * h)
-            bmp.getPixels(pixels, 0, w, 0, 0, w, h)
-            val source = RGBLuminanceSource(w, h, pixels)
-            val result = reader.decode(BinaryBitmap(HybridBinarizer(source)))
-            active = false
-            onResult?.invoke(result.text)
-        } catch (_: Exception) {
-            // 当前帧未识别到码，继续下一帧
+            val source = imageProxy.toLuminanceSource()
+            val text = source.decodeOrNull() ?: source.rotateCounterClockwise().decodeOrNull()
+            if (text != null) {
+                active = false
+                onResult?.invoke(text)
+            }
+        } catch (_: Throwable) {
+            // 当前帧解析失败，继续下一帧
         } finally {
             imageProxy.close()
         }
+    }
+
+    private fun LuminanceSource.decodeOrNull(): String? = try {
+        reader.decodeWithState(BinaryBitmap(HybridBinarizer(this))).text
+    } catch (_: Exception) {
+        null
+    } finally {
+        reader.reset()
+    }
+
+    /** 取 YUV_420_888 的 Y 平面（灰度）构建 ZXing 亮度源，避免逐帧 Bitmap 转换。 */
+    private fun ImageProxy.toLuminanceSource(): PlanarYUVLuminanceSource {
+        val plane = planes[0]
+        val buffer = plane.buffer.apply { rewind() }
+        val rowStride = plane.rowStride
+        val pixelStride = plane.pixelStride
+        val data = ByteArray(width * height)
+
+        if (pixelStride == 1 && rowStride == width) {
+            buffer.get(data, 0, minOf(buffer.remaining(), data.size))
+        } else {
+            val row = ByteArray(rowStride)
+            for (y in 0 until height) {
+                val offset = y * rowStride
+                if (offset >= buffer.limit()) break
+                buffer.position(offset)
+                val len = minOf(rowStride, buffer.remaining())
+                buffer.get(row, 0, len)
+                if (pixelStride == 1) {
+                    System.arraycopy(row, 0, data, y * width, minOf(width, len))
+                } else {
+                    var x = 0
+                    while (x < width && x * pixelStride < len) {
+                        data[y * width + x] = row[x * pixelStride]
+                        x++
+                    }
+                }
+            }
+        }
+        return PlanarYUVLuminanceSource(data, width, height, 0, 0, width, height, false)
     }
 }
